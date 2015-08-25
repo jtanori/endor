@@ -1,0 +1,60 @@
+<ion-view title="Jound">
+	<ion-nav-buttons side="right">
+        <button class="button button-icon button-clear ion-navigate" ng-class="{'active': usingGeolocation}" ng-click="toggleGeolocation()" id="geolocationButton">
+        </button>
+        <button class="button button-icon button-clear ion-gear-a" menu-toggle="right" ng-click="openRight()">
+        </button>
+    </ion-nav-buttons>
+            
+	<form class="bar bar-subheader item-input-inset bar-assertive" name="searchForm" ng-submit="submit(searchForm)" ng-disabled="!categories.length">
+		<label class="item-input-wrapper">
+			<i class="icon ion-ios-search placeholder-icon"></i>
+			<input type="search" placeholder="¿Qué estas buscando?" autocomplete="false" autocorrect="false" ng-model="query" ng-focus="isSearchFocused = true" ng-blur="isSearchFocused = false" ng-change="filterCategories()" ng-model-options="{ debounce: 350 }" id="home-search-input" focus-on="setSearchFocus" blur-on="searchBlur">
+		</label>
+		<button class="button button-clear" type="submit">
+			Buscar
+		</button>
+	</form>
+	<ion-content scroll="false" scrollbar-x="false" scrollbar-y="false" class="has-header has-subheader">
+		<ion-pane>
+			<div class="list list-inset" id="categories-results-list" ng-show="isSearchFocused">
+				<li class="item" ng-repeat="category in categories" ng-if="category.selected" ng-click="selectCategory(category)">{{category.title}}</li>
+				<li class="item item-warning" ng-show="!categoriesFound"><i class="icon ion-heart-broken"></i> No hay coincidencias</li>
+			</div>
+		    <ion-pane id="map" ng-class="{'has-venue': currentModel, 'has-routes': route1 || route2 || route3}"></ion-pane>
+		    <div ng-show="route1 || route2 || route3" id="home-routes" class="right aligned">
+		    	<button class="button button-clear button-small" ng-click="removeAllRoutes()" ng-show="route1 || route2 || route3" id="home-routes-clear"><i class="icon ion-close"></i> Limpiar</button>
+
+				<button class="button button-positive button-small icon icon-right ion-close-circled route-option" ng-show="route1" ng-click="removeRoute(route1)">{{route1.distance}}</button>
+				<button class="button button-assertive button-small icon icon-right ion-close-circled route-option" ng-show="route2" ng-click="removeRoute(route2)">{{route2.distance}}</button>
+				<button class="button button-dark button-small icon icon-right ion-close-circled route-option" ng-show="route3" ng-click="removeRoute(route3)">{{route3.distance}}</button>
+		    </div>
+		    <div ng-show="currentModel" id="home-venue-details" ng-class="{'has-phone': currentModel.get('phone_number')}">
+		    	<div class="list">
+					<div class="item item-avatar" href="#">
+						<img src="{{currentModel.getLogo()}}" ng-click="openVenue()">
+						<h2 ng-click="openVenue()">{{currentModel.get('name')}}</h2>
+						<p ng-click="openVenue()">{{currentModel.getAddress()}}</p>
+						<a class="button button-positive" ng-show="currentModel.get('phone_number')" href="tel:{{currentModel.get('phone_number')}}">
+							<i class="icon ion-ios-telephone"></i>
+						</a>
+					</div>
+				</div>
+				<div class="tabs tabs-assertive tabs-icon-top">
+					<a class="tab-item" ng-click="share()">
+						<i class="icon ion-share"></i>
+						Compartir
+					</a>
+					<a class="tab-item" href="#/app/venues/{{currentModel.id}}">
+						<i class="icon ion-chevron-right"></i>
+						Ver mas
+					</a>
+					<a class="tab-item" ng-click="traceRoute()">
+						<i class="icon ion-map"></i>
+						¿Como llego?
+					</a>
+				</div>
+		    </div>
+		</ion-pane>
+	</ion-content>
+</ion-view>

@@ -1,0 +1,24 @@
+<ion-view>
+    <ion-content id="login">
+
+        <div id="login-wrapper">
+            <div>
+                <div class="padding center aligned">
+                    <img src="img/jound-title.png" id="logo">
+                </div>
+                <form name="loginForm" novalidate="" ng-submit="login(loginForm)" id="loginForm" class="padding form auth"> 
+                    <div class="h3 center aligned light">Login</div>
+                    <input name="username" ng-model="user.username" required type="email" placeholder="Direccion de correo electronico"> 
+                    <br />
+                    <input name="password" ng-model="user.password" required type="password" placeholder="password"> 
+
+                    <button class="button button-small button-block rounded button-assertive" type="submit" ng-disabled="loginForm.$invalid">Entrar</button>
+                    <br />
+                    <div class="h5 center aligned light">O bien</div>
+                    <button type="button" class="button button-small button-positive button-block rounded" ng-click="facebookLogin()"><i class="icon ion-social-facebook"></i> Entrar con Facebook</button>
+                </form>
+            </div>
+        </div>
+        <div id="intro"></div>
+    </ion-content>
+</ion-view>

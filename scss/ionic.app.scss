@@ -1,0 +1,289 @@
+/*
+To customize the look and feel of Ionic, you can override the variables
+in ionic's _variables.scss file.
+
+For example, you might change some of the default colors:
+
+$light:                           #fff !default;
+$stable:                          #f8f8f8 !default;
+$positive:                        #387ef5 !default;
+$calm:                            #11c1f3 !default;
+$balanced:                        #33cd5f !default;
+$energized:                       #ffc900 !default;
+$assertive:                       #ef473a !default;
+$royal:                           #886aea !default;
+$dark:                            #444 !default;
+*/
+
+//Override ionic variables
+// Colors
+// -------------------------------
+/*
+$stable:                          #33465d !default;
+$positive:                        #485E90 !default;
+$energized:                       #57be29 !default;
+$dark:                            #2d3d52 !default;
+$assertive:                       #da4334 !default;
+
+//Buttons
+$button-stable-bg:                $stable !default;
+$button-stable-text:              #fff !default;
+$button-stable-border:            #fff !default;
+$button-stable-active-bg:         darken($stable, 15%) !default;
+$button-stable-active-border:     #fff !default;
+
+$button-positive-bg:              $positive !default;
+$button-positive-text:            #fff !default;
+$button-positive-border:          #fff !default;
+$button-positive-active-bg:       darken($positive, 15%) !default;
+$button-positive-active-border:   #fff !default;
+
+$button-default-border:           #fff !default;
+$button-dark-border:              $button-default-border !default;
+$button-energized-border:         $button-default-border !default;
+
+//Bar
+$bar-dark-border:                 transparent !default;
+
+$base-background-color:           $stable !default;
+$base-color:                      #fff !default;
+
+//Tabs
+$tabs-dark-border:                $bar-dark-border !default;
+
+//Modal
+$modal-bg-color:                  transparent !default;
+
+//Cards
+$card-border-color:               transparent !default;
+$card-border-radius:              4px !default;
+*/
+//Font
+$font-family-sans-serif:          robotolight, "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif !default;
+
+//App variables
+$border-calm: 1px solid transparentize(white, 0.97);
+
+//Ionicons
+//$ionicons-font-path: 'ionic/fonts' !default;
+
+$z-index-modal: 1000;
+
+//Forms
+$input-bg: white !default;
+
+// The path for our ionicons font files, relative to the built CSS in www/css
+$ionicons-font-path: "../lib/ionic/fonts" !default;
+
+// Include all of Ionic
+@import "www/lib/ionic/scss/ionic";
+
+.aligned {
+  &.right {
+    text-align: right;
+  }
+
+  &.left {
+    text-align: left;
+  }
+
+  &.center {
+    text-align: center;
+  }
+}
+
+#login-wrapper {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background-image: linear-gradient(0deg, rgba(0,0,0,0.9), transparent 80%);
+	margin: 0 auto;
+
+	&>div {
+		width: 80%;
+		margin: 0 auto;
+	}
+}
+
+#login {
+	.scroll {
+		height: 100%;
+	}
+}
+
+#login #logo {
+	width: 30%;
+	margin: 2rem auto;
+}
+
+#login #intro {
+	position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    z-index: -100;
+    -webkit-transform: translateX(-50%) translateY(-50%);
+	background: url('../img/intro.gif') no-repeat;
+	background-size: cover;
+	transition: 1s opacity;
+}
+
+.form {
+	&.auth {
+		input {
+			width: 100%;
+			display: inline-block;
+			margin-bottom: 1rem;
+			padding: 0.5rem;
+			background-color: rgba(255,255,255,0.8);
+
+			&:focus {
+				background-color: white;
+			}
+		}
+	}
+}
+
+.button {
+	&.rounded {
+		border-radius: $border-radius-large*4;
+	}
+}
+
+@import "drawer";
+
+#home-search-selected-category {
+	position: absolute;
+	border-radius: 0.3rem;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	word-wrap: break-word;
+	overflow: hidden;
+	font-size: 0.9em;top:0.5em;
+	left:1em;
+	display: inline-block;
+	padding: 0.3rem;
+	max-width: 150px; 
+}
+
+#categories-results-list {
+	position: absolute;
+	max-height: 50%;
+	box-shadow: 0 0 50px rgba(0,0,0,0.5);
+	border-radius: 0.5rem;
+	margin-top: 0.5rem;
+	overflow-y: scroll;
+	min-width: 50%;
+
+	li.item {
+		padding: 0.5rem;
+	}
+
+	&.ng-hide-add, &.ng-hide-remove {
+	    transition: 0s linear all;
+	}
+
+	&.ng-hide-add-active,
+	&.ng-hide-remove-active {
+		transition: 0.250s linear all;
+	}
+
+	&.ng-show {
+		opacity: 1;
+	}
+
+	&.ng-hide {
+		opacity: 0;
+	}
+}
+
+#map {
+	&.has-venue {
+		height: auto;
+		bottom: 75px + $tabs-height;
+	}
+
+	&.has-routes {
+		bottom: 40px + 75px + $tabs-height;
+	}
+}
+
+#home-venue-details {
+	.list {
+		position: absolute; bottom: $tabs-height; left: 0; right: 0; margin: 0;
+	}
+
+	&.has-phone {
+		.list .item {
+			padding-right: 75px;
+
+			a {
+				position:absolute;right:1em;top:1em;width:40px;height:40px;min-width:40px;min-height:40px;
+			}
+		}	
+	}
+}
+
+#home-routes {
+	position: absolute;
+	background: white;
+	bottom: 75px + $tabs-height;
+	left: 0;
+	right: 0;
+	height: 40px;
+	padding: 5px;
+
+	#home-routes-clear {
+		float: left;
+	}
+}
+
+#venue-slider {
+	height: 250px;
+	background: linear-gradient(0deg, $dark, darken($dark, 5%));
+	text-align: center;
+
+	ion-slide {
+		background-size: cover;
+	}
+
+	.venue-slide-bg {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-size: cover;
+		z-index: -1;
+		opacity: 0.4;
+	}
+
+	img {
+		max-height: 100%;
+		box-shadow: 0 0 100px black;
+	}
+}
+
+.menu {
+	&.menu-left {
+		-webkit-transform: translate3d(-100%,0,0);
+		transition: all 0.2s ease-out;
+
+		&.menu-active {
+			-webkit-transform: translate3d(0, 0, 0);
+		}
+	}
+
+	&.menu-right {
+		-webkit-transform: translate3d(100%,0,0);
+		transition: all 0.2s ease-out;
+
+		&.menu-active {
+			-webkit-transform: translate3d(0, 0, 0);
+		}
+	}
+}

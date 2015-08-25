@@ -1,0 +1,12 @@
+<ion-view view-title="">
+  <ion-content id="venue">
+  	<ion-nav-back-button class="button-icon"><span class="icon ion-ios-arrow-left"></span></ion-nav-back-button>
+  	<!-- Slideshow -->
+  	<ion-slide-box on-slide-changed="slideHasChanged($index)" id="venue-slider">
+		<ion-slide ng-repeat='img in images'>
+			<div class="venue-slide-bg" style="background: url({{img}}) no-repeat center center"></div>
+			<img src="{{img}}">
+		</ion-slide>
+	</ion-slide-box>
+  </ion-content>
+</ion-view>
