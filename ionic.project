@@ -1,4 +1,17 @@
 {
   "name": "jound-ionic",
-  "app_id": "3859ad5c"
+  "app_id": "3859ad5c",
+  "browsers": [
+    {
+      "platform": "android",
+      "browser": "crosswalk",
+      "version": "12.41.296.5"
+    }
+  ],
+  "proxies": [
+    {
+      "path": "/api",
+      "proxyUrl": "http://dev.jound.mx:5000/"
+    }
+  ]
 }

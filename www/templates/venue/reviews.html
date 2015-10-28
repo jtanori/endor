@@ -1,0 +1,12 @@
+<ion-view title="Resenas">
+    <ion-content id="venue-reviews-page">
+    	<ion-list>
+			<ion-item ng-repeat="item in items">
+				{{item.name}}
+			</ion-item>
+    	</ion-list>
+    	<ion-infinite-scroll on-infinite="loadItems(venueId, skip)" distance="1%" immediate-check="true" ng-if="canLoad()">
+            <ion-spinner></ion-spinner>
+        </ion-infinite-scroll>
+    </ion-content>
+</ion-view>

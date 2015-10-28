@@ -7821,7 +7821,7 @@ a.button {
 
 #categories-results-list {
   position: absolute;
-  max-height: 50%;
+  max-height: 90%;
   box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
   border-radius: 0.5rem;
   margin-top: 0.5rem;
@@ -7873,7 +7873,7 @@ a.button {
     float: left; }
 
 #venue-slider {
-  height: 250px;
+  height: 200px;
   background: linear-gradient(0deg, #444, #373737);
   text-align: center; }
   #venue-slider ion-slide {
@@ -7886,10 +7886,128 @@ a.button {
     bottom: 0;
     background-size: cover;
     z-index: -1;
-    opacity: 0.4; }
+    opacity: 0.4;
+    background-position: center top; }
   #venue-slider img {
     max-height: 100%;
     box-shadow: 0 0 100px black; }
+  #venue-slider.cover .venue-slide-bg {
+    z-index: 1;
+    opacity: 1; }
+  #venue-slider.cover {
+    position: relative; }
+
+#venue-tabs .tabs {
+  border-bottom: 0; }
+
+#venue-home-logo {
+  position: absolute;
+  top: 140px;
+  left: 10px;
+  width: 100px;
+  height: 100px;
+  border: 2px solid white;
+  border-radius: 0.5rem;
+  z-index: 2;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); }
+  #venue-home-logo img {
+    height: 100%; }
+
+#venue-home-business-buttons {
+  position: absolute;
+  right: 0;
+  z-index: 3;
+  padding-left: 0; }
+
+#venue-home-data {
+  margin-top: 2.5rem; }
+
+.card.social .item-body p:first-child {
+  margin-top: 0; }
+.card.social .item-body p:last-child {
+  margin-bottom: 0; }
+.card.social .item-body p span {
+  display: inline-block;
+  margin-right: 0.5rem; }
+.card.social .item-body .tags span {
+  color: #ef473a;
+  font-weight: bold; }
+  .card.social .item-body .tags span:before {
+    content: '#'; }
+.card.social.video .item-image {
+  max-height: 200px;
+  min-height: 200px;
+  background: black; }
+  .card.social.video .item-image .icon {
+    position: absolute;
+    top: 50%;
+    height: 2rem;
+    z-index: 10;
+    color: white;
+    left: 50%;
+    width: 2rem;
+    font-size: 2rem;
+    margin-left: -1rem;
+    margin-top: -1rem;
+    text-align: center; }
+
+.transparent {
+  background: transparent !important; }
+
+.image-modal {
+  width: 100% !important;
+  height: 100%;
+  top: 0 !important;
+  left: 0 !important; }
+
+.fullscreen-image {
+  max-width: 100%;
+  max-height: 100%;
+  bottom: 0;
+  left: 0;
+  margin: auto;
+  overflow: auto;
+  position: fixed;
+  right: 0;
+  top: 0; }
+
+.external-content img {
+  max-width: 100% !important; }
+
+#venue-promos-page .slider {
+  height: 100%; }
+  #venue-promos-page .slider ion-slide {
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: black; }
+    #venue-promos-page .slider ion-slide .promo {
+      padding: 0.5rem;
+      color: white;
+      background: rgba(0, 0, 0, 0.5);
+      position: absolute;
+      bottom: 0;
+      width: 100%; }
+      #venue-promos-page .slider ion-slide .promo * {
+        text-shadow: 0 0 5px black; }
+      #venue-promos-page .slider ion-slide .promo h2 {
+        color: white; }
+
+#venue-products-page .product .badge {
+  top: 0;
+  right: 0;
+  border-radius: 0; }
+
+/* Fix modal backdrop for smaller devices */
+@media (max-width: 679px) {
+  .active .modal-backdrop-bg {
+    opacity: .5; }
+  .modal-backdrop-bg {
+    -webkit-transition: opacity 300ms ease-in-out;
+    transition: opacity 300ms ease-in-out;
+    background-color: #000;
+    opacity: 0; } }
 
 .menu.menu-left {
   -webkit-transform: translate3d(-100%, 0, 0);

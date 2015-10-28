@@ -42,6 +42,7 @@ angular.module('jound',
 })
 
 .value('AppConfig', {
+    //API_URL: 'http://192.168.1.79:8100/api/',
     API_URL: 'http://www.jound.mx/',
     GEO: {
         DEFAULT: {enableHighAccuracy: true, maximumAge: 60000, timeout: 10000},
@@ -302,7 +303,8 @@ angular.module('jound',
     }
 })
 
-.config(function($stateProvider, $urlRouterProvider) {
+.config(function($stateProvider, $urlRouterProvider, $ionicConfigProvider, $httpProvider) {
+
 
     // Ionic uses AngularUI Router which uses the concept of states
     // Learn more here: https://github.com/angular-ui/ui-router
@@ -342,6 +344,56 @@ angular.module('jound',
             }
         })
 
+        .state('app.venueAbout', {
+            url: "venues/:venueId/about",
+            views: {
+                'menuContent': {
+                    templateUrl: "templates/venue/about.html",
+                    controller: 'VenueAboutCtrl'
+                }
+            },
+            resolve: {
+                venue: function($stateParams, VenuesService) {
+                    return VenuesService.getById($stateParams.venueId)
+                }
+            }
+        })
+
+        .state('app.venuePromos', {
+            url: "venues/:venueId/promos",
+            views: {
+                'menuContent': {
+                    templateUrl: "templates/venue/promos.html",
+                    controller: 'VenuePromosCtrl'
+                }
+            }
+        })
+
+        .state('app.venueProducts', {
+            url: "venues/:venueId/products",
+            views: {
+                'menuContent': {
+                    templateUrl: "templates/venue/products.html",
+                    controller: 'VenueProductsCtrl'
+                }
+            }
+        })
+
+        .state('app.venueReviews', {
+            url: "venues/:venueId/reviews",
+            views: {
+                'menuContent': {
+                    templateUrl: "templates/venue/reviews.html",
+                    controller: 'VenueReviewsCtrl'
+                }
+            },
+            resolve: {
+                venue: function($stateParams, VenuesService) {
+                    return VenuesService.getById($stateParams.venueId)
+                }
+            }
+        })
+
         .state('signup', {
             url: '/signup',
             templateUrl: 'templates/signup.html',
@@ -361,7 +413,10 @@ angular.module('jound',
         });
 
     // if none of the above states are matched, use this as the fallback
+    //TODO: Load loading controller first to avoid displaying login screen in android
     $urlRouterProvider.otherwise('/login');
+
+    $ionicConfigProvider.tabs.position('bottom');
 
 })
 .factory('User', function(){
@@ -413,7 +468,7 @@ angular.module('jound',
         }
     }
 }])
-.run(function($rootScope, User, $localStorage, AppConfig){
+.run(function($rootScope, User, $localStorage, $state, AppConfig){
     Parse.initialize("hq7NqhxfTb2p7vBij2FVjlWj2ookUMIPTmHVF9ZH", "cdfm37yRroAiw82t1qukKv9rLVhlRqQpKmuVlkLC");
 
     var u = User.current();
@@ -422,9 +477,11 @@ angular.module('jound',
     $rootScope.settings = null;
     
     if(u){
+
+        console.log(u, 'user');
+        
         $rootScope.user = u;
         $rootScope.settings = angular.extend($rootScope.user.get('settings') || {}, AppConfig.SETTINGS, $localStorage.getObject('settings'));
-
-        console.log($rootScope.settings, 'settings');
+        $state.go('app.home');
     }
 })

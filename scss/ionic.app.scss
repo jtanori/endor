@@ -172,7 +172,7 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 
 #categories-results-list {
 	position: absolute;
-	max-height: 50%;
+	max-height: 90%;
 	box-shadow: 0 0 50px rgba(0,0,0,0.5);
 	border-radius: 0.5rem;
 	margin-top: 0.5rem;
@@ -243,7 +243,7 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 }
 
 #venue-slider {
-	height: 250px;
+	height: 200px;
 	background: linear-gradient(0deg, $dark, darken($dark, 5%));
 	text-align: center;
 
@@ -260,11 +260,181 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 		background-size: cover;
 		z-index: -1;
 		opacity: 0.4;
+		background-position: center top;
 	}
 
 	img {
 		max-height: 100%;
 		box-shadow: 0 0 100px black;
+	}
+
+	&.cover .venue-slide-bg {
+		z-index: 1;
+		opacity: 1;
+	}
+
+	&.cover {
+		position: relative;
+	}
+}
+
+#venue-tabs .tabs {
+	border-bottom: 0;
+}
+
+#venue-home-logo {
+	position: absolute;
+    top: 140px;
+    left: 10px;
+    width: 100px;
+    height: 100px;
+    border: 2px solid white;
+    border-radius: 0.5rem;
+    z-index: 2;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+
+    img {
+    	height: 100%;
+    }
+}
+
+#venue-home-business-buttons {
+	position: absolute;
+    right: 0;
+    z-index: 3;
+    padding-left: 0;
+}
+
+#venue-home-data {
+	margin-top: 2.5rem;
+}
+
+.card.social {
+	.item-body {
+		p:first-child {
+			margin-top:0;
+		}
+
+		p:last-child {
+			margin-bottom: 0;
+		}
+
+		p span{
+			display: inline-block;
+			margin-right: 0.5rem;
+		}
+
+		.tags span {
+			color: $assertive;
+			font-weight: bold;
+
+			&:before {
+				content: '#';
+			}
+		}
+	}
+
+	&.video {
+		.item-image {
+			max-height: 200px;
+			min-height: 200px;
+			background: black;
+
+			.icon {
+				position:absolute;
+				top:50%;
+				height: 2rem;
+				z-index: 10;
+				color:white;
+				left:50%;
+				width:2rem;
+				font-size: 2rem;
+				margin-left: -1rem;
+				margin-top: -1rem;
+				text-align: center;
+			}
+		}
+	}
+}
+
+.transparent {
+	background: transparent !important;
+}
+.image-modal {
+	width: 100% !important;
+	height: 100%;
+	top: 0 !important;
+	left: 0 !important;
+}
+.fullscreen-image {
+	max-width: 100%;
+	max-height: 100%;
+	bottom: 0;
+	left: 0;
+	margin: auto;
+	overflow: auto;
+	position: fixed;
+	right: 0;
+	top: 0;
+}
+
+.external-content {
+	img {
+		max-width: 100% !important;
+	}
+}
+
+#venue-promos-page {
+	.slider {
+		height: 100%;
+
+		ion-slide {
+			background-size: contain;
+			background-position: center;
+			background-repeat: no-repeat;
+			background-color: black;
+
+			.promo{
+				padding: 0.5rem;
+				color: white;
+				background: rgba(0,0,0,0.5);
+				position: absolute;
+				bottom: 0;
+				width: 100%;
+
+				* {
+					text-shadow: 0 0 5px black;
+				}
+
+				h2 {
+					color: white;
+				}
+			}
+		}
+	}
+}
+
+#venue-products-page {
+	.product {
+		.badge {
+			top: 0;
+			right: 0;
+			border-radius: 0;
+		}
+	}
+}
+
+/* Fix modal backdrop for smaller devices */
+@media (max-width: 679px) {
+	.active .modal-backdrop-bg {
+		opacity: .5;
+	}
+	.modal-backdrop-bg {
+		-webkit-transition: opacity 300ms ease-in-out;
+		transition: opacity 300ms ease-in-out;
+		background-color: #000;
+		opacity: 0;
 	}
 }
 

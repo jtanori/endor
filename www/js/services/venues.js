@@ -112,9 +112,10 @@ angular.module('jound.services')
 .factory('CategoryModel', function(){
     return Parse.Object.extend({className: 'Category'});
 })
-.factory('VenuesService', function($q, VenueModel, SanitizeService, CategoryModel, AppConfig) {
+.factory('VenuesService', function($q, $http, VenueModel, SanitizeService, CategoryModel, AppConfig) {
 
     var _currentResults = [];
+    var _currentVenue;
 
     return {
         //Search by query, position and category
@@ -161,19 +162,20 @@ angular.module('jound.services')
                             _currentResults = results;
                             deferred.resolve(results);
                         }else{
-                            deferred.reject([]);
+                            deferred.reject({message: 'No encontramos resultados, intenta buscar en un rango mas amplio.'});
                         }
+                    }, function(e){
+                        deferred.reject(e);
                     }
-                )
-                .fail(function(e){
-                    deferred.reject(e);
-                });
+                );
 
             return deferred.promise;
         },
         getById: function(id){
             var deferred = $q.defer();
             var found = false, query;
+
+            console.log(id, _currentResults);
 
             if(_currentResults.length){
                 found = _currentResults.find(function(v){
@@ -184,19 +186,98 @@ angular.module('jound.services')
             if(found){
                 deferred.resolve(found);
             }else{
-                query = new Parse.Query(VenueModel);
-                query.get(id).then(function(v){
-                    if(v){
-                        deferred.resolve(v);
-                    }else{
-                        deferred.reject(v);
-                    }
-                }, function(e){
-                    deferred.reject(e);
-                });
+                $http
+                    .get(AppConfig.API_URL + 'venue/' + id)
+                    .then(function(response){
+                        deferred.resolve(response);
+                    }, function(response){
+                        deferred.reject(response);
+                    });
             }
 
             return deferred.promise;
+        },
+        getChannel: function(config){
+            var deferred = $q.defer();
+
+            if(!config){
+                deferred.reject({message: 'No channel config provided'});
+            }
+
+            if(!_currentVenue){
+                deferred.reject({message: 'No venue to get channel from'});
+            }
+
+            $http
+                .post(AppConfig.API_URL + 'getChannelForVenue', config)
+                .then(function(response){
+                    deferred.resolve(response.data);
+                }, function(response){
+                    deferred.reject(response);
+                });
+
+            return deferred.promise;
+        },
+        getProductsForVenue: function(venueId, skip){
+            var deferred = $q.defer();
+            var config = {id: venueId};
+
+            if(skip && _.isNumber(skip) && skip > 0){
+                config.skip = skip;
+            }
+
+            $http
+                .post(AppConfig.API_URL + 'getProductsForVenue', config)
+                .then(function(response){
+                    deferred.resolve(response.data.results);
+                }, function(response){
+                    deferred.reject(response);
+                });
+
+            return deferred.promise;
+        },
+        getReviewsForVenue: function(venueId, skip){
+            var deferred = $q.defer();
+            var config = {id: venueId};
+
+            if(skip && _.isNumber(skip) && skip > 0){
+                config.skip = skip;
+            }
+
+            $http
+                .post(AppConfig.API_URL + 'getReviewsForVenue', config)
+                .then(function(response){
+                    deferred.resolve(response.data.results);
+                }, function(response){
+                    deferred.reject(response);
+                });
+
+            return deferred.promise;
+        },
+        getDealsForVenue: function(venueId, skip){
+            var deferred = $q.defer();
+            var config = {id: venueId};
+
+            if(skip && _.isNumber(skip) && skip > 0){
+                config.skip = skip;
+            }
+
+            $http
+                .post(AppConfig.API_URL + 'getDealsForVenue', config)
+                .then(function(response){
+                    deferred.resolve(response.data.results);
+                }, function(response){
+                    deferred.reject(response);
+                });
+
+            return deferred.promise;
+        },
+        current: function(venue){
+            if(venue){
+                _currentVenue = venue;
+            }else{
+                return venue;
+            }
         }
     };
 });

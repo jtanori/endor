@@ -15,6 +15,7 @@ angular
         $cordovaActionSheet,
         $cordovaDialogs,
         $ionicHistory,
+        $cordovaKeyboard,
 
         AppConfig,
         CategoriesService,
@@ -110,8 +111,6 @@ angular
         $scope.selectCategory = function(c) {
             $scope.category = c;
             $scope.query = c.title + ' :: ';
-            //$scope.isSearchFocused = true;
-            //focus('setSearchFocus');
         };
 
         $scope.submit = function(form) {
@@ -121,7 +120,9 @@ angular
             $scope.points = [];
             $scope.isSearchFocused = false;
 
-            blur('searchBlur');
+            if($cordovaKeyboard.isVisible()){
+                $cordovaKeyboard.close();
+            }
 
             var position, p, category;
             var c = $scope.category.id;
@@ -140,11 +141,10 @@ angular
                             $scope.venues = venues;
                             $cordovaProgress.hide();
                         });
-                    })
-
+                    });
                 }, function(error) {
-                    console.log('error', error);
                     $cordovaProgress.hide();
+                    $cordovaDialogs.alert(error.message)
                 });
         };
 
@@ -158,58 +158,19 @@ angular
                 msg = '!Hey! Pude encontrar ' + $scope.currentModel.get('name') + ' en #' + s.replaceAll($scope.currentModel.getCityName(), ' ', '') + ' usando #jound';
             }
 
-            //Action sheet options
-            var options = {
-                'title': 'Compartir en',
-                'buttonLabels': ['Facebook', 'Twitter', 'WhatsApp', 'Otros'],
-                'androidEnableCancelButton': true, // default false
-                'winphoneEnableCancelButton': true, // default false
-                'addCancelButtonWithLabel': 'Cancelar'
-            };
-
             var onShare = function() {
-                $cordovaDialogs.alert('Gracias por compartir :)', '!Hey!', 'De nada');
+                //$cordovaDialogs.alert('Gracias por compartir :)', '!Hey!', 'De nada');
             };
             var onShareError = function() {
-                $cordovaDialogs.alert('Ha ocurrido un error al compartir, por favor intenta de nuevo', 'Error', 'Ok');
+                //$cordovaDialogs.alert('Ha ocurrido un error al compartir, por favor intenta de nuevo', 'Error', 'Ok');
             };
 
-            //Call to action
-            $cordovaActionSheet
-                .show(options)
-                .then(function(index) {
-                    switch (index) {
-                        case 1:
-                            $cordovaSocialSharing.shareViaFacebook(
-                                msg,
-                                img,
-                                'http://www.jound.mx/venue/' + id
-                            ).then(onShare, onShareError);
-                            break;
-                        case 2:
-                            $cordovaSocialSharing.shareViaTwitter(
-                                msg,
-                                img,
-                                'http://www.jound.mx/venue/' + id
-                            ).then(onShare, onShareError);
-                            break;
-                        case 3:
-                            $cordovaSocialSharing.shareViaWhatsApp(
-                                msg,
-                                img,
-                                'http://www.jound.mx/venue/' + id
-                            ).then(onShare, onShareError);
-                            break;
-                        case 4:
-                            $cordovaSocialSharing.share(
-                                msg,
-                                'Mis resultados Jound',
-                                img,
-                                'http://www.jound.mx/venue/' + id
-                            ).then(onShare, onShareError);
-                            break;
-                    }
-                });
+            $cordovaSocialSharing.share(
+                msg,
+                img,
+                null,
+                'http://www.jound.mx/venue/' + id
+            ).then(onShare, onShareError);
         };
 
         $scope.callVenue = function() {
@@ -217,7 +178,8 @@ angular
         };
 
         $scope.openVenue = function() {
-
+            VenuesService.current($scope.currentModel);
+            $state.go('app.venue', {venueId: $scope.currentModel.id});
         }
 
         $scope.traceRoute = function() {
@@ -320,6 +282,7 @@ angular
 
         $scope.$on('$ionicView.beforeLeave', function() {
             disableMap();
+            $cordovaKeyboard.hideAccessoryBar(false);
         });
 
         $scope.$on('$ionicView.enter', function() {
@@ -362,6 +325,7 @@ angular
         $ionicPlatform.ready(function() {
 
             $cordovaProgress.hide();
+            $cordovaKeyboard.hideAccessoryBar(true);
 
             $scope.$watch('isSearchFocused', function(focused) {
                 if ($rootScope.mainMap) {
@@ -456,7 +420,7 @@ angular
                                 });
                             });
                         });
-                        marker.setIcon(config.MARKERS.VENUE_SELECTED);
+                        marker.setIcon(AppConfig.MARKERS.VENUE_SELECTED);
                     }
                 });
             };
@@ -539,12 +503,12 @@ angular
 
             //Implement add new venue
             function onMapLongClick() {
-                console.log('map long click', arguments);
+                //console.log('map long click', arguments);
             };
 
             //TODO: Implement auto search
             function onMapChange() {
-                console.log('map change', arguments);
+                //console.log('map change', arguments);
             };
 
             function onMapInit() {
@@ -655,6 +619,7 @@ angular
             };
 
             plugin.google.maps.Map.isAvailable(function(isAvailable, message) {
+                console.log('is isAvailable', isAvailable);
                 if (isAvailable) {
                     window.mainMap = $rootScope.mainMap = plugin.google.maps.Map.getMap($scope.$map);
                     $rootScope.mainMap.addEventListener(plugin.google.maps.event.MAP_READY, onMapInit);

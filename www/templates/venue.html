@@ -1,12 +1,200 @@
-<ion-view view-title="">
-  <ion-content id="venue">
-  	<ion-nav-back-button class="button-icon"><span class="icon ion-ios-arrow-left"></span></ion-nav-back-button>
-  	<!-- Slideshow -->
-  	<ion-slide-box on-slide-changed="slideHasChanged($index)" id="venue-slider">
-		<ion-slide ng-repeat='img in images'>
-			<div class="venue-slide-bg" style="background: url({{img}}) no-repeat center center"></div>
-			<img src="{{img}}">
-		</ion-slide>
-	</ion-slide-box>
-  </ion-content>
+<ion-view view-title="{{basicData.name}}">
+	<ion-nav-buttons side="right">
+        <a class="button button-icon button-clear ion-email" ng-show="basicData.email" href="mailto:{{basicData.email}}">
+        </a>
+        <a ng-show="basicData.phoneNumber" class="button button-icon button-clear ion-ios-telephone" href="tel:{{basicData.phoneNumber}}"></a>
+    </ion-nav-buttons>
+	<ion-pane>
+        <ion-tabs class="tabs-assertive tabs-icon-top" id="venue-tabs">
+
+            <!-- Details -->
+            <ion-tab title="Detalles" icon="ion-ios-home-outline" icon-on="ion-ios-home">
+                <ion-nav-view name="tab-venue-home">
+                    <ion-content>
+                        <!-- Tab 1 content -->
+						<!-- Slideshow -->
+					  	<ion-slide-box on-slide-changed="slideHasChanged($index)" id="venue-slider" ng-if="images.length > 1">
+							<ion-slide ng-repeat='img in images'>
+								<div class="venue-slide-bg" style="background-image: url({{img}})"></div>
+								<img ng-src="{{img}}" />
+							</ion-slide>
+						</ion-slide-box>
+
+						<div ng-if="images.length == 1" id="venue-slider" class="cover">
+							<div class="venue-slide-bg" style="background-image: url({{images[0]}})"></div>
+							<!--img ng-src="{{images[0]}}"-->
+						</div>
+
+                        <div id="venue-home-logo">
+                            <img ng-src="{{logo}}" />
+                        </div>
+
+                        <div class="padding" id="venue-home-business-buttons">
+                            <a class="button button-small icon-left ion-person-add">Reclamar negocio</a>
+                            <a class="button button-small icon-left ion-bug">Reportar error</a>
+                        </div>
+
+                        <div class="padding" id="venue-home-data">
+                            <h4>Actividad</h4>
+                            <p>{{basicData.activity}}</p>
+
+                            <h4>Direccion</h4>
+                            <p>{{basicData.address}}, {{basicData.city}}</p>
+
+                            <div class="padding center aligned button-bar" ng-if="page">
+                                <a ng-if="basicData.www" class="button button-icon ion-link" ng-click="openUrl(basicData.www)"></a>
+                                <a ng-if="twitter" class="button button-icon ion-social-instagram" ng-click="openExternalApp('instagram', instagram)"></a>
+                                <a ng-if="youtube" class="button button-icon ion-social-youtube" ng-click="openExternalApp('youtube:channel', youtube)"></a>
+                                <a ng-if="twitter" class="button button-icon ion-social-twitter" ng-click="openExternalApp('twitter', twitter)"></a>
+                                <a ng-if="facebook" class="button button-icon ion-social-facebook" ng-click="openExternalApp('fb', facebook)"></a>
+                                <a ng-if="pinterest" class="button button-icon ion-social-pinterest" ng-click="openExternalApp('pinterest', pinterest)"></a>
+                            </div>
+                        </div>
+
+                        <ul class="list">
+                            <li class="item item-icon-right" ng-click="aboutUs()">
+                                Acerca de {{basicData.name}}
+                                <i class="icon ion-chevron-right"></i>
+                            </li>
+                            <li class="item item-icon-right" ng-click="products()">
+                                Productos
+                                <i class="icon ion-chevron-right"></i>
+                            </li>
+                            <li class="item item-icon-right" ng-click="deals()">
+                                Promociones
+                                <i class="icon ion-chevron-right"></i>
+                            </li>
+                            <li class="item item-icon-right" ng-click="reviews()">
+                                Resenas
+                                <i class="icon ion-chevron-right"></i>
+                            </li>
+                        </ul>
+
+                    </ion-content>
+
+                </ion-nav-view>
+            </ion-tab>
+            <!-- Videos-->
+            <ion-tab title="Videos" icon="ion-ios-film-outline" icon-on="ion-ios-film" ng-if="page.videoFeed">
+                <ion-nav-view name="tab-venue-videos">
+                    <ion-content>
+                        <div class="list card video social" ng-repeat="item in videos" class="animate-repeat" ng-click="playVideo(item.id)">
+                            <div class="item item-divider">
+                                <h2>{{item.title}}</h2>
+                            </div>
+                        	<div class="item item-image">
+                                <img ng-src="{{item.thumbnails.high.url}}">
+                                <i class="ion-play icon"></i>
+                            </div>
+                            <div class="item item-body" ng-show="item.description.length">
+                                {{item.description}}
+                            </div>
+                        </div>
+
+                        <ion-infinite-scroll on-infinite="refreshVideos(videoPageToken)" distance="1%" ng-if="canLoadVideos()">
+                            <ion-spinner></ion-spinner>
+                        </ion-infinite-scroll>
+                    </ion-content>
+                </ion-nav-view>
+            </ion-tab>
+            <!-- Photos -->
+            <ion-tab title="Fotos" icon="ion-ios-photos-outline" icon-on="ion-ios-photos" ng-if="page.photoFeed" on-select="loadImages()">
+                <ion-nav-view name="tab-venue-images">
+                    <ion-content>
+                        <ion-refresher pulling-text="Actualizar imagenes..." on-refresh="refreshImages(null, firstImage)"></ion-refresher>
+
+                        <div ng-repeat="item in socialImages" class="animate-repeat">
+                            <div class="list card social" ng-class="{video: item.type=='video'}">
+                                <div class="item item-avatar">
+                                    <img ng-src="{{item.user.profile_picture}}" ng-click="openImage(item.user.profile_picture)"/>
+                                    <h2 ng-click="openExternalApp('instagram', item.user.username)" class="positive">@{{item.user.username}}</h2>
+                                    <p>{{item.user.full_name}}</p>
+                                </div>
+                                <div class="item item-image">
+                                    <img ng-src="{{item.images.standard}}" ng-click="!item.type=='video' ? openExternalApp('instagram:media', item.mediaHash) : openImage(item.images.standard)">
+                                    <i class="ion-play icon" ng-if="item.type=='video'"></i>
+                                </div>
+                                <div class="item-body" ng-if="item.tags.length || item.comments.length">
+                                    <p>{{item.text}}</p>
+                                    <p ng-if="item.tags.length" class="tags">
+                                        <span ng-repeat="tag in item.tags" class="assertive">{{tag}}</span>
+                                    </p>
+                                    <p>
+                                        <span class="dark">{{item.likes}} me gusta</span> 
+                                        <span class="dark">{{item.comments.length}} comentarios</span>
+                                    </p>
+                                </div>
+                                <div class="item tabs tabs-secondary tabs-icon-left">
+                                    <a class="tab-item" ng-click="openExternalApp('instagram:media', item.mediaHash)">
+                                        <i class="icon ion-social-instagram"></i>
+                                        Ver en Instagram
+                                    </a>
+                                    <a class="tab-item" ng-click="share(item.link, item.images.standard, item.tags, venue.id)">
+                                        <i class="icon ion-share"></i>
+                                        Compartir
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <ion-infinite-scroll on-infinite="refreshImages(lastImage)" distance="1%" immediate-check="true">
+                            <ion-spinner></ion-spinner>
+                        </ion-infinite-scroll>
+                    </ion-content>
+                </ion-nav-view>
+            </ion-tab>
+
+            <ion-tab title="Twitter" icon="ion-social-twitter-outline" icon-on="ion-social-twitter" ng-if="page.twitter">
+                <ion-nav-view name="tab-venue-twitter">
+                    <ion-content>
+                        <ion-refresher pulling-text="Actualizar twitts..." on-refresh="refreshTwitter(null, firstTweet)"></ion-refresher>
+
+                        <div ng-repeat="item in twitts" class="animate-repeat">
+                            <div class="list card social" ng-class="{video: item.type=='video'}">
+                                <div class="item item-avatar">
+                                    <img ng-src="{{item.user.profilePicture}}" ng-click="openImage(item.user.profilePicture)" />
+                                    <h2 ng-click="openExternalApp('twitter', item.user.screenName)" class="positive">@{{item.user.screenName}}</h2>
+                                    <p>{{item.user.name}}</p>
+                                </div>
+                                <div class="item item-image" ng-if="item.media.length || item.extendedMedia.length">
+                                    <img ng-src="{{item.media[0].url}}" ng-click="openImage(item.media[0].url)">
+                                    <!--i class="ion-play icon" ng-if="item.type=='video'"></i-->
+                                </div>
+                                <div class="item-body">
+                                    <p>{{item.text}}</p>
+                                    <div ng-if="item.urls.length" class="urls">
+                                        <a ng-repeat="url in item.urls" class="positive" ng-click="openUrl(url.displayUrl)">{{url.displayUrl}}</a>
+                                    </div>
+                                    <p ng-if="item.tags.length" class="tags">
+                                        <span ng-repeat="tag in item.tags" class="assertive">{{tag}}</span>
+                                    </p>
+                                    <p>
+                                        <span class="dark"><i class="icon ion-arrow-return-right"></i> {{item.retweetCount}} retweets</span> 
+                                        <span class="dark"><i class="icon" ng-class="{'ion-android-favorite': item.favoriteCount, 'ion-android-favorite-outline': !item.favoriteCount}"></i> {{item.favoriteCount}} veces favorito</span>
+                                    </p>
+                                </div>
+                                <div class="item tabs tabs-secondary tabs-icon-left">
+                                    <a class="tab-item" ng-click="openExternalApp('twitter:media', item.user.screenName, item.id)">
+                                        <i class="icon ion-social-twitter"></i>
+                                        Ver en Twitter
+                                    </a>
+                                    <a class="tab-item" ng-click="share('https://twitter.com/' + item.user.screenName + '/status/' + item.id, item.media[0].url, item.tags, venue.id)">
+                                        <i class="icon ion-share"></i>
+                                        Compartir
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <ion-infinite-scroll on-infinite="refreshTwitter(lastTweet)" distance="1%" immediate-check="true">
+                            <ion-spinner></ion-spinner>
+                        </ion-infinite-scroll>
+                    </ion-content>
+                </ion-nav-view>
+            </ion-tab>
+        </ion-tabs>
+
+    </ion-pane>
+
+
 </ion-view>

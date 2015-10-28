@@ -139,9 +139,5 @@ angular
                 options.toolbarposition = 'top';
                 options.disallowoverscroll = 'yes';
             }
-
-            if (ionic.Platform.isAndroid()) {
-                options.hardwareback = 'no';
-            }
         });
     });

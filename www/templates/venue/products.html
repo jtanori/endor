@@ -1,0 +1,16 @@
+<ion-view title="Productos">
+    <ion-content id="venue-products-page">
+    	<ion-list>
+			<ion-item ng-repeat="item in items" class="item-thumbnail-left item-icon-left product">
+				<img ng-src="{{item.picture.url}}" ng-if="item.picture" />
+				<img ng-src="{{item.pictureUrl}}" ng-if="item.pictureUrl && !item.picture" />
+			    <h2>{{item.name}}</h2>
+			    <p>{{item.description}}</p>
+			    <p class="dark">${{item.price.toFixed(2)}}</p>
+			</ion-item>
+    	</ion-list>
+    	<ion-infinite-scroll on-infinite="loadItems(venueId, skip)" distance="1%" immediate-check="true" ng-if="canLoad()">
+            <ion-spinner></ion-spinner>
+        </ion-infinite-scroll>
+    </ion-content>
+</ion-view>

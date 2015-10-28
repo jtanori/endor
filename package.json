@@ -21,16 +21,10 @@
     "cordova-plugin-splashscreen",
     "com.ionic.keyboard",
     {
-      "locator": "https://github.com/phonegap-build/PushPlugin.git",
-      "id": "com.phonegap.plugins.PushPlugin"
-    },
-    "plugin.google.maps",
-    {
       "locator": "https://github.com/pbernasconi/cordova-progressIndicator.git",
       "id": "org.pbernasconi.progressindicator"
     },
     "org.apache.cordova.dialogs",
-    "org.apache.cordova.inappbrowser",
     "org.apache.cordova.geolocation",
     {
       "locator": "https://github.com/EddyVerbruggen/SocialSharing-PhoneGap-Plugin.git",
@@ -39,9 +33,21 @@
     {
       "locator": "https://github.com/EddyVerbruggen/cordova-plugin-actionsheet.git",
       "id": "nl.x-services.plugins.actionsheet"
-    }
+    },
+    "cordova-plugin-googlemaps",
+    {
+      "id": "com.phonegap.plugins.facebookconnect",
+      "locator": "../Facebook"
+    },
+    "org.apache.cordova.inappbrowser",
+    {
+      "locator": "https://github.com/Glitchbone/CordovaYoutubeVideoPlayer.git",
+      "id": "com.bunkerpalace.cordova.YoutubeVideoPlayer"
+    },
+    "cordova-plugin-appavailability"
   ],
   "cordovaPlatforms": [
-    "ios"
+    "ios",
+    "android"
   ]
 }

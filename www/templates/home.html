@@ -9,7 +9,7 @@
 	<form class="bar bar-subheader item-input-inset bar-assertive" name="searchForm" ng-submit="submit(searchForm)" ng-disabled="!categories.length">
 		<label class="item-input-wrapper">
 			<i class="icon ion-ios-search placeholder-icon"></i>
-			<input type="search" placeholder="¿Qué estas buscando?" autocomplete="false" autocorrect="false" ng-model="query" ng-focus="isSearchFocused = true" ng-blur="isSearchFocused = false" ng-change="filterCategories()" ng-model-options="{ debounce: 350 }" id="home-search-input" focus-on="setSearchFocus" blur-on="searchBlur">
+			<input type="search" placeholder="¿Qué estas buscando?" autocomplete="false" autocorrect="false" ng-model="query" ng-focus="isSearchFocused = true" ng-blur="isSearchFocused = false" ng-change="filterCategories()" ng-model-options="{ debounce: 350 }" id="home-search-input">
 		</label>
 		<button class="button button-clear" type="submit">
 			Buscar
@@ -45,7 +45,7 @@
 						<i class="icon ion-share"></i>
 						Compartir
 					</a>
-					<a class="tab-item" href="#/app/venues/{{currentModel.id}}">
+					<a class="tab-item" ng-click="openVenue()">
 						<i class="icon ion-chevron-right"></i>
 						Ver mas
 					</a>
