@@ -12,10 +12,13 @@ angular.module('jound.directives', []);
 
 angular.module('jound', 
   [
+    'ng',
     'ionic',
     'ionic.service.core',
     'ngCordova',
+    'ngSanitize',
     'ionic.service.push',
+    'ionic.rating',
 
     'jound.controllers',
     'jound.services',
@@ -23,7 +26,7 @@ angular.module('jound',
   ]
 )
 
-.run(function($ionicPlatform, $rootScope) {
+.run(function($ionicPlatform, $rootScope, $cordovaSplashscreen) {
   
   $ionicPlatform.ready(function() {
     
@@ -38,20 +41,31 @@ angular.module('jound',
       // org.apache.cordova.statusbar required
       StatusBar.styleLightContent();
     }
+
+    $cordovaSplashscreen.hide();
+    //Force portrait lock
+    if(window.screen){
+        window.screen.lockOrientation('portrait');
+    }
   });
 })
 
 .value('AppConfig', {
-    //API_URL: 'http://192.168.1.79:8100/api/',
+    PARSE: {
+        appId: "hq7NqhxfTb2p7vBij2FVjlWj2ookUMIPTmHVF9ZH",
+        jsKey: "cdfm37yRroAiw82t1qukKv9rLVhlRqQpKmuVlkLC"
+    },
+    //API_URL: 'http://192.168.1.73:8100/api/',
     API_URL: 'http://www.jound.mx/',
     GEO: {
-        DEFAULT: {enableHighAccuracy: true, maximumAge: 60000, timeout: 10000},
+        DEFAULT: {enableHighAccuracy: true, maximumAge: 1000, timeout: 10000},
         DEFAULT_CENTER: {coords: {latitude: 19.432608, longitude: -99.133208}},
         DEFAULT_ZOOM: 6,
         DEFAULT_WATCH_OPTIONS: {
-            frequency : 10000,
-            timeout : 3000,
-            enableHighAccuracy: false
+            frequency : 60000,
+            timeout : 10000,
+            enableHighAccuracy: false,
+            maximumAge: 1000
         }
     },
     RADIUS: {
@@ -104,6 +118,7 @@ angular.module('jound',
             'block',
             'building', 
             'building_floor', 
+            'claimed_by',
             'exterior_letter', 
             'email_address', 
             'exterior_number', 
@@ -116,6 +131,7 @@ angular.module('jound',
             'phone_number', 
             'position', 
             'postal_code', 
+            'rating',
             'road_name', 
             'road_name_1', 
             'road_name_2', 
@@ -322,7 +338,7 @@ angular.module('jound',
         .state('app.home', {
             url: "/venues",
             views: {
-                'menuContent': {
+                'app': {
                     templateUrl: "templates/home.html",
                     controller: 'HomeCtrl'
                 }
@@ -332,7 +348,7 @@ angular.module('jound',
         .state('app.venue', {
             url: "/venues/:venueId",
             views: {
-                'menuContent': {
+                'app': {
                     templateUrl: "templates/venue.html",
                     controller: 'VenueCtrl'
                 }
@@ -341,13 +357,16 @@ angular.module('jound',
                 venue: function($stateParams, VenuesService) {
                     return VenuesService.getById($stateParams.venueId)
                 }
+            },
+            defaultBack: {
+                state: 'app.home'
             }
         })
 
         .state('app.venueAbout', {
             url: "venues/:venueId/about",
             views: {
-                'menuContent': {
+                'app': {
                     templateUrl: "templates/venue/about.html",
                     controller: 'VenueAboutCtrl'
                 }
@@ -356,15 +375,36 @@ angular.module('jound',
                 venue: function($stateParams, VenuesService) {
                     return VenuesService.getById($stateParams.venueId)
                 }
+            },
+            defaultBack: {
+                state: 'app.venue',
+                getStateParams: function(stateParams) {
+                    return {
+                        postId: stateParams.venueId
+                    };
+                }
             }
         })
 
         .state('app.venuePromos', {
             url: "venues/:venueId/promos",
             views: {
-                'menuContent': {
+                'app': {
                     templateUrl: "templates/venue/promos.html",
                     controller: 'VenuePromosCtrl'
+                }
+            },
+            resolve: {
+                venue: function($stateParams, VenuesService) {
+                    return VenuesService.getById($stateParams.venueId)
+                }
+            },
+            defaultBack: {
+                state: 'app.venue',
+                getStateParams: function(stateParams) {
+                    return {
+                        postId: stateParams.venueId
+                    };
                 }
             }
         })
@@ -372,9 +412,22 @@ angular.module('jound',
         .state('app.venueProducts', {
             url: "venues/:venueId/products",
             views: {
-                'menuContent': {
+                'app': {
                     templateUrl: "templates/venue/products.html",
                     controller: 'VenueProductsCtrl'
+                }
+            },
+            resolve: {
+                venue: function($stateParams, VenuesService) {
+                    return VenuesService.getById($stateParams.venueId)
+                }
+            },
+            defaultBack: {
+                state: 'app.venue',
+                getStateParams: function(stateParams) {
+                    return {
+                        postId: stateParams.venueId
+                    };
                 }
             }
         })
@@ -382,7 +435,7 @@ angular.module('jound',
         .state('app.venueReviews', {
             url: "venues/:venueId/reviews",
             views: {
-                'menuContent': {
+                'app': {
                     templateUrl: "templates/venue/reviews.html",
                     controller: 'VenueReviewsCtrl'
                 }
@@ -390,6 +443,24 @@ angular.module('jound',
             resolve: {
                 venue: function($stateParams, VenuesService) {
                     return VenuesService.getById($stateParams.venueId)
+                }
+            },
+            defaultBack: {
+                state: 'app.venue',
+                getStateParams: function(stateParams) {
+                    return {
+                        postId: stateParams.venueId
+                    };
+                }
+            }
+        })
+
+        .state('app.search', {
+            url: "/venues/search/:categoryId/:lat/:lng",
+            abstract: true,
+            views: {
+                'app': {
+                    controller: 'HomeCtrl'
                 }
             }
         })
@@ -410,17 +481,59 @@ angular.module('jound',
             url: "/forgot-password",
             templateUrl: "templates/forgot-password.html",
             controller: 'ForgotPasswordCtrl'
-        });
+        })
+
+        .state('start', {
+            url: '/start',
+            templateUrl: 'templates/start.html',
+            controller: 'StartCtrl'
+        })
 
     // if none of the above states are matched, use this as the fallback
     //TODO: Load loading controller first to avoid displaying login screen in android
-    $urlRouterProvider.otherwise('/login');
+    $urlRouterProvider.otherwise('/start');
 
     $ionicConfigProvider.tabs.position('bottom');
 
 })
-.factory('User', function(){
+.factory('User', function($q, $http, AppConfig){
     return Parse.User.extend({
+        checkUserCheckIn: function(id){
+            var deferred = $q.defer();
+
+            if(!id){
+                deferred.reject('No venue id provided for checkin');
+            }else {
+                $http
+                    .post(AppConfig.API_URL + 'checkUserCheckIn', {id: id, userId: this.id})
+                    .then(function(response){
+                        deferred.resolve(response.data.results || []);
+                    }, function(response){
+                        deferred.reject(response);
+                    });
+            }
+
+            return deferred.promise;
+        },
+        checkIn: function(id){
+            var deferred = $q.defer();
+
+            if(!id){
+                deferred.reject('No venue id provided for checkin');
+            }else {
+                $http
+                    .post(AppConfig.API_URL + 'checkIn', {id: id, userId: this.id})
+                    .then(function(response){
+                        console.log('checking', response);
+                        deferred.resolve(response);
+                    }, function(response){
+                        console.log('checkin error', response);
+                        deferred.reject(response);
+                    });
+            }
+
+            return deferred.promise;
+        },
         getDisplayName: function(){
             var name = this.escape('name') ? this.escape('name') : this.escape('username') ? this.escape('username') : 'Joundini';
 
@@ -431,7 +544,7 @@ angular.module('jound',
 
             if(Parse._.isString(a)){
                 return a;
-            }else if(!Parse._.isEmpty() && this.get('avatar').get('file')){
+            }else if(this.get('avatar') && this.get('avatar').get('file')){
                 return this.get('avatar').get('file').url();
             }else{
                 return 'http://www.gravatar.com/avatar/' + CryptoJS.MD5(this.get('username'));
@@ -469,19 +582,28 @@ angular.module('jound',
     }
 }])
 .run(function($rootScope, User, $localStorage, $state, AppConfig){
-    Parse.initialize("hq7NqhxfTb2p7vBij2FVjlWj2ookUMIPTmHVF9ZH", "cdfm37yRroAiw82t1qukKv9rLVhlRqQpKmuVlkLC");
-
+    //Initialize Parse
+    Parse.initialize(AppConfig.PARSE.appId, AppConfig.PARSE.jsKey);
+    //Get user
     var u = User.current();
-
+    //Set user in root
     $rootScope.user = null;
     $rootScope.settings = null;
-    
+    //Load settings
     if(u){
-
-        console.log(u, 'user');
-        
         $rootScope.user = u;
-        $rootScope.settings = angular.extend($rootScope.user.get('settings') || {}, AppConfig.SETTINGS, $localStorage.getObject('settings'));
-        $state.go('app.home');
+        $rootScope.settings = u.get('settings') ? u.get('settings').mobile : AppConfig.SETTINGS;
+
+        if($localStorage.getObject('settings')){
+            $rootScope.settings = angular.extend($rootScope.settings, $localStorage.getObject('settings'));
+        }
     }
 })
+.controller('StartCtrl', function($state, $rootScope, User){
+    //Redirect to proper page
+    if(!!$rootScope.user){
+        $state.go('app.home');
+    }else{
+        $state.go('login');
+    }
+});

@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "jquery": "~2.1.4",
-    "lodash": "~3.10.1"
+    "lodash": "~3.10.1",
+    "ionic-rating": "~0.1.0"
   }
 }

@@ -84,11 +84,28 @@ angular.module('jound.services')
 
             return city;
         },
+        getBanner: function(){
+            if(_.isString(this.get('logo'))){
+                return {url:this.get('logo')};
+            }else if(this.get('logo')){
+                if(this.get('logo').file){
+                    return {url:this.get('logo').file._url};
+                }else{
+                    return {url:this.get('logo').get('file').url()};
+                }
+            }else{
+                return {url:'img/splash.jpg', isDefault: true};
+            }
+        },
         getLogo: function(){
             if(_.isString(this.get('logo'))){
                 return this.get('logo');
-            }else if(this.get('logo') && this.get('logo').get('file')){
-                return this.get('logo').get('file').url();
+            }else if(this.get('logo')){
+                if(this.get('logo').file){
+                    return this.get('logo').file._url;
+                }else{
+                    return this.get('logo').get('file').url();
+                }
             }else{
                 return 'img/venue_default_large.jpg';
             }
@@ -112,7 +129,7 @@ angular.module('jound.services')
 .factory('CategoryModel', function(){
     return Parse.Object.extend({className: 'Category'});
 })
-.factory('VenuesService', function($q, $http, VenueModel, SanitizeService, CategoryModel, AppConfig) {
+.factory('VenuesService', function($q, $http, $cordovaDevice, VenueModel, SanitizeService, CategoryModel, AppConfig, User) {
 
     var _currentResults = [];
     var _currentVenue;
@@ -153,6 +170,7 @@ angular.module('jound.services')
                 .withinKilometers('position', geoPoint, r/1000)
                 .include('logo')
                 .include('page')
+                .include('claimed_by')
                 .select(AppConfig.QUERY.VENUE_DEFAULT_FIELDS)
                 .limit(200)
                 .find()
@@ -175,10 +193,8 @@ angular.module('jound.services')
             var deferred = $q.defer();
             var found = false, query;
 
-            console.log(id, _currentResults);
-
             if(_currentResults.length){
-                found = _currentResults.find(function(v){
+                found = _.find(_currentResults, function(v){
                     return v.id === id;
                 });
             }
@@ -189,7 +205,18 @@ angular.module('jound.services')
                 $http
                     .get(AppConfig.API_URL + 'venue/' + id)
                     .then(function(response){
-                        deferred.resolve(response);
+                        var v = new VenueModel();
+                        var P = Parse.Object.extend('Page');
+                        var p;
+
+                        if(response.data.venue && response.data.venue.page){
+                            p = new P(response.data.venue.page);
+                        }
+
+                        v.set(response.data.venue);
+                        v.set('page', p);
+
+                        deferred.resolve(v);
                     }, function(response){
                         deferred.reject(response);
                     });
@@ -202,19 +229,15 @@ angular.module('jound.services')
 
             if(!config){
                 deferred.reject({message: 'No channel config provided'});
+            } else {
+                $http
+                    .post(AppConfig.API_URL + 'getChannelForVenue', config)
+                    .then(function(response){
+                        deferred.resolve(response.data);
+                    }, function(response){
+                        deferred.reject(response);
+                    });
             }
-
-            if(!_currentVenue){
-                deferred.reject({message: 'No venue to get channel from'});
-            }
-
-            $http
-                .post(AppConfig.API_URL + 'getChannelForVenue', config)
-                .then(function(response){
-                    deferred.resolve(response.data);
-                }, function(response){
-                    deferred.reject(response);
-                });
 
             return deferred.promise;
         },
@@ -236,7 +259,7 @@ angular.module('jound.services')
 
             return deferred.promise;
         },
-        getReviewsForVenue: function(venueId, skip){
+        getReviewsForVenue: function(venueId, skip, pageSize, sinceDate, maxDate){
             var deferred = $q.defer();
             var config = {id: venueId};
 
@@ -244,6 +267,20 @@ angular.module('jound.services')
                 config.skip = skip;
             }
 
+            if(pageSize && _.isNumber(pageSize)){
+                config.pageSize = pageSize;
+            }
+
+            if(sinceDate){
+                config.sinceDate = sinceDate;
+                config.skip = 0;
+            }
+
+            if(maxDate){
+                config.maxDate = maxDate;
+                config.skip = 0;
+            }
+            
             $http
                 .post(AppConfig.API_URL + 'getReviewsForVenue', config)
                 .then(function(response){
@@ -272,12 +309,126 @@ angular.module('jound.services')
 
             return deferred.promise;
         },
+        saveReview: function(id, text, userId, rating){
+            var deferred = $q.defer();
+            var config = {id: id, text: text, rating: rating, userId: userId};
+
+            if(_.isEmpty(id)) {
+                deferred.reject('No venue ID provided');
+            }else if(_.isEmpty(text)) {
+                deferred.reject('No review to post provided');
+            }else if(_.isEmpty(userId)) {
+                deferred.reject('No user ID provided');
+            }else {
+                $http
+                    .post(AppConfig.API_URL + 'saveReviewForVenue', config)
+                    .then(function(response){
+                        deferred.resolve(response.data.results);
+                    }, function(response){
+                        deferred.reject(response);
+                    });
+            }
+
+            return deferred.promise;
+        },
+        updatePage: function(id, attr, val){
+            var deferred = $q.defer();
+
+            if(_.isEmpty(attr)) {
+                deferred.reject('Please provide an attribute to update');
+            }else if(!_.isEmpty(id)) {
+                deferred.reject('Please provide a page id');
+            }else {
+                $http
+                    .post(AppConfig.API_URL + 'updatePage', {id: id, attr: attr, val: val})
+                    .then(function(response){
+                        deferred.resolve(response.data.results);
+                    }, function(response){
+                        deferred.reject(response);
+                    });
+            }
+
+            return deferred.promise;
+        },
         current: function(venue){
             if(venue){
                 _currentVenue = venue;
             }else{
                 return venue;
             }
+        },
+        claim: function(id, details){
+            var deferred = $q.defer();
+
+            if(_.isEmpty(details)) {
+                deferred.reject('Please provide details object.');
+            }else if(_.isEmpty(User.current())) {
+                deferred.reject('Please login to claim a business');
+            }else {
+                $http
+                    .post(AppConfig.API_URL + 'claimVenue', {id: id, userId: User.current().id, details: details})
+                    .then(function(response){
+                        deferred.resolve(response.data.results);
+                    }, function(response){
+                        deferred.reject(response);
+                    });
+            }
+
+            return deferred.promise;
+        },
+        isClaimed: function(id){
+            var deferred = $q.defer();
+
+            if(_.isEmpty(id)) {
+                deferred.reject('Please provide a venue id.');
+            }else {
+                $http
+                    .post(AppConfig.API_URL + 'venueIsClaimed', {id: id})
+                    .then(function(response){
+                        deferred.resolve(response.data.results);
+                    }, function(response){
+                        deferred.reject(response);
+                    });
+            }
+
+            return deferred.promise;
+        },
+        report: function(id, details, problemType){
+            var device = $cordovaDevice.getDevice();
+            var cordova = $cordovaDevice.getCordova();
+            var model = $cordovaDevice.getModel();
+            var platform = $cordovaDevice.getPlatform();
+            var uuid = $cordovaDevice.getUUID();
+            var version = $cordovaDevice.getVersion();
+            var userId = User.current().id;
+            var parseVersion = Parse.VERSION;
+            var deferred = $q.defer();
+
+            if(_.isEmpty(id)) {
+                deferred.reject('Please provide a venue id.');
+            }else {
+                $http
+                    .post(AppConfig.API_URL + 'report', {
+                        id: id,
+                        userId: User.current().id,
+                        device: device,
+                        cordova: cordova,
+                        model: model,
+                        platform: platform,
+                        uuid: uuid,
+                        version: version,
+                        parseVersion: parseVersion,
+                        details: details,
+                        problemType: problemType
+                    })
+                    .then(function(response){
+                        deferred.resolve(response.data.results);
+                    }, function(response){
+                        deferred.reject(response);
+                    });
+            }
+
+            return deferred.promise;
         }
     };
 });

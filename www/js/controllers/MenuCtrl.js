@@ -9,6 +9,7 @@ angular
         $ionicSideMenuDelegate,
         $timeout,
         $localStorage,
+        $cordovaKeyboard,
         User
     ) {
         $scope.right = false;
@@ -39,41 +40,65 @@ angular
             if (val !== undefined && val !== oldVal) {
                 updateGeolocationButton(val);
                 $localStorage.setObject('settings', $rootScope.settings);
-                $rootScope.user.save('settings', $rootScope.settings);
+                
+                var settings = $rootScope.user.get('settings');
+
+                settings.mobile = $rootScope.settings;
+                $rootScope.user.save('settings', settings);
             }
         });
 
         $rootScope.$watch('settings.mapAnimation', function(val, oldVal) {
             if (val !== undefined && val !== oldVal) {
                 $localStorage.setObject('settings', $rootScope.settings);
-                $rootScope.user.save('settings', $rootScope.settings);
+                
+                var settings = $rootScope.user.get('settings');
+
+                settings.mobile = $rootScope.settings;
+                $rootScope.user.save('settings', settings);
             }
         });
 
         $rootScope.$watch('settings.autoSearch', function(val, oldVal) {
             if (val !== undefined && val !== oldVal) {
                 $localStorage.setObject('settings', $rootScope.settings);
-                $rootScope.user.save('settings', $rootScope.settings);
+                
+                var settings = $rootScope.user.get('settings');
+
+                settings.mobile = $rootScope.settings;
+                $rootScope.user.save('settings', settings);
             }
         });
 
         $rootScope.$watch('settings.autoFocus', function(val, oldVal) {
             if (val !== undefined && val !== oldVal) {
                 $localStorage.setObject('settings', $rootScope.settings);
-                $rootScope.user.save('settings', $rootScope.settings);
+
+                var settings = $rootScope.user.get('settings');
+
+                settings.mobile = $rootScope.settings;
+                $rootScope.user.save('settings', settings);
             }
         });
 
         $rootScope.$watch('settings.searchRadius', function(val, oldVal) {
-            console.log('search radius change', val, oldVal);
             if (val !== undefined && val !== oldVal) {
                 $localStorage.setObject('settings', $rootScope.settings);
-                $rootScope.user.save('settings', $rootScope.settings);
+                
+                var settings = $rootScope.user.get('settings');
+
+                settings.mobile = $rootScope.settings;
+                $rootScope.user.save('settings', settings);
             }
         });
 
         $scope.toggleGeolocation = function(on) {
             $rootScope.settings.usingGeolocation = !$rootScope.settings.usingGeolocation;
+        };
+
+        $scope.home = function(){
+            $scope.closeLeft();
+            $state.go('app.home');
         };
 
         $scope.about = function() {
@@ -88,6 +113,24 @@ angular
             $cordovaInAppBrowser.open('http://www.jound.mx/ayuda', '_blank', options);
         };
 
+        $scope.business = function(){
+            //console.log('add new business');
+        };
+
+        var _tutorialModal;
+        $scope.tutorial = function(){
+            if(!_tutorialModal){
+                $ionicModal.fromTemplateUrl('templates/tutorial.html', {
+                    scope: $scope,
+                    animation: 'slide-in-up'
+                }).then(function(modal) {
+                    _tutorialModal = modal;
+                });
+            }else{
+                _tutorialModal.show();
+            }
+        };
+
         $scope.openLeft = function() {
             $ionicSideMenuDelegate.toggleLeft(false);
             $scope.left = true;
@@ -98,6 +141,7 @@ angular
             $ionicSideMenuDelegate.toggleRight(false);
             $scope.right = true;
             $rootScope.mainMap.setClickable(false);
+            $cordovaKeyboard.hideAccessoryBar(false);
         };
 
         $scope.closeLeft = function() {
@@ -110,6 +154,7 @@ angular
             $ionicSideMenuDelegate.toggleRight();
             $scope.right = false;
             $rootScope.mainMap.setClickable(true);
+            $cordovaKeyboard.hideAccessoryBar(true);
         };
 
         $scope.logout = function() {

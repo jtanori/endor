@@ -14,8 +14,13 @@ angular
                     break;
                 case 'twitter:media':
                     uriScheme = isIOS ? type + '://' : 'com.twitter.android';
-                    schemeUrl = isIOS ? 'twitter://status?id=' + identifier : 'twitter://status?status_id=' + identifier;
+                    schemeUrl = 'twitter://status?user_id=' + identifier + '&status_id=' + subIdentifier;
                     url = 'https://twitter.com/' + identifier + '/status/' + subIdentifier;
+                    break;
+                case 'twitter:hashtag':
+                    uriScheme = isIOS ? type + '://' : 'com.twitter.android';
+                    schemeUrl = 'twitter://search?query=' + identifier;
+                    url = 'https://twitter.com/search?q=' + encodeURIComponent(identifier);
                     break;
                 case 'fb':
                     uriScheme = isIOS ? type + '://' : 'com.facebook.katana';
@@ -32,15 +37,25 @@ angular
                     schemeUrl = 'instagram://media?id=' + identifier;
                     url = 'https://instagram.com/p/' + identifier;
                     break;
+                case 'instagram:hashtag':
+                    uriScheme = isIOS ? type + '://' : 'com.instagram.android';
+                    schemeUrl = 'instagram://tag?name=' + identifier;
+                    url = 'https://instagram.com/explore/tags/' + identifier;
+                    break;
+                case 'youtube':
+                    uriScheme = isIOS ? type + '://' : 'com.google.android.youtube';
+                    schemeUrl = 'vnd.youtube://user/' + identifier;
+                    url = 'https://www.youtube.com/' + identifier;
+                    break;
                 case 'youtube:channel':
                     uriScheme = isIOS ? type + '://' : 'com.google.android.youtube';
                     schemeUrl = 'youtube://channel/' + identifier;
                     url = 'https://www.youtube.com/channel/' + identifier;
                     break;
-                case 'youtube':
+                case 'youtube:video':
                     uriScheme = isIOS ? type + '://' : 'com.google.android.youtube';
-                    schemeUrl = 'youtube://user/' + identifier;
-                    url = 'https://www.youtube.com/' + identifier;
+                    schemeUrl = 'vnd.youtube://' + identifier;
+                    url = 'https://www.youtube.com/watch?v=' + identifier;
                     break;
                 case 'pinterest':
                     uriScheme = isIOS ? type + '://' : 'com.pinterest';
@@ -64,8 +79,8 @@ angular
             if(typeof address !== "string"){
                 throw new Error('No valid address provided');
             }
-
-            if(address.indexOf('http://') === -1 || address.indexOf('https://') === -1){
+            
+            if(address.indexOf('http://') === -1 && address.indexOf('https://') === -1){
                 address = 'http://' + address;
             }
             

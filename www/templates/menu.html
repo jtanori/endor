@@ -1,14 +1,8 @@
 <ion-side-menus enable-menu-with-back-views="false">
     <ion-side-menu-content drag-content="false">
         <ion-nav-bar class="bar-assertive nav-title-slide-ios7">
-            <ion-nav-back-button>
-            </ion-nav-back-button>
-            <ion-nav-buttons side="left">
-                <button class="button button-icon button-clear ion-navicon-round" menu-toggle="left" ng-click="openLeft()">
-                </button>
-            </ion-nav-buttons>
         </ion-nav-bar>
-        <ion-nav-view name="menuContent" animation="slide-left-right"></ion-nav-view>
+        <ion-nav-view name="app" animation="slide-left-right"></ion-nav-view>
     </ion-side-menu-content>
 
     <ion-side-menu side="left" ng-class="{true: 'menu-active'}[left == true]" expose-aside-when="large">
@@ -23,6 +17,9 @@
                 </div>
             </div>
             <div>
+                <a class="button button-clear button-full left aligned" ng-click="home()">
+                    <i class="icon ion-home"></i> Inicio
+                </a>
                 <a class="button button-clear button-full left aligned" ng-click="help()">
                     <i class="icon ion-help-buoy"></i> Ayuda
                 </a>
@@ -54,18 +51,19 @@
             <h1 class="title">Configuracion</h1>
         </div>
         <ion-content class="dark-bg has-header drawer">
-            <div class="item item-divider item-dark">Mapa</div>
+            <!--div class="item item-divider">Mapa</div>
 
             <ion-toggle class='item-dark' ng-model="settings.autoSearch" toggle-class="toggle-assertive" ng-checked="settings.autoSearch">Auto-Busqueda</ion-toggle>
             <ion-toggle class='item-dark' ng-model="settings.autoFocus" toggle-class="toggle-calm" ng-checked="settings.autoFocus">Auto-Enfoque</ion-toggle>
-            <ion-toggle class='item-dark' ng-model="settings.mapAnimation" toggle-class="toggle-calm" ng-checked="settings.mapAnimation">Animacion</ion-toggle>
+            <ion-toggle class='item-dark' ng-model="settings.mapAnimation" toggle-class="toggle-calm" ng-checked="settings.mapAnimation">Animacion</ion-toggle-->
 
-            <div class="item item-divider item-dark">Rango de busqueda</div>
+            <div class="item item-divider">Rango de busqueda</div>
             <label class="item item-input item-select item-dark">
                 <div class="input-label">
                     Kilometros
                 </div>
                 <select ng-model="settings.searchRadius" integer>
+                    <option value="500" ng-selected="settings.searchRadius == 500">0.5kms</option>
                     <option value="1000" ng-selected="settings.searchRadius == 1000">1km</option>
                     <option value="2000" ng-selected="settings.searchRadius == 2000">2kms</option>
                     <option value="3000" ng-selected="settings.searchRadius == 3000">3kms</option>
@@ -79,8 +77,8 @@
 
             <br />
             <div class="center aligned padding" id="drawer-right-help">
-                <div class="h5 light">Necesitas ayuda?</div>
-                <button class="button button-positive button-block">
+                <div class="h5 light">¿Necesitas ayuda?</div>
+                <button class="button button-positive button-block" ng-click="tutorial()">
                     <i class="icon ion-umbrella"></i> Visita el tutorial
                 </button>
             </div>

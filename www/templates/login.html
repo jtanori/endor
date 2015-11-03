@@ -3,17 +3,25 @@
 
         <div id="login-wrapper">
             <div>
-                <div class="padding center aligned">
+                <div class="center aligned">
                     <img src="img/jound-title.png" id="logo">
                 </div>
-                <form name="loginForm" novalidate="" ng-submit="login(loginForm)" id="loginForm" class="padding form auth"> 
-                    <div class="h3 center aligned light">Login</div>
-                    <input name="username" ng-model="user.username" required type="email" placeholder="Direccion de correo electronico"> 
+                <form name="loginForm" novalidate="" ng-submit="isSignup() ? signup(loginForm) : login(loginForm)" id="loginForm" class="padding form auth">
+                    <div class="h4 center aligned light">{{label}}</div>
+                    <input name="username" ng-model="user.username" required type="email" placeholder="Direccion de correo electronico">
                     <br />
-                    <input name="password" ng-model="user.password" required type="password" placeholder="password"> 
+                    <input name="password" ng-model="user.password" required type="password" placeholder="Contraseña"> 
+                    <input name="passwordConfirmation" ng-model="user.passwordConfirmation" type="password" placeholder="Confirmar contraseña" ng-if="isSignup()"> 
 
-                    <button class="button button-small button-block rounded button-assertive" type="submit" ng-disabled="loginForm.$invalid">Entrar</button>
-                    <br />
+                    <button class="button button-small button-block rounded button-assertive" type="submit" ng-disabled="isSignup() ? checkForm(loginForm) : loginForm.$invalid">{{label}}</button>
+
+                    <div class="center aligned" ng-if="!isSignup()">
+                        <a class="button button-clear" ng-click="enableSignup()">Crear Cuenta</a>
+                    </div>
+                    <div class="center aligned" ng-if="isSignup()">
+                        <a class="button button-clear" ng-click="enableLogin()">Entrar con mi correo</a>
+                    </div>
+                    
                     <div class="h5 center aligned light">O bien</div>
                     <button type="button" class="button button-small button-positive button-block rounded" ng-click="facebookLogin()"><i class="icon ion-social-facebook"></i> Entrar con Facebook</button>
                 </form>

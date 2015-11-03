@@ -10,8 +10,122 @@ angular
         $cordovaDialogs,
         $ionicHistory,
         $localStorage,
+        $cordovaKeyboard,
+        $timeout,
         User,
         AppConfig) {
+
+        var _signup = false;
+
+        $scope.user = {};
+        $scope.master = {};
+
+        $scope.isSignup = function(){
+            return _signup;
+        };
+
+        $scope.enableLogin = function(){
+            $timeout(function(){
+                $scope.$apply(function(){
+                    _signup = false;
+                    $scope.label = 'Entrar';
+                });
+            });
+        };
+
+        $scope.enableSignup = function(){
+            $timeout(function(){
+                $scope.$apply(function(){
+                    _signup = true;
+                    $scope.label = 'Crear Cuenta';
+                });
+            });
+        };
+
+        $scope.login = function(form) {
+            if (!form.$invalid) {
+                $cordovaProgress.showSimpleWithLabelDetail(true, 'Autenticando', 'Espere un momento');
+
+                User
+                    .logIn($scope.user.username, $scope.user.password)
+                    .then(function() {
+                        //Set root user
+                        $rootScope.user = User.current();
+                        $rootScope.settings = angular.extend($rootScope.user.get('settings') || {}, AppConfig.SETTINGS, $localStorage.getObject('settings'));
+
+                        $localStorage.setObject('settings', $rootScope.settings);
+                        $rootScope.user.save('settings', {
+                            mobile: $rootScope.settings
+                        });
+
+                        form.$setPristine();
+                        form.$setUntouched();
+
+                        $scope.user = angular.copy($scope.master);
+
+                        $cordovaProgress.hide();
+                        $state.go('app.home');
+                    }, function(e) {
+                        switch (e.code) {
+                            case 101:
+                                e.message = 'Usuario y contraseña invalidos';
+                                break;
+                        }
+                        $cordovaProgress.hide();
+                        $cordovaDialogs.alert(e.message, 'Hay caramba!', 'Ok');
+                    });
+            }
+        }
+
+        $scope.signup = function(form){
+            if (!form.$invalid && !$scope.checkForm(form)) {
+
+                var user = new User();
+
+                $cordovaProgress.showSimpleWithLabelDetail(true, 'Creando Cuenta', 'Espere un momento');
+
+                user.set('username', $scope.user.username);
+                user.set('email', $scope.user.username);
+                user.set('password', $scope.user.password);
+
+                user.signUp(null, {
+                    success: function(user) {
+                        //Set root user
+                        $rootScope.user = User.current();
+                        $rootScope.settings = angular.extend($rootScope.user.get('settings') || {}, AppConfig.SETTINGS, $localStorage.getObject('settings'));
+
+                        $localStorage.setObject('settings', $rootScope.settings);
+                        $rootScope.user.save('settings', {
+                            mobile: $rootScope.settings
+                        });
+
+                        form.$setPristine();
+                        form.$setUntouched();
+
+                        $scope.user = angular.copy($scope.master);
+
+                        $cordovaProgress.hide();
+                        $state.go('app.home');
+                    },
+                    error: function(user, e) {
+                        switch (e.code) {
+                            case 202:
+                                e.message = 'Ya existe un usuario con ese correo';
+                                break;
+                        }
+                        $cordovaProgress.hide();
+                        $cordovaDialogs.alert(e.message, 'Hay caramba!', 'Ok');
+                    }
+                });
+            }
+        }
+
+        $scope.checkForm = function(form){
+            var isEqual = ($scope.user.password === $scope.user.passwordConfirmation);
+
+            return !(form.$valid && isEqual);
+        };
+
         $ionicPlatform.ready(function() {
             if (Parse.User.current()) {
                 $state.go('app.home');
@@ -20,7 +134,14 @@ angular
             $ionicHistory.clearCache();
             $ionicHistory.clearHistory();
 
-            $scope.user = {};
+            $scope.$on('$ionicView.beforeLeave', function() {
+                $cordovaKeyboard.disableScroll(true);
+                $cordovaKeyboard.hideAccessoryBar(true);
+            });
+
+            $scope.enableLogin();
+            $cordovaKeyboard.disableScroll(false);
+            $cordovaKeyboard.hideAccessoryBar(false);
 
             function facebookLogin(response) {
                 if (!response.authResponse) {
@@ -96,38 +217,8 @@ angular
                                 break;
                         }
                     }, function() {
-                        console.log('error', arguments);
+                        //console.log('error', arguments);
                     });
             };
-
-            $scope.login = function(form) {
-                if (!form.$invalid) {
-                    $cordovaProgress.showSimpleWithLabelDetail(true, 'Autenticando', 'Espere un momento');
-
-                    User
-                        .logIn($scope.user.username, $scope.user.password)
-                        .then(function() {
-                            //Set root user
-                            $rootScope.user = User.current();
-                            $rootScope.settings = angular.extend($rootScope.user.get('settings') || {}, AppConfig.SETTINGS, $localStorage.getObject('settings'));
-
-                            $localStorage.setObject('settings', $rootScope.settings);
-                            $rootScope.user.save('settings', {
-                                mobile: $rootScope.settings
-                            });
-
-                            $cordovaProgress.hide();
-                            $state.go('app.home');
-                        }, function(e) {
-                            switch (e.code) {
-                                case 101:
-                                    e.message = 'Usuario y contrasena invalidos';
-                                    break;
-                            }
-                            $cordovaProgress.hide();
-                            $cordovaDialogs.alert(e.message, 'Hay caramba!', 'Ok');
-                        });
-                }
-            }
         });
     });

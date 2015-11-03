@@ -1,4 +1,8 @@
 <ion-view title="Jound">
+	<ion-nav-buttons side="left">
+        <button class="button button-icon button-clear ion-navicon-round" menu-toggle="left" ng-click="openLeft()">
+        </button>
+    </ion-nav-buttons>
 	<ion-nav-buttons side="right">
         <button class="button button-icon button-clear ion-navigate" ng-class="{'active': usingGeolocation}" ng-click="toggleGeolocation()" id="geolocationButton">
         </button>
@@ -7,10 +11,11 @@
     </ion-nav-buttons>
             
 	<form class="bar bar-subheader item-input-inset bar-assertive" name="searchForm" ng-submit="submit(searchForm)" ng-disabled="!categories.length">
-		<label class="item-input-wrapper">
+		<label class="item-input-wrapper" id="home-search-box">
 			<i class="icon ion-ios-search placeholder-icon"></i>
 			<input type="search" placeholder="¿Qué estas buscando?" autocomplete="false" autocorrect="false" ng-model="query" ng-focus="isSearchFocused = true" ng-blur="isSearchFocused = false" ng-change="filterCategories()" ng-model-options="{ debounce: 350 }" id="home-search-input">
 		</label>
+		<i ng-if="query && query.length > 2" ng-click="clearSearch()" class="clear-search icon ion-ios-close close"></i>
 		<button class="button button-clear" type="submit">
 			Buscar
 		</button>
@@ -21,7 +26,9 @@
 				<li class="item" ng-repeat="category in categories" ng-if="category.selected" ng-click="selectCategory(category)">{{category.title}}</li>
 				<li class="item item-warning" ng-show="!categoriesFound"><i class="icon ion-heart-broken"></i> No hay coincidencias</li>
 			</div>
-		    <ion-pane id="map" ng-class="{'has-venue': currentModel, 'has-routes': route1 || route2 || route3}"></ion-pane>
+		    <ion-pane id="map" ng-class="{'has-venue': currentModel, 'has-routes': route1 || route2 || route3}">
+				
+		    </ion-pane>
 		    <div ng-show="route1 || route2 || route3" id="home-routes" class="right aligned">
 		    	<button class="button button-clear button-small" ng-click="removeAllRoutes()" ng-show="route1 || route2 || route3" id="home-routes-clear"><i class="icon ion-close"></i> Limpiar</button>
 
