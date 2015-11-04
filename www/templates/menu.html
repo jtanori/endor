@@ -5,15 +5,12 @@
         <ion-nav-view name="app" animation="slide-left-right"></ion-nav-view>
     </ion-side-menu-content>
 
-    <ion-side-menu side="left" ng-class="{true: 'menu-active'}[left == true]" expose-aside-when="large">
-        <div class="bar bar-header bar-dark">
-            <h1 class="title">Menu</h1>
-        </div>
-        <ion-content class="dark-bg has-header drawer" id="drawer">
-            <div id="drawer-avatar">
-                <div class="center aligned">
-                    <img src="{{user.getAvatar()}}" />
-                    <div class="h5 light">Hola {{user.get('fullName') || user.get('username')}}</div>
+    <ion-side-menu side="left" ng-class="{'menu-active': isLeftOpen()}" expose-aside-when="large">
+        <ion-content class="dark-bg drawer" id="drawer">
+            <div id="drawer-avatar" style="background-image:url('{{user.getAvatar()}}')">
+                <div class="center aligned" id="drawer-avatar-info">
+                    <!--a ng-click="profile()" class="button button-clear button-icon ion-wrench"></a-->
+                    <span class="h5 light">Hola {{user.get('fullName') || user.get('username')}}</span>
                 </div>
             </div>
             <div>
@@ -29,7 +26,7 @@
                 <a class="button button-clear button-full left aligned" ng-click="privacy()">
                     <i class="icon ion-lock-combination"></i> Privacidad
                 </a>
-                <a class="button button-assertive button-full left aligned" ng-click="business()">
+                <a class="button button-assertive button-full left aligned disabled" ng-click="business()">
                     <i class="icon ion-upload"></i> Agregar un negocio
                 </a>
             </div>
@@ -44,11 +41,11 @@
         </ion-content>
     </ion-side-menu>
 
-    <div ng-if="left" class="closer left" ng-click="closeLeft()"></div>
-    <div ng-if="right" class="closer right" ng-click="closeRight()"></div>
-    <ion-side-menu side="right" ng-class="{true: 'menu-active'}[right == true]">
+    <div ng-if="isLeftOpen()" class="closer left" ng-click="closeLeft()"></div>
+    <div ng-if="isRightOpen()" class="closer right" ng-click="closeRight()"></div>
+    <ion-side-menu side="right" ng-class="{'menu-active': isRightOpen()}">
         <div class="bar bar-header bar-dark">
-            <h1 class="title">Configuracion</h1>
+            <h1 class="title">Configuraci&oacute;n</h1>
         </div>
         <ion-content class="dark-bg has-header drawer">
             <!--div class="item item-divider">Mapa</div>

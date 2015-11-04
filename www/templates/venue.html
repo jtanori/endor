@@ -18,7 +18,7 @@
                         <div id="tab-venue-home-rating">
                             <rating ng-model="rating" max="max" readonly="true" class="light small" ng-class="{energized: rating > 0 }"></rating>
                         </div>
-                        <a class="button button-icon icon" id="tab-venue-home-checkin" ng-click="checkin()" ng-class="{disabled: checkingLoading, 'ion-ios-circle-outline': !isCheckedIn, 'ion-ios-circle-filled energized': isCheckedIn}"> Check-in</a>
+                        <button type="button" class="button button-icon icon" id="tab-venue-home-checkin" ng-click="checkin()" ng-class="{disabled: checkingLoading, 'ion-ios-circle-outline': !isCheckedIn, 'ion-ios-circle-filled energized': isCheckedIn}"> Check-in</button>
                         <!-- Tab 1 content -->
 						<!-- Slideshow -->
 					  	<ion-slide-box on-slide-changed="slideHasChanged($index)" id="venue-slider" ng-if="images.length > 1">
@@ -38,8 +38,8 @@
                         </div>
 
                         <div class="padding" id="venue-home-business-buttons">
-                            <a class="button button-small icon-left ion-person-add" ng-click="startClaim()" ng-if="!isClaimed()">Reclamar negocio</a>
-                            <a class="button button-small icon-left ion-bug" ng-click="reportBug()">Reportar error</a>
+                            <button type="button" class="button button-small icon-left ion-person-add" ng-click="startClaim()" ng-if="!isClaimed()">Reclamar negocio</button>
+                            <button type="button" class="button button-small icon-left ion-bug" ng-click="reportBug()">Reportar error</button>
                         </div>
 
                         <div class="padding" id="venue-home-data">
@@ -51,7 +51,7 @@
 
                             <div class="padding center aligned button-bar" ng-if="page">
                                 <a ng-if="basicData.www" class="button button-icon ion-link" ng-click="openUrl(basicData.www)"></a>
-                                <a ng-if="twitter" class="button button-icon ion-social-instagram" ng-click="openExternalApp('instagram', instagram)"></a>
+                                <a ng-if="instagram" class="button button-icon ion-social-instagram" ng-click="openExternalApp('instagram', instagram)"></a>
                                 <a ng-if="youtube" class="button button-icon ion-social-youtube" ng-click="openExternalApp('youtube:channel', youtube)"></a>
                                 <a ng-if="twitter" class="button button-icon ion-social-twitter" ng-click="openExternalApp('twitter', twitter)"></a>
                                 <a ng-if="facebook" class="button button-icon ion-social-facebook" ng-click="openExternalApp('fb', facebook)"></a>

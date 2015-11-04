@@ -293,6 +293,10 @@ angular
             $state.go('app.venueReviews', {inherith:true, venueId: $scope.venue.id});
         };
 
+        $scope.events = function(){
+            $state.go('app.venueEvents', {inherith:true, venueId: $scope.venue.id});
+        };
+
         $scope.share = function(link, img, tags, venueId) {
             var onShare = function() {
                 //$cordovaDialogs.alert('Gracias por compartir :)', '!Hey!', 'De nada');
@@ -624,6 +628,9 @@ angular
         $scope.share = function() {
             var index = $ionicSlideBoxDelegate.currentIndex();
             var promo = $scope.items[index];
+            var img = promo.bannerUrl ? promo.bannerUrl : promo.file && promo.file.url;
+            var link = 'http://www.jound.mx/venue/' + $scope.venueId + '/promo/' + promo.objectId;
+            var msg = 'Hey mira la promo que encontre via #jound';
             
             var onShare = function() {
                 //$cordovaDialogs.alert('Gracias por compartir :)', '!Hey!', 'De nada');
@@ -632,14 +639,73 @@ angular
                 //$cordovaDialogs.alert('Ha ocurrido un error al compartir, por favor intenta de nuevo', 'Error', 'Ok');
             };
 
-            var msg = 'Hey mira lo que encontre via #jound http://www.jound.mx/venue/' + $scope.venueId;
+            $cordovaSocialSharing.share(msg, null, img, link).then(onShare, onShareError);
+        };
 
-            $cordovaSocialSharing.share(
-                msg,
-                'Mira lo que encontre en Jound',
-                promo.bannerUrl ? promo.bannerUrl : promo.file && promo.file.url,
-                'http://www.jound.mx/promos/' + promo.objectId
-            ).then(onShare, onShareError);
+        $scope.back = function(){
+            $state.go('app.venue', {venueId: $scope.venueId});
+        }
+
+        $scope.$on('$ionicView.enter', function() {
+            $scope.loadItems($scope.venueId);
+        });
+    })
+    .controller('VenueEventsCtrl', function($scope, $state, $stateParams, $ionicSlideBoxDelegate, $cordovaSocialSharing, $ionicHistory, VenuesService, LinksService, venue){
+        var _canLoadMore = false;
+        var _pageSize = 20;
+
+        $scope.venueId = $stateParams.venueId;
+        $scope.skip = 0;
+        $scope.items = [];
+        $scope.name = venue.get('name');
+
+        $scope.loadItems = function(id, skip){
+            VenuesService
+                .getEventsForVenue(id, skip)
+                .then(function(items){
+                    if(items.length < $scope.pageSize){
+                        _canLoadMore = false;
+                    }else{
+                        _canLoadMore = true;
+                        $scope.skip = _pageSize;
+                    }
+
+                    $scope.items = items;
+                    $ionicSlideBoxDelegate.update();
+                }, function(){
+                    //console.log('deals error', arguments);
+                })
+                .finally(function(){
+                    $scope.$broadcast('scroll.infiniteScrollComplete');
+                });
+        }
+
+        $scope.openUrl = function(url){
+            LinksService.open(url);
+        };
+
+        $scope.canLoad = function(){
+            return _canLoadMore;
+        };
+
+        $scope.share = function() {
+            var index = $ionicSlideBoxDelegate.currentIndex();
+            var e = $scope.items[index];
+            var msg = 'Hey mira el evento que encontre via #jound';
+            var img = e.bannerUrl ? e.bannerUrl : e.banner && e.banner.url;
+            var link = 'http://www.jound.mx/venue/' + $scope.venueId + '/event/' + e.objectId;
+
+            console.log('image to share', img);
+
+            var onShare = function() {
+                //$cordovaDialogs.alert('Gracias por compartir :)', '!Hey!', 'De nada');
+            };
+            var onShareError = function() {
+                //$cordovaDialogs.alert('Ha ocurrido un error al compartir, por favor intenta de nuevo', 'Error', 'Ok');
+            };
+
+            console.log(msg, img, link);
+            $cordovaSocialSharing.share(msg, null, img, link).then(onShare, onShareError);
         };
 
         $scope.back = function(){

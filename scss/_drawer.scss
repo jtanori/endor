@@ -10,11 +10,34 @@
 
 	#drawer-avatar {
 		border-bottom: 1px solid lighten(darken($dark, 10%), 5%);
+		height: 140px;
+		background-size: cover;
+	}
+
+	#drawer-avatar-info {
+		margin: 0;
+		text-align: left;
+		background: rgba(0,0,0,0.5);
+		height: $bar-height;
+		width: 100%;
+
+		span {
+			margin: 0;
+			padding: 0.8rem;
+			display: inline-block;
+		}
+
+		a {
+			padding-left: 1rem;
+			padding-right: 1rem;
+			position: absolute;
+			right:0;
+		}
 	}
 }
 
 .closer {
-	width: 100px;
+	width: 100%;
 	position: absolute;
 	top: 0;
 	bottom: 0;

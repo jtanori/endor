@@ -1,0 +1,12 @@
+<div class="modal image-modal transparent" ng-click="closeTutorial()">
+	<ion-pane class="transparent">
+		<ion-slide-box on-slide-changed="slideHasChanged($index)" id="tutorial-slider" ng-if="tutorial.length > 1">
+			<ion-slide ng-repeat='img in tutorial'>
+				<img ng-src="{{image}}" class="fullscreen-image"/>
+			</ion-slide>
+		</ion-slide-box>
+		
+
+		<div class="text-center padding light" id="fullscreen-image-tip">Omitir</div>
+	</ion-pane>
+</div>

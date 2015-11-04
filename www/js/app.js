@@ -316,6 +316,9 @@ angular.module('jound',
                 'zoom': 10
             }
         }
+    },
+    TUTORIAL: {
+        //{src: 'tutorial/'}
     }
 })
 
@@ -438,6 +441,29 @@ angular.module('jound',
                 'app': {
                     templateUrl: "templates/venue/reviews.html",
                     controller: 'VenueReviewsCtrl'
+                }
+            },
+            resolve: {
+                venue: function($stateParams, VenuesService) {
+                    return VenuesService.getById($stateParams.venueId)
+                }
+            },
+            defaultBack: {
+                state: 'app.venue',
+                getStateParams: function(stateParams) {
+                    return {
+                        postId: stateParams.venueId
+                    };
+                }
+            }
+        })
+
+        .state('app.venueEvents', {
+            url: "venues/:venueId/events",
+            views: {
+                'app': {
+                    templateUrl: "templates/venue/events.html",
+                    controller: 'VenueEventsCtrl'
                 }
             },
             resolve: {
@@ -591,11 +617,21 @@ angular.module('jound',
     $rootScope.settings = null;
     //Load settings
     if(u){
+        //Check if we have no settings in the cloud
+        var wasEmpty = _.isEmpty(u.get('settings'));
+        //Assign global objects
         $rootScope.user = u;
-        $rootScope.settings = u.get('settings') ? u.get('settings').mobile : AppConfig.SETTINGS;
-
+        //Assign default settings if original object is empty
+        $rootScope.settings = wasEmpty ? AppConfig.SETTINGS : u.get('settings').mobile;
+        //If we have localstorage settings, merge with  
         if($localStorage.getObject('settings')){
-            $rootScope.settings = angular.extend($rootScope.settings, $localStorage.getObject('settings'));
+            $rootScope.settings = angular.extend($localStorage.getObject('settings'), $rootScope.settings);
+        }else{
+            $localStorage.setObject('settings', $rootScope.settings);
+        }
+        //Save mobile compatible settings to the cloud
+        if(wasEmpty){
+            $rootScope.user.save('settings', angular.extend($rootScope.settings, {mobile: $rootScope.settings}));
         }
     }
 })

@@ -49,14 +49,21 @@ angular
                 User
                     .logIn($scope.user.username, $scope.user.password)
                     .then(function() {
+                        var wasEmpty = _.isEmpty(User.current().get('settings'));
                         //Set root user
                         $rootScope.user = User.current();
-                        $rootScope.settings = angular.extend($rootScope.user.get('settings') || {}, AppConfig.SETTINGS, $localStorage.getObject('settings'));
-
-                        $localStorage.setObject('settings', $rootScope.settings);
-                        $rootScope.user.save('settings', {
-                            mobile: $rootScope.settings
-                        });
+                        //Assign default settings if original object is empty
+                        $rootScope.settings = wasEmpty ? AppConfig.SETTINGS : $rootScope.user.get('settings').mobile;
+                        //If we have localstorage settings, merge with  
+                        if($localStorage.getObject('settings')){
+                            $rootScope.settings = angular.extend($localStorage.getObject('settings'), $rootScope.settings);
+                        }else{
+                            $localStorage.setObject('settings', $rootScope.settings);
+                        }
+                        //Save mobile compatible settings to the cloud
+                        if(wasEmpty){
+                            $rootScope.user.save('settings', angular.extend($rootScope.settings, {mobile: $rootScope.settings}));
+                        }
 
                         form.$setPristine();
                         form.$setUntouched();
@@ -91,14 +98,22 @@ angular
                 user.signUp(null, {
                     success: function(user) {
                         //Set root user
+                        var wasEmpty = _.isEmpty(User.current().get('settings'));
+                        //Set root user
                         $rootScope.user = User.current();
-                        $rootScope.settings = angular.extend($rootScope.user.get('settings') || {}, AppConfig.SETTINGS, $localStorage.getObject('settings'));
-
-                        $localStorage.setObject('settings', $rootScope.settings);
-                        $rootScope.user.save('settings', {
-                            mobile: $rootScope.settings
-                        });
-
+                        //Assign default settings if original object is empty
+                        $rootScope.settings = wasEmpty ? AppConfig.SETTINGS : $rootScope.user.get('settings').mobile;
+                        //If we have localstorage settings, merge with  
+                        if($localStorage.getObject('settings')){
+                            $rootScope.settings = angular.extend($localStorage.getObject('settings'), $rootScope.settings);
+                        }else{
+                            $localStorage.setObject('settings', $rootScope.settings);
+                        }
+                        //Save mobile compatible settings to the cloud
+                        if(wasEmpty){
+                            $rootScope.user.save('settings', angular.extend($rootScope.settings, {mobile: $rootScope.settings}));
+                        }
+                        
                         form.$setPristine();
                         form.$setUntouched();
 
@@ -211,6 +226,7 @@ angular
                             default:
                                 $cordovaFacebook.login(["public_profile", "email", "user_friends"])
                                     .then(facebookLogin, function(error) {
+                                        console.log(error, 'error');
                                         $cordovaProgress.hide();
                                         $cordovaDialogs.alert('No podemos conectar con tu cuenta de Facebook, por favor intenta de nuevo', 'Hay caramba!', 'Ok');
                                     });

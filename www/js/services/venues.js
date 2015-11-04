@@ -120,7 +120,7 @@ angular.module('jound.services')
                 url: this.get('www'),
                 activity: this.get('activity_description'),
                 logo: this.getLogo(),
-                email: !!this.get('email_address'),
+                email: this.get('email_address'),
                 www: this.getWWW()
             };
         }
@@ -154,7 +154,7 @@ angular.module('jound.services')
                 if(q.length === 1){
                     query.equalTo('keywords', q[0].toLowerCase());
                 }else if(q.length > 1){
-                    query.containedIn('keywords', SanitizeService.strings.sanitize(q));
+                    query.containsAll('keywords', SanitizeService.strings.sanitize(q));
                 }
             }
 
@@ -301,6 +301,24 @@ angular.module('jound.services')
 
             $http
                 .post(AppConfig.API_URL + 'getDealsForVenue', config)
+                .then(function(response){
+                    deferred.resolve(response.data.results);
+                }, function(response){
+                    deferred.reject(response);
+                });
+
+            return deferred.promise;
+        },
+        getEventsForVenue: function(venueId, skip){
+            var deferred = $q.defer();
+            var config = {id: venueId};
+
+            if(skip && _.isNumber(skip) && skip > 0){
+                config.skip = skip;
+            }
+
+            $http
+                .post(AppConfig.API_URL + 'getEventsForVenue', config)
                 .then(function(response){
                     deferred.resolve(response.data.results);
                 }, function(response){

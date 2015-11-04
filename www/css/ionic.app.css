@@ -7775,10 +7775,10 @@ a.button {
   width: 100%;
   display: inline-block;
   margin-bottom: 1rem;
-  padding: 0.5rem;
-  background-color: rgba(255, 255, 255, 0.8); }
-  .form.auth input:focus {
-    background-color: white; }
+  padding: 1rem;
+  background-color: transparent;
+  border-bottom: 2px solid white;
+  color: white; }
 
 .button.rounded {
   border-radius: 24px; }
@@ -7791,10 +7791,27 @@ a.button {
     border: 4px solid white;
     margin: 1rem 0 0; }
   .drawer #drawer-avatar {
-    border-bottom: 1px solid #373737; }
+    border-bottom: 1px solid #373737;
+    height: 140px;
+    background-size: cover; }
+  .drawer #drawer-avatar-info {
+    margin: 0;
+    text-align: left;
+    background: rgba(0, 0, 0, 0.5);
+    height: 44px;
+    width: 100%; }
+    .drawer #drawer-avatar-info span {
+      margin: 0;
+      padding: 0.8rem;
+      display: inline-block; }
+    .drawer #drawer-avatar-info a {
+      padding-left: 1rem;
+      padding-right: 1rem;
+      position: absolute;
+      right: 0; }
 
 .closer {
-  width: 100px;
+  width: 100%;
   position: absolute;
   top: 0;
   bottom: 0;
@@ -7951,7 +7968,9 @@ a.button {
   position: absolute;
   right: 0;
   z-index: 3;
-  padding-left: 0; }
+  padding-left: 0;
+  text-align: right;
+  left: 120px; }
 
 #venue-home-data {
   margin-top: 2.5rem; }
@@ -8028,23 +8047,23 @@ a.button {
 .external-content img {
   max-width: 100% !important; }
 
-#venue-promos-page .slider {
+#venue-promos-page .slider, #venue-events-page .slider {
   height: 100%; }
-  #venue-promos-page .slider ion-slide {
+  #venue-promos-page .slider ion-slide, #venue-events-page .slider ion-slide {
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
     background-color: black; }
-    #venue-promos-page .slider ion-slide .promo {
+    #venue-promos-page .slider ion-slide .promo, #venue-promos-page .slider ion-slide .event, #venue-events-page .slider ion-slide .promo, #venue-events-page .slider ion-slide .event {
       padding: 0.5rem;
       color: white;
       background: rgba(0, 0, 0, 0.5);
       position: absolute;
       bottom: 0;
       width: 100%; }
-      #venue-promos-page .slider ion-slide .promo * {
+      #venue-promos-page .slider ion-slide .promo *, #venue-promos-page .slider ion-slide .event *, #venue-events-page .slider ion-slide .promo *, #venue-events-page .slider ion-slide .event * {
         text-shadow: 0 0 5px black; }
-      #venue-promos-page .slider ion-slide .promo h2 {
+      #venue-promos-page .slider ion-slide .promo h2, #venue-promos-page .slider ion-slide .event h2, #venue-events-page .slider ion-slide .promo h2, #venue-events-page .slider ion-slide .event h2 {
         color: white; }
 
 #venue-products-page .product .badge {
@@ -8165,13 +8184,15 @@ ion-footer-bar.disabled:before {
     background-color: #000;
     opacity: 0; } }
 
-.menu.menu-left {
-  -webkit-transform: translate3d(-100%, 0, 0);
-  transition: all 0.2s ease-out; }
-  .menu.menu-left.menu-active {
-    -webkit-transform: translate3d(0, 0, 0); }
-.menu.menu-right {
-  -webkit-transform: translate3d(100%, 0, 0);
-  transition: all 0.2s ease-out; }
-  .menu.menu-right.menu-active {
-    -webkit-transform: translate3d(0, 0, 0); }
+.menu {
+  z-index: 1001 !important; }
+  .menu.menu-left {
+    -webkit-transform: translate3d(-100%, 0, 0);
+    transition: all 0.2s ease-out; }
+    .menu.menu-left.menu-active {
+      -webkit-transform: translate3d(0, 0, 0); }
+  .menu.menu-right {
+    -webkit-transform: translate3d(100%, 0, 0);
+    transition: all 0.2s ease-out; }
+    .menu.menu-right.menu-active {
+      -webkit-transform: translate3d(0, 0, 0); }

@@ -10,12 +10,10 @@ angular
         $timeout,
         $localStorage,
         $cordovaKeyboard,
+        $ionicModal,
         User
     ) {
-        $scope.right = false;
-        $scope.left = false;
         $scope.usingGeolocation = $rootScope.settings.usingGeolocation;
-
         $ionicSideMenuDelegate.canDragContent(false);
 
         var options = {
@@ -119,42 +117,64 @@ angular
 
         var _tutorialModal;
         $scope.tutorial = function(){
+            if($scope.isRightOpen()){
+                $scope.closeRight();
+            }
+
             if(!_tutorialModal){
                 $ionicModal.fromTemplateUrl('templates/tutorial.html', {
                     scope: $scope,
                     animation: 'slide-in-up'
                 }).then(function(modal) {
                     _tutorialModal = modal;
+                    _tutorialModal.show();
                 });
             }else{
                 _tutorialModal.show();
             }
-        };
 
-        $scope.openLeft = function() {
-            $ionicSideMenuDelegate.toggleLeft(false);
-            $scope.left = true;
             $rootScope.mainMap.setClickable(false);
         };
+
+        $scope.closeTutorial = function(){
+            _tutorialModal.hide();
+            $rootScope.mainMap.setClickable(true);
+        }
+
+        $scope.openLeft = function() {
+            $rootScope.mainMap.setClickable(false);
+            $ionicSideMenuDelegate.toggleLeft(false);
+            _left = true;
+        };
+
+        var _left = false;
+        $scope.isLeftOpen = function(){
+            return _left;
+        };
+
+        var _right = false;
+        $scope.isRightOpen = function(){
+            return _right;
+        }
 
         $scope.openRight = function() {
             $ionicSideMenuDelegate.toggleRight(false);
-            $scope.right = true;
             $rootScope.mainMap.setClickable(false);
             $cordovaKeyboard.hideAccessoryBar(false);
+            _right = true;
         };
 
         $scope.closeLeft = function() {
             $ionicSideMenuDelegate.toggleLeft();
-            $scope.left = false;
             $rootScope.mainMap.setClickable(true);
+            _left = false;
         };
 
         $scope.closeRight = function() {
             $ionicSideMenuDelegate.toggleRight();
-            $scope.right = false;
             $rootScope.mainMap.setClickable(true);
             $cordovaKeyboard.hideAccessoryBar(true);
+            _right = false;
         };
 
         $scope.logout = function() {

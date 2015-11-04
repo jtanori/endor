@@ -15,7 +15,6 @@ angular
         $cordovaSocialSharing,
         $cordovaProgress,
         $cordovaActionSheet,
-        $cordovaDialogs,
         $ionicHistory,
         $cordovaKeyboard,
 
@@ -126,9 +125,7 @@ angular
             $scope.points = [];
             $scope.isSearchFocused = false;
 
-            if($cordovaKeyboard.isVisible()){
-                $cordovaKeyboard.close();
-            }
+            ionic.DomUtil.blurAll();
 
             var position, p, category;
             var c = $scope.category.id;
@@ -139,7 +136,9 @@ angular
 
             q = q.length >= 2 ? q.splice(1, 1).join() : q.join();
 
-            $cordovaProgress.showSimpleWithLabelDetail(true, 'Buscando', 'Esperen un segundo');
+            $timeout(function(){
+                $cordovaProgress.showSimpleWithLabelDetail(true, 'Buscando', 'Esperen un segundo');
+            })
 
             if(c){
                 config.categoryId = c;
@@ -162,7 +161,9 @@ angular
                     });
                 }, function(error) {
                     $cordovaProgress.hide();
-                    $cordovaDialogs.alert(error.message)
+                    $timeout(function(){
+                        $cordovaDialogs.alert(error.message);
+                    });
                 });
         };
 
@@ -176,23 +177,12 @@ angular
                 msg = '!Hey! Pude encontrar ' + $scope.currentModel.get('name') + ' en #' + s.replaceAll($scope.currentModel.getCityName(), ' ', '') + ' usando #jound';
             }
 
-            var onShare = function() {
-                //$cordovaDialogs.alert('Gracias por compartir :)', '!Hey!', 'De nada');
-            };
-            var onShareError = function() {
-                //$cordovaDialogs.alert('Ha ocurrido un error al compartir, por favor intenta de nuevo', 'Error', 'Ok');
-            };
-
             $cordovaSocialSharing.share(
                 msg,
                 img,
                 null,
                 'http://www.jound.mx/venue/' + id
-            ).then(onShare, onShareError);
-        };
-
-        $scope.callVenue = function() {
-            $state.go('/venue/' + $currentModel.id);
+            );
         };
 
         $scope.openVenue = function() {
@@ -269,7 +259,9 @@ angular
                 }
             };
             var onRouteFail = function() {
-                $cordovaDialogs.alert('No pudimos trazar la ruta, por favor intenta de nuevo.', '¡Ups!', 'OK');
+                $timeout(function(){
+                    $cordovaDialogs.alert('No pudimos trazar la ruta, por favor intenta de nuevo.', '¡Ups!', 'OK');
+                });
             };
 
             l = $scope.currentModel.get('position');
@@ -368,7 +360,11 @@ angular
             $timeout(function(){
                 $scope.$apply(function(){
                     $scope.query = '';
+                    _.each($scope.venue, function(v){v = null;});
                     $scope.venues = [];
+                    $scope.removeAllRoutes();
+                    $scope.currentMarker = null;
+                    $scope.currentModel = null;
                 });
             });
         };
@@ -450,7 +446,7 @@ angular
                         //Highlight marker
                         $timeout(function() {
                             $scope.$apply(function() {
-                                $scope.currentMarker = marker;
+                                $scope.currentMarker = window.currentMarker = marker;
                                 $scope.currentModel = _.find($scope.venues, function(v) {
                                     return v.id === marker.get('data').id
                                 });
@@ -541,6 +537,12 @@ angular
                             $rootScope.settings.position = position;
                             $rootScope.marker.setIcon(AppConfig.MARKERS.LOCATION);
                             centerMap(position);
+
+                            var settings = $rootScope.user.get('settings');
+
+                            settings.mobile = $rootScope.settings;
+
+                            $rootScope.user.save('settings', settings);
                         }, function(err) {
                             // error
                             //console.log(err, 'error on position');
@@ -605,6 +607,17 @@ angular
                 $rootScope.settings.position = position;
                 $rootScope.marker.setPosition(p);
                 $rootScope.circle.setCenter(p);
+
+                
+                _.throttle(function(){
+                    var settings = $rootScope.user.get('settings');
+
+                    settings.mobile = $rootScope.settings;
+
+                    $rootScope.user.save('settings', settings);
+                    console.log($rootScope.settings, 'saved settings');
+                }, 1000)();
+                console.log('we should update position', $rootScope.settings.position);
             };
 
             function onMapInit() {
@@ -623,11 +636,6 @@ angular
 
                 //Set default options
                 $rootScope.mainMap.setOptions(AppConfig.MAP.DEFAULT);
-                //Listen for map events
-                $rootScope.mainMap.addEventListener(plugin.google.maps.event.CAMERA_CHANGE, onMapChange);
-                $rootScope.mainMap.addEventListener(plugin.google.maps.event.MAP_CLICK, onMapClick);
-                $rootScope.mainMap.addEventListener(plugin.google.maps.event.MAP_LONG_CLICK, onMapLongClick);
-
                 //Add the main radius graphic
                 try {
                     $rootScope.mainMap.addCircle(
@@ -679,11 +687,22 @@ angular
                         if ($rootScope.settings.usingGeolocation) {
                             getCurrentPosition();
                         }else{
-                            p = new plugin.google.maps.LatLng(AppConfig.GEO.DEFAULT_CENTER.coords.latitude, AppConfig.GEO.DEFAULT_CENTER.coords.longitude);
+                            if($rootScope.settings && $rootScope.settings.position && $rootScope.settings.position.coords){
+                                p = $rootScope.settings.position.coords;
+                                p = new plugin.google.maps.LatLng(p.latitude, p.longitude);
+                            }else {
+                                p = new plugin.google.maps.LatLng(AppConfig.GEO.DEFAULT_CENTER.coords.latitude, AppConfig.GEO.DEFAULT_CENTER.coords.longitude);
+                            }
+
                             $rootScope.circle.setCenter(p);
                             $rootScope.marker.setPosition(p);
                             $rootScope.mainMap.setCenter(p);
                         }
+
+                        //Listen for map events
+                        $rootScope.mainMap.addEventListener(plugin.google.maps.event.CAMERA_CHANGE, onMapChange);
+                        $rootScope.mainMap.addEventListener(plugin.google.maps.event.MAP_CLICK, onMapClick);
+                        $rootScope.mainMap.addEventListener(plugin.google.maps.event.MAP_LONG_CLICK, onMapLongClick);
                     });
             };
 
