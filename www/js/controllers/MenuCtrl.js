@@ -9,8 +9,10 @@ angular
         $ionicSideMenuDelegate,
         $timeout,
         $localStorage,
-        $cordovaKeyboard,
         $ionicModal,
+        $ionicSlideBoxDelegate,
+        AppConfig,
+        LinksService,
         User
     ) {
         $scope.usingGeolocation = $rootScope.settings.usingGeolocation;
@@ -112,38 +114,70 @@ angular
         };
 
         $scope.business = function(){
-            //console.log('add new business');
+            $rootScope.$broadcast('venue:new:frommenu');
+            $scope.newBusinessStarted = true;
+            $scope.closeLeft();
         };
 
-        var _tutorialModal;
+        $scope.newBusinessStarted = false;
+        $rootScope.$on('venue:new', function(){
+            $scope.newBusinessStarted = true;
+        });
+
+        $rootScope.$on('venue:new:cancel', function(){
+            $scope.newBusinessStarted = false;
+        });
+
+        $scope.openVideo = function(id){
+            LinksService.openExternalApp('youtube:video', id);
+        };
+
+        $scope.openExternalApp = function(type, identifier, subIdentifier){
+            LinksService.openExternalApp(type, identifier, subIdentifier);
+        };
+
+        $scope.openUrl = function(url){
+            LinksService.open(url);
+        };
+
         $scope.tutorial = function(){
-            if($scope.isRightOpen()){
-                $scope.closeRight();
+            if($rootScope.mainMap){
+                $rootScope.mainMap.setClickable(false);
             }
 
-            if(!_tutorialModal){
-                $ionicModal.fromTemplateUrl('templates/tutorial.html', {
-                    scope: $scope,
-                    animation: 'slide-in-up'
-                }).then(function(modal) {
-                    _tutorialModal = modal;
-                    _tutorialModal.show();
+            $ionicModal.fromTemplateUrl('templates/tutorial.html', {
+                scope: $scope,
+                animation: 'slide-in-up'
+            }).then(function(modal) {
+                $rootScope.tutorialModal = modal;
+                $rootScope.tutorialModal.show();
+
+                $rootScope.$watch('mainMap', function(){
+                    if($rootScope.tutorialModal && $rootScope.tutorialModal.isShown() && $rootScope.mainMap){
+                        $rootScope.mainMap.setClickable(false);
+                    }
                 });
-            }else{
-                _tutorialModal.show();
-            }
 
-            $rootScope.mainMap.setClickable(false);
+                if($rootScope.mainMap){
+                    $rootScope.mainMap.setClickable(false);
+                }
+            });
         };
 
         $scope.closeTutorial = function(){
-            _tutorialModal.hide();
-            $rootScope.mainMap.setClickable(true);
+            $rootScope.tutorialModal
+                .remove()
+                .then(function(){
+                    if($rootScope.mainMap){
+                        $rootScope.mainMap.setClickable(true);
+                    }
+                });
         }
 
         $scope.openLeft = function() {
             $rootScope.mainMap.setClickable(false);
             $ionicSideMenuDelegate.toggleLeft(false);
+            Keyboard.hide();
             _left = true;
         };
 
@@ -159,36 +193,47 @@ angular
 
         $scope.openRight = function() {
             $ionicSideMenuDelegate.toggleRight(false);
-            $rootScope.mainMap.setClickable(false);
-            $cordovaKeyboard.hideAccessoryBar(false);
+            if($rootScope.mainMap){
+                $rootScope.mainMap.setClickable(false);
+            }
+            Keyboard.hideFormAccessoryBar(false);
+            Keyboard.hide();
             _right = true;
         };
 
         $scope.closeLeft = function() {
             $ionicSideMenuDelegate.toggleLeft();
-            $rootScope.mainMap.setClickable(true);
+            if($rootScope.mainMap){
+                $rootScope.mainMap.setClickable(true);
+            }
+            Keyboard.hide();
             _left = false;
         };
 
         $scope.closeRight = function() {
             $ionicSideMenuDelegate.toggleRight();
-            $rootScope.mainMap.setClickable(true);
-            $cordovaKeyboard.hideAccessoryBar(true);
+            if($rootScope.mainMap){
+                $rootScope.mainMap.setClickable(true);
+            }
+            Keyboard.hideFormAccessoryBar(true);
+            Keyboard.hide();
             _right = false;
         };
 
         $scope.logout = function() {
             if ($ionicSideMenuDelegate.isOpenLeft()) {
                 $ionicSideMenuDelegate.toggleLeft(true);
-                $scope.left = false;
+                _left = false;
             }
 
             if ($ionicSideMenuDelegate.isOpenRight()) {
                 $ionicSideMenuDelegate.toggleRight(true);
-                $scope.right = false;
+                right = false;
             }
 
-            $rootScope.mainMap.setClickable(true);
+            if($rootScope.mainMap){
+                $rootScope.mainMap.setClickable(true);
+            }
 
             $rootScope.user = null;
             $rootScope.settings = null;
@@ -197,12 +242,31 @@ angular
             $state.go('login');
         }
 
+        $scope.helpVideos = [];
+
+        Parse.Config
+            .get()
+            .then(function(c){
+                $scope.helpVideos = c.get('helpVideos');
+                $scope.twitter = c.get('twitterUsername');
+                $scope.instagram = c.get('instagramUsername');
+                $scope.fbID = c.get('facebookPageID');
+                $scope.www = c.get('www');
+            },function(){
+                //Report error
+            });
+
         $ionicPlatform.ready(function() {
             if (ionic.Platform.isIOS()) {
                 options.presentationstyle = 'fullscreen';
                 options.transitionstyle = 'fliphorizontal';
                 options.toolbarposition = 'top';
                 options.disallowoverscroll = 'yes';
+            }
+
+            if(!$localStorage.get('tutorial')) {
+                $scope.tutorial();
+                $localStorage.set('tutorial', true);
             }
         });
     });

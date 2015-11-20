@@ -10,6 +10,7 @@
   "dependencies": {
     "jquery": "~2.1.4",
     "lodash": "~3.10.1",
-    "ionic-rating": "~0.1.0"
+    "ionic-rating": "~0.1.0",
+    "ng-img-crop": "ngImgCrop#~0.3.2"
   }
 }

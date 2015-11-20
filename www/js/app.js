@@ -19,6 +19,8 @@ angular.module('jound',
     'ngSanitize',
     'ionic.service.push',
     'ionic.rating',
+    'ngIOS9UIWebViewPatch',
+    'ngImgCrop',
 
     'jound.controllers',
     'jound.services',
@@ -32,10 +34,8 @@ angular.module('jound',
     
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
-    if (window.cordova && window.cordova.plugins && window.cordova.plugins.Keyboard) {
-      cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
-      cordova.plugins.Keyboard.disableScroll(true);
-
+    if (window.Keyboard) {
+      Keyboard.disableScrollingInShrinkView(true);
     }
     if (window.StatusBar) {
       // org.apache.cordova.statusbar required
@@ -50,12 +50,46 @@ angular.module('jound',
   });
 })
 
+.constant('AUTH_EVENTS', {
+  notAuthenticated: 'auth-not-authenticated',
+  notAuthorized: 'auth-not-authorized'
+})
+
+.constant('USER_ROLES', {
+  admin: 'admin_role',
+  public: 'public_role'
+})
+
+.constant('VENUE_DEFAULT_IMAGE', {
+    small: 'img/venue_default.jpg',
+    large: 'img/venue_default_large.jpg'
+})
+
+.constant('NEW_VENUE_MASTER', {
+    image: '',
+    name: '',
+    phone: '',
+    owner: false
+})
+
+.constant('BASE_64', {
+    JPG: "data:image/jpeg;base64,",
+    PNG: "data:image/png;base64,"
+})
+
+.constant('VERIFICATION_LEVELS', {
+    'DEFAULT': undefined,
+    'VERIFIED': 1,
+    'NON_VERIFIED': 2,
+    'CONFLICTING': 3 
+})
+
 .value('AppConfig', {
     PARSE: {
         appId: "hq7NqhxfTb2p7vBij2FVjlWj2ookUMIPTmHVF9ZH",
         jsKey: "cdfm37yRroAiw82t1qukKv9rLVhlRqQpKmuVlkLC"
     },
-    //API_URL: 'http://192.168.1.73:8100/api/',
+    //API_URL: 'http://192.168.1.96:8100/api/',
     API_URL: 'http://www.jound.mx/',
     GEO: {
         DEFAULT: {enableHighAccuracy: true, maximumAge: 1000, timeout: 10000},
@@ -85,8 +119,8 @@ angular.module('jound',
         center: null,
         usingGeolocation: true,
         position: null
-    },/*,
-    CAMERA: {
+    },
+    CAMERA: {/*
         PHOTO_CAPTURE_DEFAULT: {
             quality : 75,
             destinationType : Camera.DestinationType.DATA_URL,
@@ -109,8 +143,8 @@ angular.module('jound',
             targetHeight: 600,
             meditaType: Camera.MediaType.PICTURE,
             correctOrientation: true
-        }
-    },*/
+        }*/
+    },
     QUERY: {
         VENUE_DEFAULT_FIELDS: [
             'name',
@@ -145,6 +179,7 @@ angular.module('jound',
             'shopping_center_name', 
             'shopping_center_store_number', 
             'shopping_center_type', 
+            'verificationLevel',
             'www', 
             'logo', 
             'avatar', 
@@ -316,9 +351,6 @@ angular.module('jound',
                 'zoom': 10
             }
         }
-    },
-    TUTORIAL: {
-        //{src: 'tutorial/'}
     }
 })
 
@@ -491,12 +523,6 @@ angular.module('jound',
             }
         })
 
-        .state('signup', {
-            url: '/signup',
-            templateUrl: 'templates/signup.html',
-            controller: 'SignupCtrl'
-        })
-
         .state('login', {
             url: "/login",
             templateUrl: "templates/login.html",
@@ -517,11 +543,31 @@ angular.module('jound',
 
     // if none of the above states are matched, use this as the fallback
     //TODO: Load loading controller first to avoid displaying login screen in android
-    $urlRouterProvider.otherwise('/start');
+    $urlRouterProvider.otherwise(function ($injector, $location) {
+        var $state = $injector.get("$state");
+        $state.go("start");
+    });
 
     $ionicConfigProvider.tabs.position('bottom');
 
 })
+
+.factory('AuthInterceptor', function ($rootScope, $q, AUTH_EVENTS) {
+  return {
+    responseError: function (response) {
+      $rootScope.$broadcast({
+        401: AUTH_EVENTS.notAuthenticated,
+        403: AUTH_EVENTS.notAuthorized
+      }[response.status], response);
+      return $q.reject(response);
+    }
+  };
+})
+ 
+.config(function ($httpProvider) {
+  $httpProvider.interceptors.push('AuthInterceptor');
+})
+
 .factory('User', function($q, $http, AppConfig){
     return Parse.User.extend({
         checkUserCheckIn: function(id){
@@ -619,21 +665,31 @@ angular.module('jound',
     if(u){
         //Check if we have no settings in the cloud
         var wasEmpty = _.isEmpty(u.get('settings'));
+        var settings = u.get('settings');
         //Assign global objects
         $rootScope.user = u;
-        //Assign default settings if original object is empty
-        $rootScope.settings = wasEmpty ? AppConfig.SETTINGS : u.get('settings').mobile;
-        //If we have localstorage settings, merge with  
-        if($localStorage.getObject('settings')){
-            $rootScope.settings = angular.extend($localStorage.getObject('settings'), $rootScope.settings);
+
+        if(settings && !_.isEmpty(settings.mobile)){
+            $rootScope.settings = settings.mobile;
         }else{
-            $localStorage.setObject('settings', $rootScope.settings);
+            $rootScope.settings = AppConfig.SETTINGS;
+            settings.mobile = $rootScope.settings;
+
+            u.save('settings', settings);
         }
-        //Save mobile compatible settings to the cloud
-        if(wasEmpty){
-            $rootScope.user.save('settings', angular.extend($rootScope.settings, {mobile: $rootScope.settings}));
-        }
+    }else{
+        $rootScope.settings = AppConfig.SETTINGS;
+        console.log('settings default settings', $rootScope.settings);
     }
+    
+    $rootScope.$on('$stateChangeStart', function (event, next, nextParams, fromState) {
+        if (_.isEmpty(User.current())) {
+            if (next.name !== 'login') {
+                event.preventDefault();
+                $state.go('login');
+            }
+        }
+    });
 })
 .controller('StartCtrl', function($state, $rootScope, User){
     //Redirect to proper page

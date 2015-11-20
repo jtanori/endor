@@ -8,7 +8,7 @@
                 </div>
                 <form name="loginForm" novalidate="" ng-submit="isSignup() ? signup(loginForm) : login(loginForm)" id="loginForm" class="padding form auth">
                     <div class="h4 center aligned light">{{label}}</div>
-                    <input name="username" ng-model="user.username" required type="email" placeholder="Direccion de correo electronico">
+                    <input name="username" ng-model="user.username" required type="email" placeholder="Dirección de correo electrónico">
                     <br />
                     <input name="password" ng-model="user.password" required type="password" placeholder="Contraseña"> 
                     <input name="passwordConfirmation" ng-model="user.passwordConfirmation" type="password" placeholder="Confirmar contraseña" ng-if="isSignup()"> 

@@ -112,11 +112,20 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 	}
 }
 
-#login #logo {
+#login #logo{
 	width: 30%;
 }
 
-#login #intro {
+#tutorial #logo {
+	width: 20%;
+}
+
+.item.item-dark p {
+	color: darken($light, 30%);
+}
+
+#login #intro,
+#loader {
 	position: absolute;
     top: 50%;
     left: 50%;
@@ -131,6 +140,11 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 	transition: 1s opacity;
 }
 
+#loader {
+	z-index: 1000;
+	pointer-events: none;
+}
+
 .form {
 	&.auth {
 		input {
@@ -141,6 +155,7 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 			background-color: transparent;
 			border-bottom: 2px solid white;
 			color: white;
+			border-radius: 0;
 		}
 	}
 }
@@ -171,17 +186,17 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 	position: relative;
 
 	& + .close {
-		    position: absolute;
-		    z-index: 100;
-		    right: 23%;
-		    top: 0;
-		    width: 30px;
-		    text-align: center;
-		    vertical-align: middle;
-		    color: $dark;
-		    line-height: 100%;
-		    padding-top: 15px;
-		    padding-bottom: 15px;
+		position: absolute;
+		z-index: 100;
+		top: 0;
+		width: 30px;
+		margin-left: -30px;
+		text-align: center;
+		vertical-align: middle;
+		color: $dark;
+		line-height: 100%;
+		padding-top: 15px;
+		padding-bottom: 15px;
 
 		&:before {
 			height: 100%;
@@ -232,10 +247,68 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 	&.has-routes {
 		bottom: 40px + 75px + $tabs-height;
 	}
+
+	#map-clear-venue {
+		background: white;
+		border-radius: 1rem 1rem 0 0;
+		height: 2rem;
+		width: 2rem;
+		line-height: 1rem;
+		min-height: initial;
+		min-width: initial;
+		position: absolute;
+		bottom: -1px;
+		left: 50%;
+		margin-left: -1rem;
+		color:#444;border: 1px solid #ddd;border-bottom:0;
+	}
+
+	#map-geolocation-button {
+		position: absolute;
+		color: $assertive;
+		width: 2.5rem;
+		height: 2.5rem;
+		font-size: 1.5rem;
+		min-height: initial;
+		border-radius: 0.2rem;
+		background: white;
+		line-height: 1rem;
+		bottom: 1rem;
+		right: 1rem;
+		box-shadow: 0 0 1px $assertive;
+
+		&.active {
+			opacity: 1;
+			color: $positive;
+			box-shadow: 0 0 1px $positive;
+		}
+	}
 }
 
-#mapLoadingIndicator.ng-hide {
-	display:none;
+.platform-android {
+	#map #map-geolocation-button {
+		right: 3.75rem;
+	}
+}
+
+#map-category {
+	background: rgba(0,0,0,0.65);
+    padding: 0.5rem;
+    color: white;
+    text-shadow: 1px 1px 0 black;
+    padding-left: 2.3rem;
+
+    button {
+    	position: absolute;
+	    top: -2px;
+	    left: 0;
+	    padding-top: 0;
+	    padding-bottom: 0;
+	    bottom: 0;
+	    min-height: initial;
+	    padding-left: 0.8rem;
+	    padding-right: 0.8rem;
+    }
 }
 
 #home-venue-details {
@@ -268,7 +341,22 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 	}
 }
 
-#venue-slider {
+#tutorial-slider {
+	height: 80%;
+	margin-top: 5%;
+
+	ion-slide {
+		padding: 1rem;
+
+		img, .box {
+			border: 2px solid white;
+			border-radius: 0.5rem;
+		}
+	}
+}
+
+#venue-slider,
+#modal-venue-new-cover {
 	height: 200px;
 	background: linear-gradient(0deg, $dark, darken($dark, 5%));
 	text-align: center;
@@ -334,7 +422,9 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
     box-shadow: 0 0 10px rgba(0,0,0,0.5);
 
     img {
-    	height: 100%;
+		min-height: 100%;
+		min-width: 100%;
+		max-width: 100%;
     }
 }
 
@@ -614,6 +704,16 @@ ion-footer-bar {
     }
 }
 
+#tab-venue-home-photo {
+	position: fixed;
+	color: white;
+	background: rgba(0,0,0,0.5);
+    border-radius: 0.5rem;
+    z-index: 4;
+    right: 0.5rem;
+    top: 160px;
+}
+
 #start-slider {
 	width: 100%;
 	display: block;
@@ -640,7 +740,7 @@ ion-footer-bar {
 /* Fix modal backdrop for smaller devices */
 @media (max-width: 679px) {
 	.active .modal-backdrop-bg {
-		opacity: .5;
+		opacity: .75;
 	}
 	.modal-backdrop-bg {
 		-webkit-transition: opacity 300ms ease-in-out;
@@ -668,5 +768,55 @@ ion-footer-bar {
 		&.menu-active {
 			-webkit-transform: translate3d(0, 0, 0);
 		}
+	}
+}
+
+#new-business-popup {
+	position: absolute;
+    left: 0.5rem;
+    bottom: 0.5rem;
+    right: 0.5rem;
+    width: auto;
+
+    #new-business-popup-wrapper {
+    	border-radius: 0.25rem;
+	    box-shadow: 0 0 5px rgba(0,0,0,0.5);
+	    background-color: $light;
+	    margin: 0 auto;
+	    width: 33%;
+    }
+
+    #new-business-photo-button {
+    	position: absolute;
+    	top:0;
+    	left:0;
+    	right:0;
+    	bottom:0;
+    	background: rgba(0,0,0,0.5);
+    }
+
+    img {
+    	max-width: 100%;
+    	max-height: 100%;
+    }
+
+    #new-business-popup-image {
+    	padding-right: 0.5rem;
+    }
+}
+
+#crop-modal {
+	.crop-area {
+		overflow: hidden;
+		width: 300px;
+	    height: 300px;
+	    margin: 0.5rem auto;
+	    border: 1px solid red;
+    }
+}
+
+@media only screen and (max-device-width: 568px){
+	.ui-medium-and-larger {
+		display: none;
 	}
 }

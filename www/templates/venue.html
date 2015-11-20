@@ -19,6 +19,7 @@
                             <rating ng-model="rating" max="max" readonly="true" class="light small" ng-class="{energized: rating > 0 }"></rating>
                         </div>
                         <button type="button" class="button button-icon icon" id="tab-venue-home-checkin" ng-click="checkin()" ng-class="{disabled: checkingLoading, 'ion-ios-circle-outline': !isCheckedIn, 'ion-ios-circle-filled energized': isCheckedIn}"> Check-in</button>
+                        <button type="button" class="buton button-icon icon ion-camera" id="tab-venue-home-photo" ng-click="takePhoto()"></button>
                         <!-- Tab 1 content -->
 						<!-- Slideshow -->
 					  	<ion-slide-box on-slide-changed="slideHasChanged($index)" id="venue-slider" ng-if="images.length > 1">
@@ -38,8 +39,8 @@
                         </div>
 
                         <div class="padding" id="venue-home-business-buttons">
-                            <button type="button" class="button button-small icon-left ion-person-add" ng-click="startClaim()" ng-if="!isClaimed()">Reclamar negocio</button>
-                            <button type="button" class="button button-small icon-left ion-bug" ng-click="reportBug()">Reportar error</button>
+                            <button type="button" class="button button-small icon-left ion-person-add" ng-click="startClaim()" ng-if="!isClaimed()">Reclamar<span class='ui-medium-and-larger'> negocio</span></button>
+                            <button type="button" class="button button-small icon-left ion-bug" ng-click="reportBug()">Reportar<span class="ui-medium-and-larger"> error</span></button>
                         </div>
 
                         <div class="padding" id="venue-home-data">
@@ -65,23 +66,23 @@
                             </li>
                         </ul>
                         <ul class="list" ng-if="page">
-                            <li class="item item-icon-right" ng-click="reviews()">
+                            <li class="item item-icon-right" ng-click="reviews()" ng-if="page.showReviews || page.showReviews == undefined">
                                 Reseñas
                                 <i class="icon ion-chevron-right"></i>
                             </li>
-                            <li class="item item-icon-right" ng-click="aboutUs()">
+                            <li class="item item-icon-right" ng-click="aboutUs()" ng-if="page.about">
                                 Acerca de {{basicData.name}}
                                 <i class="icon ion-chevron-right"></i>
                             </li>
-                            <li class="item item-icon-right" ng-click="products()">
+                            <li class="item item-icon-right" ng-click="products()" ng-if="page.hasProducts || page.hasProducts == undefined">
                                 Productos
                                 <i class="icon ion-chevron-right"></i>
                             </li>
-                            <li class="item item-icon-right" ng-click="deals()">
+                            <li class="item item-icon-right" ng-click="deals()" ng-if="page.hasDeals || page.hasDeals == undefined">
                                 Promociones
                                 <i class="icon ion-chevron-right"></i>
                             </li>
-                            <li class="item item-icon-right" ng-click="events()">
+                            <li class="item item-icon-right" ng-click="events()" ng-if="page.hasEvents || page.hasEvents == undefined">
                                 Eventos
                                 <i class="icon ion-chevron-right"></i>
                             </li>
@@ -95,7 +96,7 @@
             <ion-tab title="Fotos" icon="ion-ios-photos-outline" icon-on="ion-ios-photos" ng-if="page.photoFeed" on-select="loadImages()">
                 <ion-nav-view name="tab-venue-images">
                     <ion-content>
-                        <ion-refresher pulling-text="Actualizar imagenes..." on-refresh="refreshImages(firstImage)"></ion-refresher>
+                        <ion-refresher pulling-text="Actualizar imágenes..." on-refresh="refreshImages(firstImage)"></ion-refresher>
 
                         <div ng-repeat="item in socialImages" class="animate-repeat">
                             <div class="list card social" ng-class="{video: item.type=='video'}">
@@ -184,7 +185,7 @@
             <ion-tab title="Twitter" icon="ion-social-twitter-outline" icon-on="ion-social-twitter" ng-if="page.twitter">
                 <ion-nav-view name="tab-venue-twitter">
                     <ion-content>
-                        <ion-refresher pulling-text="Actualizar twitts..." on-refresh="refreshTwitter(firstTweet)"></ion-refresher>
+                        <ion-refresher pulling-text="Actualizar Twitter timeline..." on-refresh="refreshTwitter(firstTweet)"></ion-refresher>
 
                         <div ng-repeat="item in twitts" class="animate-repeat">
                             <div class="list card social" ng-class="{video: item.type=='video'}">

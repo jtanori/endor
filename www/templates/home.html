@@ -1,22 +1,20 @@
 <ion-view title="Jound">
 	<ion-nav-buttons side="left">
-        <button class="button button-icon button-clear ion-navicon-round" menu-toggle="left" ng-click="openLeft()">
+        <button class="button button-icon button-clear ion-navicon-round" menu-toggle="left" ng-click="openLeft()" ng-disabled="newBusinessMarker">
         </button>
     </ion-nav-buttons>
 	<ion-nav-buttons side="right">
-        <button class="button button-icon button-clear ion-navigate" ng-class="{'active': usingGeolocation}" ng-click="toggleGeolocation()" id="geolocationButton">
-        </button>
-        <button class="button button-icon button-clear ion-gear-a" menu-toggle="right" ng-click="openRight()">
+        <button class="button button-icon button-clear ion-gear-a" menu-toggle="right" ng-click="openRight()" ng-disabled="newBusinessMarker">
         </button>
     </ion-nav-buttons>
             
-	<form class="bar bar-subheader item-input-inset bar-assertive" name="searchForm" ng-submit="submit(searchForm)" ng-disabled="!categories.length">
+	<form class="bar bar-subheader item-input-inset bar-assertive" name="searchForm" ng-submit="submit(searchForm)" ng-disabled="!categories.length || newBusinessMarker">
 		<label class="item-input-wrapper" id="home-search-box">
 			<i class="icon ion-ios-search placeholder-icon"></i>
 			<input type="search" placeholder="¿Qué estas buscando?" autocomplete="false" autocorrect="false" ng-model="query" ng-focus="isSearchFocused = true" ng-blur="isSearchFocused = false" ng-change="filterCategories()" ng-model-options="{ debounce: 350 }" id="home-search-input">
 		</label>
-		<i ng-if="query && query.length > 2" ng-click="clearSearch()" class="clear-search icon ion-ios-close close"></i>
-		<button class="button button-clear" type="submit">
+		<i ng-show="query && query.length > 2 && isSearchFocused" ng-click="clearSearch()" class="clear-search icon ion-ios-close close" id="home-search-clear"></i>
+		<button class="button button-clear" type="submit" id="home-search-submit">
 			Buscar
 		</button>
 	</form>
@@ -27,7 +25,30 @@
 				<li class="item item-warning" ng-show="!categoriesFound"><i class="icon ion-heart-broken"></i> No hay coincidencias</li>
 			</div>
 		    <ion-pane id="map" ng-class="{'has-venue': currentModel, 'has-routes': route1 || route2 || route3}">
-				
+				<div id="map-category" ng-if="category"><button type="button" class="button button-clear button-icon ion-close" ng-click="clearCategory()"></button> {{category.title}}</div>
+
+				<button type="button" ng-if="currentModel" class="button button-clear clear-search ion-ios-close" id="map-clear-venue" ng-click="clearSelectedVenue()"></button>
+
+				<button ng-if="!newBusinessMarker" class="button button-icon button-clear ion-navigate" ng-class="{'active': usingGeolocation}" ng-click="toggleGeolocation()" id="map-geolocation-button" ng-disabled="newBusinessMarker"></button>
+
+				<div ng-if="newBusinessMarker" id="new-business-popup">
+					<div id="new-business-popup-wrapper">
+						<div class="padding">
+							<img ng-src="{{newBusinessImageSRC}}"/>
+						</div>
+					</div>
+					<div class="center aligned padding">
+						<button type="button" class="button button button-small" ng-click="cancelNewBusiness()">
+							<i class="icon ion-close"></i> Cancelar
+						</button>
+						<button type="button" class="button button-assertive" ng-click="takePhoto()">
+							<i class="icon ion-camera "></i>
+						</button>
+						<button type="button" class="button button-positive button-small" ng-click="getNewBusinessAddress()" ng-class="{disabled: !newBusinessMarker}">
+							<i class="icon ion-bookmark"></i> Siguiente
+						</button>
+					</div>
+				</div>
 		    </ion-pane>
 		    <div ng-show="route1 || route2 || route3" id="home-routes" class="right aligned">
 		    	<button class="button button-clear button-small" ng-click="removeAllRoutes()" ng-show="route1 || route2 || route3" id="home-routes-clear"><i class="icon ion-close"></i> Limpiar</button>

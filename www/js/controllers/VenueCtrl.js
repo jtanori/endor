@@ -19,6 +19,7 @@ angular
         $cordovaProgress,
         VenuesService,
         LinksService,
+        CameraService,
         venue,
         User
     ) {
@@ -263,7 +264,7 @@ angular
 
         $scope.playVideo = function(id){
             if(ionic.Platform.isAndroid() && ionic.Platform.version() > 5){
-                $scope.openExternalApp('youtube:video', id)
+                $scope.openExternalApp('youtube:video', id);
             }else{
                 YoutubeVideoPlayer.openVideo(id);
             }
@@ -556,25 +557,44 @@ angular
             $scope.fullScreenModal.hide();
         };
 
+        $scope.businessImageSRC = '';
+        $scope.takePhoto = function(){
+            CameraService
+                .ready()
+                .then(function(){
+                    CameraService
+                        .take()
+                        .then(function(image){
+                            $timeout(function(){
+                                $scope.$apply(function(){
+                                    $scope.businessImageSRC = image;
+                                });
+                            });
+                        }, function(e){
+                            console.log(e, 'error on getting image');
+                        });
+                });
+        };
+
         //Cleanup the modal when we're done with it!
         $scope.$on('$destroy', function() {
             $scope.fullScreenModal.remove();
         });
         // Execute action on hide modal
-        $scope.$on('fullScreenModal.hide', function() {
+        $scope.$on('modal.hide', function() {
             // Execute action
         });
         // Execute action on remove modal
-        $scope.$on('fullScreenModal.removed', function() {
+        $scope.$on('modal.removed', function() {
             // Execute action
         });
-        $scope.$on('fullScreenModal.shown', function() {
+        $scope.$on('modal.shown', function() {
             //console.log('Modal is shown!');
         });
 
         $scope.$on('$ionicView.enter', function(){
             _isCheckedIn();
-            _checkClaimed()
+            _checkClaimed();
         });
     })
     .controller('VenueAboutCtrl', function($scope, $state, $sce, $ionicHistory, $stateParams, venue){
@@ -587,7 +607,7 @@ angular
             $state.go('app.venue', {venueId: $scope.venueId});
         }
     })
-    .controller('VenuePromosCtrl', function($scope, $state, $stateParams, $ionicSlideBoxDelegate, $cordovaSocialSharing, $ionicHistory, VenuesService, LinksService, venue){
+    .controller('VenuePromosCtrl', function($scope, $state, $timeout, $stateParams, $ionicSlideBoxDelegate, $cordovaSocialSharing, $ionicHistory, VenuesService, LinksService, venue){
         var _canLoadMore = false;
         var _pageSize = 20;
 
@@ -595,6 +615,7 @@ angular
         $scope.skip = 0;
         $scope.items = [];
         $scope.name = venue.get('name');
+        $scope.loading = true;
 
         $scope.loadItems = function(id, skip){
             VenuesService
@@ -613,7 +634,11 @@ angular
                     //console.log('deals error', arguments);
                 })
                 .finally(function(){
-                    $scope.$broadcast('scroll.infiniteScrollComplete');
+                    $timeout(function(){
+                        $scope.$apply(function(){
+                            $scope.loading = false;
+                        });
+                    });
                 });
         }
 
@@ -631,15 +656,8 @@ angular
             var img = promo.bannerUrl ? promo.bannerUrl : promo.file && promo.file.url;
             var link = 'http://www.jound.mx/venue/' + $scope.venueId + '/promo/' + promo.objectId;
             var msg = 'Hey mira la promo que encontre via #jound';
-            
-            var onShare = function() {
-                //$cordovaDialogs.alert('Gracias por compartir :)', '!Hey!', 'De nada');
-            };
-            var onShareError = function() {
-                //$cordovaDialogs.alert('Ha ocurrido un error al compartir, por favor intenta de nuevo', 'Error', 'Ok');
-            };
 
-            $cordovaSocialSharing.share(msg, null, img, link).then(onShare, onShareError);
+            $cordovaSocialSharing.share(msg, null, img, link);
         };
 
         $scope.back = function(){
@@ -650,7 +668,7 @@ angular
             $scope.loadItems($scope.venueId);
         });
     })
-    .controller('VenueEventsCtrl', function($scope, $state, $stateParams, $ionicSlideBoxDelegate, $cordovaSocialSharing, $ionicHistory, VenuesService, LinksService, venue){
+    .controller('VenueEventsCtrl', function($scope, $state, $timeout, $stateParams, $ionicSlideBoxDelegate, $cordovaSocialSharing, $ionicHistory, VenuesService, LinksService, venue){
         var _canLoadMore = false;
         var _pageSize = 20;
 
@@ -658,6 +676,7 @@ angular
         $scope.skip = 0;
         $scope.items = [];
         $scope.name = venue.get('name');
+        $scope.loading = true;
 
         $scope.loadItems = function(id, skip){
             VenuesService
@@ -676,7 +695,11 @@ angular
                     //console.log('deals error', arguments);
                 })
                 .finally(function(){
-                    $scope.$broadcast('scroll.infiniteScrollComplete');
+                    $timeout(function(){
+                        $scope.$apply(function(){
+                            $scope.loading = false;
+                        });
+                    });
                 });
         }
 
@@ -695,17 +718,7 @@ angular
             var img = e.bannerUrl ? e.bannerUrl : e.banner && e.banner.url;
             var link = 'http://www.jound.mx/venue/' + $scope.venueId + '/event/' + e.objectId;
 
-            console.log('image to share', img);
-
-            var onShare = function() {
-                //$cordovaDialogs.alert('Gracias por compartir :)', '!Hey!', 'De nada');
-            };
-            var onShareError = function() {
-                //$cordovaDialogs.alert('Ha ocurrido un error al compartir, por favor intenta de nuevo', 'Error', 'Ok');
-            };
-
-            console.log(msg, img, link);
-            $cordovaSocialSharing.share(msg, null, img, link).then(onShare, onShareError);
+            $cordovaSocialSharing.share(msg, null, img, link);
         };
 
         $scope.back = function(){
@@ -716,7 +729,7 @@ angular
             $scope.loadItems($scope.venueId);
         });
     })
-    .controller('VenueProductsCtrl', function($scope, $state, $stateParams, $ionicHistory, VenuesService, venue){
+    .controller('VenueProductsCtrl', function($scope, $state, $stateParams, $ionicHistory, $ionicModal, VenuesService, venue){
         var _canLoadMore = true;
         var _pageSize = 20;
         var _page = 0;
@@ -753,7 +766,29 @@ angular
 
         $scope.back = function(){
             $state.go('app.venue', {venueId: $scope.venueId});
-        }
+        };
+
+        $scope.currentFSImage = undefined;
+        //Create fullscreen image modal
+        $ionicModal.fromTemplateUrl('templates/fsmodal.html', {
+            scope: $scope,
+            animation: 'slide-in-up'
+        }).then(function(modal) {
+            $scope.fullScreenModal = modal;
+        });
+
+        $scope.openImage = function(url){
+            $scope.currentFSImage = url;
+            $scope.openFSModal();
+        };
+
+        $scope.openFSModal = function() {
+            $scope.fullScreenModal.show();
+        };
+
+        $scope.closeFSModal = function() {
+            $scope.fullScreenModal.hide();
+        };
     })
     .controller('VenueReviewsCtrl', function($scope, $stateParams, $state, $cordovaProgress, $ionicHistory, VenuesService, User, venue){
         var _canLoadMore = true;

@@ -136,6 +136,7 @@ angular.module('jound.services')
 
     return {
         //Search by query, position and category
+        //TODO: User search service instead
         search: function(p, r, q, c){
             var deferred = $q.defer();
 
@@ -445,6 +446,97 @@ angular.module('jound.services')
                         deferred.reject(response);
                     });
             }
+
+            return deferred.promise;
+        },
+        new: function(p, name, phone, image, isOwner){
+            var deferred = $q.defer();
+            var File = Parse.Object.extend('File');
+            var P = Parse.Object.extend('Page');
+            var F,file, f;
+            var save = function(savedFile){
+                var config = {
+                    position: p,
+                    name: name,
+                    phone: phone,
+                    userId: User.current().id
+                };
+
+                if(isOwner){
+                    config.owner = true;
+                }
+
+                if(savedFile && savedFile.id){
+                    config.imageId = savedFile.id;
+                }
+
+                plugin.google.maps.Geocoder.geocode({position: p}, function(results) {
+                    if (results.length) {
+                        config.address = results[0];
+                    }
+
+                    $http
+                        .post(AppConfig.API_URL + 'newVenue', config)
+                        .then(function(response){
+                            var v = new VenueModel();
+
+                            console.log(response, 'server response');
+
+                            v.set(response.data.venue);
+
+                            deferred.resolve(v);
+                        }, function(response){
+                            deferred.reject(response);
+                        });
+                });
+
+                
+            }
+
+            if(_.isEmpty(p) || _.isEmpty(name) || _.isEmpty(phone)) {
+                deferred.reject('Please provide a position, name and phone number.');
+            }else {
+                if(image){
+                    F = new Parse.File('front-image', {base64: image});
+                    F
+                        .save()
+                        .then(function(savedFile){
+                            f = new File({file: savedFile})
+                            f
+                                .save()
+                                .then(function(){
+                                    save(f);
+                                }, function(e){
+                                    deferred.reject(e);
+                                })
+                        }, function(e){
+                            deferred.reject(e);
+                        })
+
+                }else{
+                    save();
+                }
+            }
+
+            return deferred.promise;
+        },
+
+        getAddressComponents: function(p){
+            var deferred = $q.defer();
+
+            console.log(p);
+
+            $http
+                .post(AppConfig.API_URL + 'address', {
+                    extended: true,
+                    latitude: p.lat,
+                    longitude: p.lng
+                })
+                .then(function(response){
+                    deferred.resolve(response.data.results);
+                }, function(response){
+                    deferred.reject(response);
+                });
 
             return deferred.promise;
         }

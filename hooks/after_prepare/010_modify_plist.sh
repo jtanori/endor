@@ -23,16 +23,29 @@ Add :LSApplicationQueriesSchemes:15 string fbauth
 Add :LSApplicationQueriesSchemes:16 string fbauth2
 Add :LSApplicationQueriesSchemes:17 string fb-messenger-api20140430
 Add :NSAppTransportSecurity dict
-Add :NSExceptionDomains:NSExceptionDomains dict
-Add :NSExceptionDomains:NSExceptionDomains:facebook.com dict
-Add :NSExceptionDomains:NSExceptionDomains:facebook.com:NSIncludesSubdomains bool true
-Add :NSExceptionDomains:NSExceptionDomains:facebook.com:NSThirdPartyExceptionRequiresForwardSecrecy bool false
-Add :NSExceptionDomains:NSExceptionDomains:fbcdn.net dict
-Add :NSExceptionDomains:NSExceptionDomains:fbcdn.net:NSIncludesSubdomains bool true
-Add :NSExceptionDomains:NSExceptionDomains:fbcdn.net:NSThirdPartyExceptionRequiresForwardSecrecy bool false
-Add :NSExceptionDomains:NSExceptionDomains:akamaihd.net dict
-Add :NSExceptionDomains:NSExceptionDomains:akamaihd.net:NSIncludesSubdomains bool true
-Add :NSExceptionDomains:NSExceptionDomains:akamaihd.net:NSThirdPartyExceptionRequiresForwardSecrecy bool false
+Add :NSAppTransportSecurity:NSExceptionDomains dict
+Add :NSAppTransportSecurity:NSExceptionDomains:facebook.com dict
+Add :NSAppTransportSecurity:NSExceptionDomains:facebook.com:NSIncludesSubdomains bool YES
+Add :NSAppTransportSecurity:NSExceptionDomains:facebook.com:NSExceptionAllowsInsecureHTTPLoads bool YES
+Add :NSAppTransportSecurity:NSExceptionDomains:fbcdn.net dict
+Add :NSAppTransportSecurity:NSExceptionDomains:fbcdn.net:NSIncludesSubdomains bool YES
+Add :NSAppTransportSecurity:NSExceptionDomains:fbcdn.net:NSExceptionAllowsInsecureHTTPLoads bool YES
+Add :NSAppTransportSecurity:NSExceptionDomains:akamaihd.net dict
+Add :NSAppTransportSecurity:NSExceptionDomains:akamaihd.net:NSIncludesSubdomains bool YES
+Add :NSAppTransportSecurity:NSExceptionDomains:akamaihd.net:NSExceptionAllowsInsecureHTTPLoads bool YES
+Add :NSAppTransportSecurity:NSExceptionDomains:parse.com dict
+Add :NSAppTransportSecurity:NSExceptionDomains:parse.com:NSIncludesSubdomains bool YES
+Add :NSAppTransportSecurity:NSExceptionDomains:parse.com:NSExceptionAllowsInsecureHTTPLoads bool YES
+Add :NSAppTransportSecurity:NSExceptionDomains:jound.mx dict
+Add :NSAppTransportSecurity:NSExceptionDomains:jound.mx:NSIncludesSubdomains bool YES
+Add :NSAppTransportSecurity:NSExceptionDomains:jound.mx:NSExceptionAllowsInsecureHTTPLoads bool YES
+Add :NSAppTransportSecurity:NSExceptionDomains:gravatar.com dict
+Add :NSAppTransportSecurity:NSExceptionDomains:gravatar.com:NSIncludesSubdomains bool YES
+Add :NSAppTransportSecurity:NSExceptionDomains:gravatar.com:NSExceptionAllowsInsecureHTTPLoads bool YES
+Add :NSAppTransportSecurity:NSExceptionDomains:parsetfss.com dict
+Add :NSAppTransportSecurity:NSExceptionDomains:parsetfss.com:NSIncludesSubdomains bool YES
+Add :NSAppTransportSecurity:NSExceptionDomains:parsetfss.com:NSExceptionAllowsInsecureHTTPLoads bool YES
+Add :NSAppTransportSecurity:NSAllowsArbitraryLoads bool YES
 EOF
 while read line
 do
