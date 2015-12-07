@@ -17,15 +17,22 @@ angular
         $ionicHistory,
         $cordovaDialogs,
         $cordovaProgress,
+        $cordovaToast,
+        $ionicSlideBoxDelegate,
         VenuesService,
         LinksService,
         CameraService,
         venue,
-        User
+        User,
+        WEEKDAYS
     ) {
         $scope.venue = venue;
         $scope.basicData = venue.getBasicData();
-        $scope.logo = venue.getLogo();
+        $scope.logo = $scope.basicData.logo;
+        $scope.banner = $scope.basicData.banner;
+        $scope.coverVideo = venue.get('cover_video');
+
+        console.log('cover video', venue.get('cover_video'));
         $scope.images = [];
         $scope.page = venue.get('page') ? venue.get('page').toJSON() : undefined;
         $scope.videos = [];
@@ -41,6 +48,9 @@ angular
         $scope.max = 5;
         $scope.user = $rootScope.user.toJSON();
         $scope.user.avatar = $rootScope.user.getAvatar();
+        $scope.enableUserPhotos = venue.get('enableUserPhotos') === false ? false : true;
+        $scope.twentyFourSeven = false;
+        $scope.serviceHours = [];
         $scope.claimMaster = {
             name: '',
             surname: '',
@@ -54,19 +64,81 @@ angular
         };
         $scope.bug = angular.copy($scope.bugMaster);
 
-        if (venue.get('images') && venue.get('images').length) {
-            $timeout(function() {
-                $scope.$apply(function() {
-                    $scope.images.push($scope.logo);
-                    $scope.images = $scope.images.concat(venue.get('images'));
+        $timeout(function() {
+            $scope.$apply(function() {
+                $scope.images.push($scope.banner);
+
+                if(venue.get('images') && venue.get('images').length){
+                    $scope.images = $scope.images.concat(venue.get('images').map(function(i){return {url: i};}));
+                }
+            });
+        })
+
+        var serviceHours = [];
+        var master_day = {name: '', capital: ''};
+        var currentDay, everyDay;
+
+        if(venue.get('service_hours')){
+            serviceHours = venue.get('service_hours');
+
+            twentyFourSeven = serviceHours.filter(function(d){
+                console.log(d, 'day', d.days === "*" && d.hours === "*");
+                if(d.days === "*" && d.hours === "*"){
+                    return true;
+                }
+            }).length;
+
+            console.log(twentyFourSeven, 'twentyFourSeven');
+
+            if(!twentyFourSeven){
+                everyDay = serviceHours.filter(function(d){
+                    if(d.days === "*"){
+                        return true;
+                    }
+                }).length;
+
+                if(everyDay){
+                    serviceHours = WEEKDAYS.map(function(d){
+                        return angular.extend({}, d, {hours: serviceHours[0].hours});
+                    });
+
+                    console.log(serviceHours, 'service hours');
+
+                    $timeout(function(){
+                        $scope.$apply(function(){
+                            $scope.serviceHours = serviceHours;
+                        });
+                    });
+                }else{
+                    serviceHours = serviceHours.map(function(r){
+
+
+                        if(_.isArray(r.days)){
+                            r = r.map(function(d){
+                                return angular.extend({}, WEEKDAYS[d], {hours: r.hours});
+                            });
+                        }else if(_.isNumber(r.days) && WEEKDAYS[r.days]){
+                            r = angular.extend({}, WEEKDAYS[r.days], {hours: r.hours});
+                        }
+
+
+                    });
+
+                    console.log(serviceHours, 'service hours');
+
+                    $timeout(function(){
+                        $scope.$apply(function(){
+                            $scope.serviceHours = serviceHours;
+                        });
+                    });
+                }
+            }else{
+                $timeout(function(){
+                    $scope.$apply(function(){
+                        $scope.twentyFourSeven = twentyFourSeven;
+                    });
                 });
-            })
-        }else{
-            $timeout(function() {
-                $scope.$apply(function() {
-                    $scope.images.push($scope.logo);
-                });
-            })
+            }
         }
 
         $scope.getVideos = function(){
@@ -312,12 +384,60 @@ angular
                 tags = [];
             }
 
-            var msg = 'Hey mira lo que encontre via #jound http://www.jound.mx/venue/' + venueId + ' ' + tags.join(' #');
+            var msg = 'Hey mira lo que encontre via #jound http://www.jound.mx/venue/' + venueId + ' #' + tags.join(' #');
 
             $cordovaSocialSharing.share(
                 msg,
                 'Hey mira lo que encontre en #jound',
                 img,
+                link
+            ).then(onShare, onShareError);
+        };
+
+        $scope.shareInstagram = function(link, img, tags, venueId) {
+            var onShare = function() {
+                //$cordovaDialogs.alert('Gracias por compartir :)', '!Hey!', 'De nada');
+            };
+            var onShareError = function() {
+                //$cordovaDialogs.alert('Ha ocurrido un error al compartir, por favor intenta de nuevo', 'Error', 'Ok');
+            };
+
+            if(tags){
+                tags = tags.map(function(t){return t.text || t;});
+            }else{
+                tags = [];
+            }
+
+            var msg = 'Cheka esta foto que encontre ' + link + ' http://www.jound.mx/venue/' + venueId + ' #jound #' + tags.join(' #');
+
+            $cordovaSocialSharing.share(
+                msg,
+                null,
+                img || null,
+                link
+            ).then(onShare, onShareError);
+        };
+
+        $scope.shareTwitter = function(link, img, tags, venueId) {
+            var onShare = function() {
+                //$cordovaDialogs.alert('Gracias por compartir :)', '!Hey!', 'De nada');
+            };
+            var onShareError = function() {
+                //$cordovaDialogs.alert('Ha ocurrido un error al compartir, por favor intenta de nuevo', 'Error', 'Ok');
+            };
+
+            if(tags){
+                tags = tags.map(function(t){return t.text || t;});
+            }else{
+                tags = [];
+            }
+
+            var msg = 'Mira lo que estan twiteando ' + link + ' http://www.jound.mx/venue/' + venueId + ' #jound #' + tags.join(' #');
+
+            $cordovaSocialSharing.share(
+                msg,
+                null,
+                img || null,
                 link
             ).then(onShare, onShareError);
         };
@@ -341,19 +461,17 @@ angular
         };
 
         $scope.shareVideo = function(link, img, title, venueId) {
+            var msg = 'Hey mira el video de '+ $scope.venue.get('name') + ' ' + link + ' http://www.jound.mx/venue/' + venueId + ' #jound';
             var onShare = function() {
                 //$cordovaDialogs.alert('Gracias por compartir :)', '!Hey!', 'De nada');
             };
             var onShareError = function() {
                 //$cordovaDialogs.alert('Ha ocurrido un error al compartir, por favor intenta de nuevo', 'Error', 'Ok');
             };
-
-            var msg = 'Hey mira lo que encontre via #jound http://www.jound.mx/venue/' + venueId;
-
             $cordovaSocialSharing.share(
                 msg,
-                'Hey mira lo que encontre en #jound (' + title + ')',
-                img,
+                null,
+                null,
                 link
             ).then(onShare, onShareError);
         };
@@ -544,34 +662,76 @@ angular
             $scope.fullScreenModal = modal;
         });
 
+        $ionicModal.fromTemplateUrl('templates/fspreviewmodal.html', {
+            scope: $scope,
+            animation: 'slide-in-up'
+        }).then(function(modal) {
+            $scope.fullScreenPreviewModal = modal;
+        });
+
         $scope.openImage = function(url){
             $scope.currentFSImage = url;
             $scope.openFSModal();
         };
 
+        $scope.openBusinessImage = function(data){
+            console.log(data, 'data');
+            $timeout(function(){
+                $scope.$apply(function(){
+                    $scope.businessImageSRC = data;
+                    $cordovaProgress.hide();
+                });
+            });
+
+            $scope.openFSImagePreviewModal();
+        }
+
         $scope.openFSModal = function() {
             $scope.fullScreenModal.show();
         };
 
+        $scope.openFSImagePreviewModal = function(){
+            $scope.fullScreenPreviewModal.show();
+        };
+
         $scope.closeFSModal = function() {
             $scope.fullScreenModal.hide();
+            $scope.businessImageSRC = '';
+        };
+
+        $scope.closeFSImagePreviewModal = function(){
+            $scope.fullScreenPreviewModal.hide();
         };
 
         $scope.businessImageSRC = '';
         $scope.takePhoto = function(){
+            $scope.businessImageSRC = '';
+
             CameraService
                 .ready()
                 .then(function(){
                     CameraService
-                        .take()
+                        .take({targetWidth:720, targetHeight: 400})
                         .then(function(image){
-                            $timeout(function(){
-                                $scope.$apply(function(){
-                                    $scope.businessImageSRC = image;
+                            $cordovaProgress.showSimpleWithLabelDetail(true, 'Guardando imagen', 'Esperen un segundo');
+                            //Save photo
+                            VenuesService
+                                .savePhotoForVenue(image, $scope.venue.id)
+                                .then(function(url){
+                                    $scope.images.push({url: url});
+                                    $ionicSlideBoxDelegate.update();
+                                    $cordovaProgress.hide();
+                                    $timeout(function(){
+                                        $cordovaToast.showShortBottom('Imagen guardada, gracias :)');
+                                        $ionicSlideBoxDelegate.slide($ionicSlideBoxDelegate.slidesCount()-1);
+                                    });
+                                }, function(e){
+                                    $cordovaProgress.hide();
+                                    console.log(e, 'error saving image');
+                                    $timeout(function(){
+                                        $cordovaDialogs.alert(e.message);
+                                    });
                                 });
-                            });
-                        }, function(e){
-                            console.log(e, 'error on getting image');
                         });
                 });
         };
@@ -729,7 +889,7 @@ angular
             $scope.loadItems($scope.venueId);
         });
     })
-    .controller('VenueProductsCtrl', function($scope, $state, $stateParams, $ionicHistory, $ionicModal, VenuesService, venue){
+    .controller('VenueProductsCtrl', function($scope, $timeout, $state, $stateParams, $ionicHistory, $ionicModal, VenuesService, venue){
         var _canLoadMore = true;
         var _pageSize = 20;
         var _page = 0;
@@ -738,6 +898,7 @@ angular
         $scope.skip = 0;
         $scope.items = [];
         $scope.name = venue.get('name');
+        $scope.loading = true;
 
         $scope.loadItems = function(id, skip){
             VenuesService
@@ -756,7 +917,12 @@ angular
                     //console.log('products error', arguments);
                 })
                 .finally(function(){
-                    $scope.$broadcast('scroll.infiniteScrollComplete');
+                    $timeout(function(){
+                        $scope.$apply(function(){
+                            $scope.loading = false;
+                            $scope.$broadcast('scroll.infiniteScrollComplete');
+                        });
+                    });
                 });
         }
 

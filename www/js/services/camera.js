@@ -15,7 +15,7 @@ angular.module('jound.services')
     };
 
     $ionicPlatform.ready(function(){
-        var options = {
+        var defaultOptions = {
             destinationType: Camera.DestinationType.DATA_URL,
             sourceType: Camera.PictureSourceType.PHOTOLIBRARY,
             allowEdit: true,
@@ -40,12 +40,16 @@ angular.module('jound.services')
             return deferred.promise;
         };
 
-        global.take = function(){
+        global.take = function(options){
             var deferred = $q.defer();
-            var o = angular.copy(options);
+            var o = angular.copy(defaultOptions);
+
+            if(_.isEmpty(options)){
+                o = angular.extend(o, options);
+            }
 
             if(ionic.Platform.isAndroid()){
-                getPicture(options)
+                getPicture(o)
                     .then(function(data){
                         deferred.resolve(data);
                     }, function(e){
@@ -53,14 +57,13 @@ angular.module('jound.services')
                     });
             }else{
                 $cordovaActionSheet.show({
-                    title: 'Agregar una foto',
+                    title: 'Agregar una imagen',
                     buttonLabels: ['Desde el carrete', 'Desde la camara'],
                     addCancelButtonWithLabel: 'Cancelar',
                     androidEnableCancelButton: true,
                     winphoneEnableCancelButton: true
                 })
                     .then(function(btnIndex) {
-                        console.log(btnIndex);
                         switch(btnIndex){
                         case 2:
                             o.sourceType = Camera.PictureSourceType.CAMERA;

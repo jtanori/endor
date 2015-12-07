@@ -19,6 +19,7 @@ angular
         $cordovaCamera,
         $ionicModal,
         $ionicPosition,
+        $cordovaToast,
 
         AppConfig,
         CategoriesService,
@@ -55,6 +56,8 @@ angular
         $scope.route2 = false;
         $scope.route3 = false;
         $scope.showLoader = false;
+        $scope.centerCaptured = false;
+        $scope.searchFeatured = true;
 
         CategoriesService
             .get()
@@ -141,22 +144,12 @@ angular
             var position, p, category;
             var c = $scope.category ? $scope.category.id : false;
             var q = $scope.query.trim();
+            var r = $rootScope.settings.searchRadius;
             var position = $rootScope.settings.position;
-            var config = {};
-            var p = $rootScope.settings.position.coords;
 
             $timeout(function(){
                 $cordovaProgress.showSimpleWithLabelDetail(true, 'Buscando', 'Esperen un segundo');
-            })
-
-            if(c){
-                config.categoryId = c;
-            }
-
-            config.lat = p.latitude;
-            config.lng = p.longitude;
-
-            //$state.go('app.search', config);
+            });
 
             //TODO: Fix backwards (attributes from URI) search
             VenuesService
@@ -355,8 +348,6 @@ angular
             var searchBoxPosition = $ionicPosition.position(angular.element(document.getElementById('home-search-box')));
             var position = searchBoxPosition.left + searchBoxPosition.width;
 
-            console.log('new position', position, '' + position + 'px');
-
             $timeout(function(){
                 $scope.$apply(function(){
                     clearSearchButton.css('left', position + 'px');
@@ -426,7 +417,6 @@ angular
         $scope.newBusinessImageSRC = '';
         $scope.newVenue = null;
         $scope.startNewBusiness = function(latlng){
-            //console.log('start new business');
             $scope.clearSearch();
             $scope.clearCategory();
 
@@ -478,7 +468,10 @@ angular
                                 });
                             });
                         }, function(e){
-                            console.log(e, 'error on getting image');
+                            $timeout(function(){
+                                $cordovaDialogs.alert(e.message);
+                            });
+
                         });
                 });
         };
@@ -500,8 +493,11 @@ angular
                     $scope.newVenue.address = address;
 
                     openNewBusinessModal();
-                }, function(){
-                    console.log('error', arguments);
+                }, function(e){
+                    console.log('error getting address components', e);
+                    $timeout(function(){
+                        $cordovaDialogs.alert(e.message);
+                    });
                 });
         };
 
@@ -541,7 +537,6 @@ angular
             VenuesService
                 .new(position, nb.name, nb.phone, nb.image, nb.owner)
                 .then(function(venue){
-                    console.log('venue added', venue);
                     $timeout(function(){
                         $scope.$apply(function(){
                             $scope.newBusinessMarker.remove();
@@ -551,8 +546,11 @@ angular
                             $scope.venues = [venue];
                         });
                     });
-                }, function(){
-                    console.log(arguments, 'error adding venue');
+                }, function(e){
+                    console.log(e, 'error adding venue');
+                    $timeout(function(){
+                        $cordovaDialogs.alert(e.message);
+                    });
                 });
         };
 
@@ -568,6 +566,39 @@ angular
 
             $scope.$emit('venue:new:cancel');
         };
+
+        var getFeaturedVenues = function(p, r) {
+            if(!$scope.searchFeatured) {
+                return;
+            }
+
+            VenuesService
+                .getFeatured(p, r)
+                .then(function(venues) {
+                    $timeout(function() {
+                        $scope.$apply(function() {
+                            $scope.venues = venues;
+                        });
+                    });
+                });
+        }
+
+        var lockPosition = function(lock){
+            $scope.centerCaptured = lock === false ? false : true;
+
+            var message;
+            if($scope.centerCaptured){
+                message = 'Posicion capturada';
+            }else{
+                message = 'Posicion liberada';
+            }
+
+            $cordovaToast.showShortBottom(message)
+        }
+
+        var releasePosition = function(){
+            lockPosition(false);
+        }
 
         $ionicPlatform.ready(function() {
 
@@ -591,6 +622,7 @@ angular
 
             $rootScope.$watch('settings.usingGeolocation', function(using) {
                 if (using) {
+                    $cordovaToast.showShortBottom('Trazando tu ubicacion');
                     getCurrentPosition();
                 } else if ($rootScope.marker) {
                     
@@ -600,6 +632,8 @@ angular
                     }
 
                     $rootScope.marker.setIcon(AppConfig.MARKERS.LOCATION_CUSTOM);
+
+                    $cordovaToast.showShortBottom('Estilo libre activado');
                 }
             });
 
@@ -633,13 +667,18 @@ angular
                     data: {
                         id: model.id,
                         category: $scope.category ? $scope.category.id : undefined,
-                        position: l.toJSON()
+                        position: l.toJSON(),
+                        featured: model.get('featured')
                     },
                     visible: false,
                     disableAutoPan: true,
                     markerClick: function(marker) {
                         if ($scope.currentMarker) {
-                            $scope.currentMarker.setIcon(AppConfig.MARKERS.VENUE);
+                            if($scope.currentMarker.get('data').featured){
+                                $scope.currentMarker.setIcon(AppConfig.MARKERS.VENUE_FEATURED);
+                            }else{
+                                $scope.currentMarker.setIcon(AppConfig.MARKERS.VENUE);
+                            }
                         }
 
                         //Highlight marker
@@ -653,10 +692,19 @@ angular
                             });
                         });
 
-                        marker.setIcon(AppConfig.MARKERS.VENUE_SELECTED);
+                        if (marker.get('data').featured) {
+                            marker.setIcon(AppConfig.MARKERS.VENUE_SELECTED_FEATURED);
+                        } else {
+                            marker.setIcon(AppConfig.MARKERS.VENUE_SELECTED);
+                        }
                     }
                 }, function(marker) {
-                    marker.setIcon(AppConfig.MARKERS.VENUE);
+                    if(marker.get('data').featured){
+                        marker.setIcon(AppConfig.MARKERS.VENUE_FEATURED);
+                    }else{
+                        marker.setIcon(AppConfig.MARKERS.VENUE);
+                    }
+
                     marker.setVisible(true);
 
                     $scope.markers.push(marker);
@@ -672,7 +720,11 @@ angular
                             });
                         });
 
-                        marker.setIcon(AppConfig.MARKERS.VENUE_SELECTED);
+                        if(marker.get('data').featured){
+                            marker.setIcon(AppConfig.MARKERS.VENUE_SELECTED_FEATURED);
+                        }else{
+                            marker.setIcon(AppConfig.MARKERS.VENUE_SELECTED);
+                        }
                     }
                 });
             };
@@ -731,6 +783,8 @@ angular
                     return;
                 }
 
+                var deferred = $q.defer();
+
                 $cordovaGeolocation
                     .getCurrentPosition(AppConfig.GEO.DEFAULT)
                     .then(
@@ -758,10 +812,13 @@ angular
                             if(!$scope.watchPosition){
                                 $scope.watchPosition = $interval(getCurrentPosition, 20000);
                             }
-                        }, function(err) {
-                            // error
-                            //console.log(err, 'error on position');
+                            
+                            deferred.resolve(position);
+                        }, function(e) {
+                            deferred.reject(e);
                         });
+                
+                return deferred.promise;
             }
 
             function onMapClick() {
@@ -784,11 +841,11 @@ angular
                 if($scope.newBusinessMarker){
                     return;
                 }
-                //console.log('map long click', arguments);
+
                 //Share location or add new location
                 $cordovaActionSheet.show({
                     title: '¿Que deseas hacer?',
-                    buttonLabels: ['Compartir esta ubicacion', 'Agregar nuevo establecimiento'],
+                    buttonLabels: ['Compartir esta ubicacion'/*, 'Agregar nuevo establecimiento'*/],
                     addCancelButtonWithLabel: 'Cancelar',
                     androidEnableCancelButton: true,
                     winphoneEnableCancelButton: true
@@ -816,7 +873,7 @@ angular
             //TODO: Implement auto search
             var onMapChangeTimeout = null;
             function onMapChange(camera) {
-                if($rootScope.settings.usingGeolocation){
+                if($rootScope.settings.usingGeolocation || $scope.centerCaptured){
                     return;
                 }
 
@@ -852,7 +909,14 @@ angular
                     icon: settings.usingGeolocation ? AppConfig.MARKERS.LOCATION : AppConfig.MARKERS.LOCATION_CUSTOM,
                     visible: false,
                     title: '',
-                    snippet: ''
+                    snippet: '',
+                    markerClick: function(marker){
+                        if(!$rootScope.settings.usingGeolocation){
+                            lockPosition(!$scope.centerCaptured);
+                        }else{
+                            $cordovaToast.showLongBottom('Esta es tu posicion, segun la red U_U');
+                        }
+                    }
                 };
 
                 //Set default options
@@ -903,10 +967,20 @@ angular
                             $rootScope.mainMap.setCenter(p);
                             $rootScope.circle.setCenter(p);
                             $rootScope.marker.setPosition(p);
-                        }
 
-                        if ($rootScope.settings.usingGeolocation) {
-                            getCurrentPosition();
+                            //TODO: Fix backwards (attributes from URI) search
+                            getFeaturedVenues({coords: {latitude: p.lat, longitude: p.lng}}, $rootScope.settings.searchRadius);
+                            lockPosition();
+                        }else if ($rootScope.settings.usingGeolocation) {
+                            getCurrentPosition()
+                                .then(function(position){
+                                    getFeaturedVenues(position, $rootScope.settings.searchRadius);
+                                }, function(e){
+                                    console.log(e, 'error getting position');
+                                    $timeout(function(){
+                                        $cordovaDialogs.alert(e.message);
+                                    });
+                                });
                         }else{
                             if($rootScope.settings && $rootScope.settings.position && $rootScope.settings.position.coords){
                                 p = $rootScope.settings.position.coords;
@@ -918,6 +992,10 @@ angular
                             $rootScope.circle.setCenter(p);
                             $rootScope.marker.setPosition(p);
                             $rootScope.mainMap.setCenter(p);
+
+                            //TODO: Fix backwards (attributes from URI) search
+                            getFeaturedVenues({coords: {latitude: p.lat, longitude: p.lng}}, $rootScope.settings.searchRadius);
+                            lockPosition();
                         }
 
                         //Listen for map events

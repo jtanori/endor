@@ -1,6 +1,6 @@
 angular.module('jound.services')
 
-.factory('VenueModel', function(){
+.factory('VenueModel', function(AppConfig){
     return Parse.Object.extend('Location', {
         pageLoaded: false,
         getURL: function(){
@@ -85,26 +85,32 @@ angular.module('jound.services')
             return city;
         },
         getBanner: function(){
-            if(_.isString(this.get('logo'))){
-                return {url:this.get('logo')};
-            }else if(this.get('logo')){
-                if(this.get('logo').file){
-                    return {url:this.get('logo').file._url};
-                }else{
-                    return {url:this.get('logo').get('file').url()};
+            var l;
+
+            if(this.get('cover')){
+                l = this.get('cover').get('file');
+
+                console.log(this.get('cover'), 'cover');
+                
+                if(l.url){
+                    return {url: l.url(), isDefault: false};
+                }else if(l._url){
+                    return {url: l._url, isDefault: false};
                 }
             }else{
                 return {url:'img/splash.jpg', isDefault: true};
             }
         },
         getLogo: function(){
-            if(_.isString(this.get('logo'))){
-                return this.get('logo');
-            }else if(this.get('logo')){
-                if(this.get('logo').file){
-                    return this.get('logo').file._url;
-                }else{
-                    return this.get('logo').get('file').url();
+            var l;
+            
+            if(this.get('logo')){
+                l = this.get('logo').get('file');
+
+                if(l.url){
+                    return l.url();
+                }else if(l._url){
+                    return l._url;
                 }
             }else{
                 return 'img/venue_default_large.jpg';
@@ -120,6 +126,7 @@ angular.module('jound.services')
                 url: this.get('www'),
                 activity: this.get('activity_description'),
                 logo: this.getLogo(),
+                banner: this.getBanner(),
                 email: this.get('email_address'),
                 www: this.getWWW()
             };
@@ -129,7 +136,7 @@ angular.module('jound.services')
 .factory('CategoryModel', function(){
     return Parse.Object.extend({className: 'Category'});
 })
-.factory('VenuesService', function($q, $http, $cordovaDevice, VenueModel, SanitizeService, CategoryModel, AppConfig, User) {
+.factory('VenuesService', function($q, $http, $rootScope, $cordovaDevice, VenueModel, SanitizeService, CategoryModel, AppConfig, User) {
 
     var _currentResults = [];
     var _currentVenue;
@@ -170,13 +177,16 @@ angular.module('jound.services')
                 .near('position', geoPoint)
                 .withinKilometers('position', geoPoint, r/1000)
                 .include('logo')
+                .include('cover')
                 .include('page')
                 .include('claimed_by')
                 .select(AppConfig.QUERY.VENUE_DEFAULT_FIELDS)
                 .limit(200)
+                .ascending('featured')
                 .find()
                 .then(
                     function(results){
+                        console.log(results, 'results');
                         if(results.length){
                             _currentResults = results;
                             deferred.resolve(results);
@@ -187,6 +197,54 @@ angular.module('jound.services')
                         deferred.reject(e);
                     }
                 );
+
+            return deferred.promise;
+        },
+        getFeatured: function(p, r){
+            var deferred = $q.defer();
+
+            if(!p || !r){
+                deferred.reject({message: 'VenuesService.getFeatured requires at least two arguments', code: 101});
+            }
+
+            var query = new Parse.Query(VenueModel);
+            var geoPoint = new Parse.GeoPoint({latitude: p.coords.latitude, longitude: p.coords.longitude});
+
+            //Search near current position
+            Parse.Config
+                .get()
+                .then(function(c){
+                    var r = {
+                        limit: c.get('defaultFeaturedLimit') || 50,
+                        radius: c.get('defaultFeaturedRadius') || $rootScope.settings.searchRadius
+                    };
+
+                    query
+                        .near('position', geoPoint)
+                        .withinKilometers('position', geoPoint, r.radius/1000)
+                        .include('logo')
+                        .include('cover')
+                        .include('page')
+                        .include('claimed_by')
+                        .equalTo('featured', true)
+                        .select(AppConfig.QUERY.VENUE_DEFAULT_FIELDS)
+                        .limit(r.limit)
+                        .find()
+                        .then(
+                            function(results){ 
+                                if(results.length){
+                                    _currentResults = results;
+                                    deferred.resolve(results);
+                                }else{
+                                    deferred.reject({message: 'No encontramos resultados, intenta buscar en un rango mas amplio.'});
+                                }
+                            }, function(e){
+                                deferred.reject(e);
+                            }
+                        );
+                }, function(e){
+                    deferred.reject(e);
+                });
 
             return deferred.promise;
         },
@@ -206,16 +264,31 @@ angular.module('jound.services')
                 $http
                     .get(AppConfig.API_URL + 'venue/' + id)
                     .then(function(response){
+                        console.log('response', response);
                         var v = new VenueModel();
                         var P = Parse.Object.extend('Page');
-                        var p;
-
-                        if(response.data.venue && response.data.venue.page){
-                            p = new P(response.data.venue.page);
-                        }
+                        var L = Parse.Object.extend('File');
+                        var p, l, c;
 
                         v.set(response.data.venue);
-                        v.set('page', p);
+
+                        if(response.data.venue && response.data.venue.page){
+                            if(response.data.venue.page){
+                                p = new P(response.data.venue.page);
+                                v.set('page', p);
+                            }
+                            if(response.data.venue.logo){
+                                l = new L(response.data.venue.logo);
+                                v.set('logo', l);
+                            }
+                            if(response.data.venue.cover){
+                                console.log('cover from service', response.data.venue.cover);
+                                c = new L(response.data.venue.cover);
+                                v.set('cover', c);
+                            }
+                        }
+
+                        console.log('venue', v);
 
                         deferred.resolve(v);
                     }, function(response){
@@ -535,7 +608,24 @@ angular.module('jound.services')
                 .then(function(response){
                     deferred.resolve(response.data.results);
                 }, function(response){
-                    deferred.reject(response);
+                    deferred.reject(response.data.error);
+                });
+
+            return deferred.promise;
+        },
+
+        savePhotoForVenue: function(data, id){
+            var deferred = $q.defer();
+
+            $http
+                .post(AppConfig.API_URL + 'savePhotoForVenue', {
+                    id: id,
+                    data: data
+                })
+                .then(function(response){
+                    deferred.resolve(response.data.url);
+                }, function(response){
+                    deferred.reject(response.data.error);
                 });
 
             return deferred.promise;

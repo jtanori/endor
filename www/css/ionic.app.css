@@ -8006,7 +8006,6 @@ a.button {
     bottom: 0;
     background-size: cover;
     z-index: -1;
-    opacity: 0.4;
     background-position: center top;
     background-image: '../img/splash.jpg'; }
   #venue-slider img, #modal-venue-new-cover img {
@@ -8027,6 +8026,25 @@ a.button {
       top: 50%;
       margin-bottom: 0;
       height: 50%; }
+  #venue-slider .default, #modal-venue-new-cover .default {
+    height: 100%; }
+    #venue-slider .default h4, #modal-venue-new-cover .default h4 {
+      margin-top: 0; }
+    #venue-slider .default img, #modal-venue-new-cover .default img {
+      margin-top: 1rem;
+      height: 75px;
+      box-shadow: none; }
+  #venue-slider #venue-slider-cover-play, #modal-venue-new-cover #venue-slider-cover-play {
+    position: absolute;
+    font-size: 3rem;
+    color: white;
+    text-shadow: 0 0 0.5rem black;
+    top: 50%;
+    margin-top: -1.5rem;
+    left: 50%;
+    margin-left: -1.5rem;
+    width: 3rem;
+    text-align: center; }
 
 #venue-tabs .tabs {
   border-bottom: 0; }
@@ -8244,7 +8262,20 @@ ion-footer-bar.disabled:before {
   border-radius: 0.5rem;
   z-index: 4;
   right: 0.5rem;
-  top: 160px; }
+  top: 155px; }
+
+#tab-venue-home-247 {
+  position: fixed;
+  top: 80px;
+  z-index: 2;
+  color: white;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 0.5rem;
+  padding: 0.2rem 0.5rem;
+  right: 0.5rem; }
+  #tab-venue-home-247 .span {
+    font-size: 0.7rem; }
 
 #start-slider {
   width: 100%;
@@ -8324,3 +8355,7 @@ ion-footer-bar.disabled:before {
 @media only screen and (max-device-width: 568px) {
   .ui-medium-and-larger {
     display: none; } }
+
+#image-modal-buttons {
+  position: absolute;
+  bottom: 0; }

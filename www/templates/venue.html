@@ -19,20 +19,25 @@
                             <rating ng-model="rating" max="max" readonly="true" class="light small" ng-class="{energized: rating > 0 }"></rating>
                         </div>
                         <button type="button" class="button button-icon icon" id="tab-venue-home-checkin" ng-click="checkin()" ng-class="{disabled: checkingLoading, 'ion-ios-circle-outline': !isCheckedIn, 'ion-ios-circle-filled energized': isCheckedIn}"> Check-in</button>
-                        <button type="button" class="buton button-icon icon ion-camera" id="tab-venue-home-photo" ng-click="takePhoto()"></button>
+                        <div ng-if="twentyFourSeven" id="tab-venue-home-247">
+                            <div>24/7</div>
+                            <div class="label">Abierto</div>
+                        </div>
+                        <button type="button" class="buton button-icon icon ion-camera" id="tab-venue-home-photo" ng-click="takePhoto()" ng-if="enableUserPhotos"></button>
                         <!-- Tab 1 content -->
 						<!-- Slideshow -->
-					  	<ion-slide-box on-slide-changed="slideHasChanged($index)" id="venue-slider" ng-if="images.length > 1">
-							<ion-slide ng-repeat='img in images' ng-click="openImage(img)">
-								<div class="venue-slide-bg" style="background-image: url({{img}})"></div>
-								<img ng-src="{{img}}" />
+					  	<ion-slide-box on-slide-changed="slideHasChanged($index)" id="venue-slider" ng-if="images.length">
+							<ion-slide ng-repeat='img in images' ng-click="coverVideo && coverVideo.id ? playVideo(coverVideo.id) : img.isDefault ? _.noop() : openImage(img.url)">
+								<div class="venue-slide-bg" style="background-image: url({{img.url}})"></div>
+								<!--img ng-src="{{img.url}}" ng-if="!img.isDefault"/-->
+                                <div ng-if="img.isDefault" class="center aligned default padding">
+                                    <img src="img/jound.png" />
+                                    <h4 class="light">{{basicData.name}}</h4>
+                                </div>
+
+                                <i ng-if="coverVideo && coverVideo.id" class="icon ion-play" id="venue-slider-cover-play"></i>
 							</ion-slide>
 						</ion-slide-box>
-
-						<div ng-if="images.length == 1" id="venue-slider" class="cover" ng-click="venue.getBanner().isDefault ? _.noop() : openImage(venue.getBanner().url)">
-							<div class="venue-slide-bg" style="background-image: url({{venue.getBanner().url}})"></div>
-							<img ng-src="img/jound.png" ng-if="venue.getBanner().isDefault">
-						</div>
 
                         <div id="venue-home-logo" ng-click="openImage(logo)">
                             <img ng-src="{{logo}}" />
@@ -49,6 +54,13 @@
 
                             <h4>Direccion</h4>
                             <p>{{basicData.address}}, {{basicData.city}}</p>
+
+                            <div ng-if="serviceDays && !twentyFourSeven" id="venue-home-service-days">
+                                <div ng-repeat="day in serviceDays">
+                                    <div>{{day.name}}</div>
+                                    <span>{{day.from}}-{{day.to}}</span>
+                                </div>
+                            </div>
 
                             <div class="padding center aligned button-bar" ng-if="page">
                                 <a ng-if="basicData.www" class="button button-icon ion-link" ng-click="openUrl(basicData.www)"></a>
@@ -127,7 +139,7 @@
                                         <i class="icon ion-social-instagram"></i>
                                         Ver en Instagram
                                     </a>
-                                    <a class="tab-item" ng-click="share(item.link, item.images.standard, item.tags, venue.id)">
+                                    <a class="tab-item" ng-click="shareInstagram(item.link, item.images.standard, item.tags, venue.id)">
                                         <i class="icon ion-share"></i>
                                         Compartir
                                     </a>
@@ -216,7 +228,7 @@
                                         <i class="icon ion-social-twitter"></i>
                                         Ver en Twitter
                                     </a>
-                                    <a class="tab-item" ng-click="share('https://twitter.com/{{item.user.screenName}}/status/{{item.id}}', item.media[0].url, item.tags, venue.id)">
+                                    <a class="tab-item" ng-click="shareTwitter('https://twitter.com/{{item.user.screenName}}/status/{{item.id}}', item.media[0].url, item.tags, venue.id)">
                                         <i class="icon ion-share"></i>
                                         Compartir
                                     </a>

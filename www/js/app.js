@@ -84,12 +84,23 @@ angular.module('jound',
     'CONFLICTING': 3 
 })
 
+.constant('WEEKDAYS', {
+    0: {name: 'Lunes', capital: 'L'},
+    1: {name: 'Master', capital: 'M'},
+    2: {name: 'Miercoles', capital: 'Mi'},
+    3: {name: 'Jueves', capital: 'J'},
+    4: {name: 'Viernes', capital: 'V'},
+    5: {name: 'Sabado', capital: 'S'},
+    6: {name: 'Domingo', capital: 'D'}
+})
+
 .value('AppConfig', {
     PARSE: {
         appId: "hq7NqhxfTb2p7vBij2FVjlWj2ookUMIPTmHVF9ZH",
         jsKey: "cdfm37yRroAiw82t1qukKv9rLVhlRqQpKmuVlkLC"
     },
-    //API_URL: 'http://192.168.1.96:8100/api/',
+    //API_URL: 'http://192.168.0.10:8100/api/',
+    HOST_URL: 'http://www.jound.mx/',
     API_URL: 'http://www.jound.mx/',
     GEO: {
         DEFAULT: {enableHighAccuracy: true, maximumAge: 1000, timeout: 10000},
@@ -147,21 +158,29 @@ angular.module('jound',
     },
     QUERY: {
         VENUE_DEFAULT_FIELDS: [
-            'name',
+            'avatar',
             'activity_description',
             'block',
             'building', 
             'building_floor', 
             'claimed_by',
+            'cover',
+            'cover_video',
             'exterior_letter', 
             'email_address', 
             'exterior_number', 
+            'enableUserPhotos',
+            'featured',
             'federal_entity', 
+            'images',
             'internal_letter', 
             'internal_number', 
             'keywords', 
             'locality', 
+            'logo',
             'municipality', 
+            'name',
+            'page',
             'phone_number', 
             'position', 
             'postal_code', 
@@ -174,17 +193,14 @@ angular.module('jound',
             'road_type_1', 
             'road_type_2', 
             'road_type_3', 
+            'service_hours',
             'settling_name', 
             'settling_type', 
             'shopping_center_name', 
             'shopping_center_store_number', 
             'shopping_center_type', 
             'verificationLevel',
-            'www', 
-            'logo', 
-            'avatar', 
-            'page',
-            'images'
+            'www'
         ]
     },
     DATE: {
@@ -233,15 +249,29 @@ angular.module('jound',
                 height: 35
             }
         },
-        VENUE: {
+        VENUE_FEATURED: {
             url: 'www/img/marker_venue.png',
             size: {
                 width: 30,
                 height: 43
             }
         },
-        VENUE_SELECTED: {
+        VENUE_SELECTED_FEATURED: {
             url: 'www/img/marker_venue_selected.png',
+            size: {
+                width: 30,
+                height: 43
+            }
+        },
+        VENUE: {
+            url: 'www/img/marker_d.png',
+            size: {
+                width: 30,
+                height: 43
+            }
+        },
+        VENUE_SELECTED: {
+            url: 'www/img/marker_d_selected.png',
             size: {
                 width: 30,
                 height: 43

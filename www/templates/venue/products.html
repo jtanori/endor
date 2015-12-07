@@ -4,6 +4,10 @@
         </button>
     </ion-nav-buttons>
     <ion-content id="venue-products-page">
+        <div ng-if="!loading && !items.length" class="center aligned padding error message">
+            <div><i class="icon ion-nuclear"></i></div>
+            <p>Este comerciante aun no ha agregado productos, hemos notado tu interes, te mantendremos informado cuando {{name}} agregue productos.</p>
+        </div>
     	<ion-list>
 			<ion-item ng-repeat="item in items" class="item-thumbnail-left item-icon-left product">
 				<img ng-src="{{item.picture.url}}" ng-if="item.picture" ng-click="openImage(item.picture.url)" />
