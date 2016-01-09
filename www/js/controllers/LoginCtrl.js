@@ -82,7 +82,7 @@ angular
                         });
                         $state.go('app.home');
                     }, function(e) {
-                        AnalyticsService.track('error', {code: '' + e.code, message: e.message});
+                        AnalyticsService.track('error', {code:  e.code, message: e.message});
 
                         switch (e.code) {
                             case 101:
@@ -130,7 +130,7 @@ angular
                         $state.go('app.home');
                     },
                     error: function(user, e) {
-                        AnalyticsService.track('error', {code: '' + e.code, message: e.message});
+                        AnalyticsService.track('error', {code:  e.code, message: e.message});
 
                         switch (e.code) {
                             case 202:
@@ -222,7 +222,7 @@ angular
 
                                             $state.go('app.home');
                                         }, function(e) {
-                                            AnalyticsService.track('error', {code: '' + e.code, message: e.message, user: $rootScope.user.id});
+                                            AnalyticsService.track('error', {code:  e.code, message: e.message, user: $rootScope.user.id});
 
                                             $timeout(function(){
                                                 $cordovaProgress.hide();
@@ -230,14 +230,14 @@ angular
                                             $state.go('app.home');
                                         });
                                 }, function(e) {
-                                    AnalyticsService.track('error', {code: '' + e.code, message: e.message});
+                                    AnalyticsService.track('error', {code:  e.code, message: e.message});
                                     $timeout(function(){
                                         $cordovaProgress.hide();
                                     });
                                     $state.go('app.home');
                                 });
                         }, function(e) {
-                            AnalyticsService.track('error', {code: '' + e.code, message: e.message});
+                            AnalyticsService.track('error', {code:  e.code, message: e.message});
 
                             $timeout(function(){
                                 $cordovaProgress.hide();
@@ -257,7 +257,7 @@ angular
                             default:
                                 $cordovaFacebook.login(AppConfig.FB.DEFAULT_PERMISSIONS)
                                     .then(facebookLogin, function(e) {
-                                        AnalyticsService.track('error', {code: '' + e.code, message: e.message});
+                                        AnalyticsService.track('error', {code:  e.code, message: e.message});
                                         
                                         $timeout(function(){
                                             $cordovaDialogs.alert('No podemos conectar con tu cuenta de Facebook, por favor intenta de nuevo', 'Hay caramba!', 'Ok');
@@ -266,7 +266,7 @@ angular
                                 break;
                         }
                     }, function(e) {
-                        AnalyticsService.track('error', {code: '' + e.code, message: e.message});
+                        AnalyticsService.track('error', {code:  e.code, message: e.message});
 
                         $timeout(function(){
                             $cordovaDialogs.alert('No podemos conectar con tu cuenta de Facebook, por favor intenta de nuevo', 'Hay caramba!', 'Ok');

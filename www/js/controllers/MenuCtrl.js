@@ -111,7 +111,7 @@ angular
         };
 
         $scope.openExternalApp = function(type, identifier, subIdentifier){
-            AnalyticsService.track('openSidebarExternalApp', {type: '' + type, identifier: '' + identifier, subIdentifier: '' + subIdentifier});
+            AnalyticsService.track('openSidebarExternalApp', {type:  type, identifier:  identifier, subIdentifier:  subIdentifier});
             LinksService.openExternalApp(type, identifier, subIdentifier);
         };
 

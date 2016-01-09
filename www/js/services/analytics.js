@@ -34,17 +34,20 @@ angular.module('jound.services')
 
         global.track = function(type, e){
             var deviceData = getDeviceData(e);
+            var serverLogData = angular.extend({}, deviceData, {
+                user: User.current() ? User.current().id : null,
+                timestamp: new Date()*1,
+                event: type
+            });
             
-            if(User.current()){
-                deviceData.user = User.current().id;
-            }
+            //Post device data to analytics service
+            $http.post(AppConfig.API_URL + 'analytics', {data: serverLogData});
+
+            _.each(deviceData, function(a, i){
+                deviceData[i] = '' + a;
+            });
 
             Parse.Analytics.track(type, deviceData);
-
-            deviceData.event = type;
-            deviceData.timestamp = new Date()*1;
-            //Post device data to analytics service
-            $http.post(AppConfig.API_URL + 'analytics', {data: deviceData});
         };
     });
     

@@ -163,7 +163,7 @@ angular
             $timeout(function(){
                 $cordovaProgress.showSimpleWithLabelDetail(true, 'Buscando', 'Esperen un segundo');
 
-                AnalyticsService.track('search', {position: position.coords.latitude + ',' + position.coords.longitude, latitude: '' + position.coords.latitude, longitude: '' + position.coords.longitude, search: q, radius: '' + r, category: '' + c});
+                AnalyticsService.track('search', {position: position.coords.latitude + ',' + position.coords.longitude, latitude: position.coords.latitude, longitude: position.coords.longitude, search: q, radius: r, category: c});
 
                 //TODO: Fix backwards (attributes from URI) search
                 VenuesService
@@ -174,7 +174,7 @@ angular
                             $scope.$apply(function() {
                                 $scope.venues = venues;
                                 isSearching = false;
-                                AnalyticsService.track('search', {position: position.coords.latitude + ',' + position.coords.longitude, count: '' + venues.length, latitude: '' + position.coords.latitude, longitude: '' + position.coords.longitude, search: '' + q, radius: '' + r, category: '' + c});
+                                AnalyticsService.track('search', {position: position.coords.latitude + ',' + position.coords.longitude, count: venues.length, latitude: position.coords.latitude, longitude: position.coords.longitude, search: q, radius: r, category: c});
                             });
                         });
                     }, function(error) {
@@ -182,7 +182,7 @@ angular
                         $timeout(function(){
                             isSearching = false;
                             $cordovaDialogs.alert(error.message);
-                            AnalyticsService.track('error', {position: position.coords.latitude + ',' + position.coords.longitude, type: 'search', code: '' + error.code, message: error.message, latitude: '' + position.coords.latitude, longitude: '' + position.coords.longitude, search: '' + q, radius: '' + r, category: '' + c});
+                            AnalyticsService.track('error', {position: position.coords.latitude + ',' + position.coords.longitude, type: 'search', code: error.code, message: error.message, latitude: position.coords.latitude, longitude: position.coords.longitude, search: q, radius: r, category: c});
                         });
                     });
             });
@@ -220,7 +220,7 @@ angular
             .then(function(results){
                 AnalyticsService.track('shareVenue', {id: id});
             }, function(e){
-                AnalyticsService.track('error', {type: 'shareVenue', code: '' + e.code, message: e.message, id: id});
+                AnalyticsService.track('error', {type: 'shareVenue', code: e.code, message: e.message, id: id});
             });
         };
 
@@ -300,7 +300,7 @@ angular
                 }
             };
             var onRouteFail = function(e) {
-                AnalyticsService.track('error', {type: 'traceRoute', code: '' + e.code, message: e.message});
+                AnalyticsService.track('error', {type: 'traceRoute', code: e.code, message: e.message});
                 $timeout(function(){
                     $cordovaDialogs.alert('No pudimos trazar la ruta, por favor intenta de nuevo.', '¡Ups!', 'OK');
                 });
@@ -329,7 +329,7 @@ angular
                     case 3: return;
                     }
 
-                    AnalyticsService.track('traceRoute', {mode: mode || 'driving', fromLatitude: ''+ p.coords.latitude, fromLongitude: ''+ p.coords.longitude, toLatitude: ''+ l.latitude, toLongitude: ''+ l.longitude, position: l.latitude + ',' + l.longitude});
+                    AnalyticsService.track('traceRoute', {mode: mode || 'driving', fromLatitude:  p.coords.latitude, fromLongitude:  p.coords.longitude, toLatitude:  l.latitude, toLongitude:  l.longitude, position: l.latitude + ',' + l.longitude});
 
                     //Get route directions
                     RoutesService
@@ -424,7 +424,7 @@ angular
                 });
             });
 
-            AnalyticsService.track('getRoutePoints', {distance: '' + distance});
+            AnalyticsService.track('getRoutePoints', {distance: distance});
 
             return {
                 points: routePoints,
@@ -620,7 +620,7 @@ angular
             VenuesService
                 .getFeatured(p, r)
                 .then(function(venues) {
-                    AnalyticsService.track('getFeaturedVenues', {radius: ''+ r, latitude: ''+ p.coords.latitude, longitude: ''+ p.coords.longitude, position: p.coords.latitude + ',' + p.coords.longitude});
+                    AnalyticsService.track('getFeaturedVenues', {radius:  r, latitude:  p.coords.latitude, longitude:  p.coords.longitude, position: p.coords.latitude + ',' + p.coords.longitude});
                     
                     $timeout(function() {
                         $scope.$apply(function() {
@@ -628,7 +628,7 @@ angular
                         });
                     });
                 }, function(e){
-                    AnalyticsService.track('error', {type: 'getFeaturedVenues', radius: ''+ r, latitude: ''+ p.coords.latitude, longitude: ''+ p.coords.longitude, code: '' + e.code, message: e.message, position: p.coords.latitude + ',' + p.coords.longitude});
+                    AnalyticsService.track('error', {type: 'getFeaturedVenues', radius:  r, latitude:  p.coords.latitude, longitude:  p.coords.longitude, code: e.code, message: e.message, position: p.coords.latitude + ',' + p.coords.longitude});
                 });
         }
 
@@ -643,18 +643,14 @@ angular
             }
 
             $cordovaToast.showShortBottom(message);
-            AnalyticsService.track('lockPosition', {release: '' + !!lock});
+            AnalyticsService.track('lockPosition', {release: !!lock});
         }
 
         var releasePosition = function(){
             lockPosition(false);
         }
-
-        console.log('home controller');
-
+        
         $ionicPlatform.ready(function() {
-
-            console.log('check we are ready');
 
             Keyboard.hideFormAccessoryBar(true);
 
@@ -666,12 +662,12 @@ angular
 
             $rootScope.$watch('settings.searchRadius', function(radius) {
                 if ($rootScope.circle && radius) {
-                    AnalyticsService.track('searchRadiusChange', {radius: '' + radius});
+                    AnalyticsService.track('searchRadiusChange', {radius: radius});
                     $rootScope.circle.setRadius(radius);
 
                     zoomToRadiusLevel(radius);
                 }else{
-                    AnalyticsService.track('error', {type: 'usingGelocationChange', message: 'No circle or radius defined', radius: ''+ radius, circle: '' + !!$rootScope.circle});
+                    AnalyticsService.track('error', {type: 'usingGelocationChange', message: 'No circle or radius defined', radius:  radius, circle: !!$rootScope.circle});
                 }
             });
 
@@ -690,7 +686,7 @@ angular
                     $rootScope.marker.setIcon(AppConfig.MARKERS.LOCATION_CUSTOM);
 
                     $cordovaToast.showShortBottom('Estilo libre activado');
-                    AnalyticsService.track('usingGelocationChange', {using: '' + using, freestyle: 'true'});
+                    AnalyticsService.track('usingGelocationChange', {using: using, freestyle: 'true'});
                 }
             });
 
@@ -698,7 +694,7 @@ angular
                 var v = venues.map(function(v){return v.id;});
 
                 if($rootScope.settings && $rootScope.settings.position && $rootScope.settings.position.coords){
-                    AnalyticsService.track('venuesChange', {total: '' + venues.length, venues: v.toString(), position: $rootScope.settings.position.coords.latitude + ',' + $rootScope.settings.position.coords.longitude});    
+                    AnalyticsService.track('venuesChange', {total: venues.length, venues: v.toString(), position: $rootScope.settings.position.coords.latitude + ',' + $rootScope.settings.position.coords.longitude});    
                 }
                 
                 if ($scope.markers.length) {
@@ -719,7 +715,7 @@ angular
                 var v = venues.map(function(v){return v.id;});
 
                 if($rootScope.settings && $rootScope.settings.position && $rootScope.settings.position.coords){
-                    AnalyticsService.track('featuredVenuesChange', {total: '' + venues.length, venues: v.toString(), position: $rootScope.settings.position.coords.latitude + ',' + $rootScope.settings.position.coords.longitude});
+                    AnalyticsService.track('featuredVenuesChange', {total: venues.length, venues: v.toString(), position: $rootScope.settings.position.coords.latitude + ',' + $rootScope.settings.position.coords.longitude});
                 }
 
                 if($scope.featuredMarkers.length){
@@ -794,7 +790,7 @@ angular
                                     return v.id === id;
                                 });
 
-                                AnalyticsService.track('venueClick', {id: id, isFeatured: '' + isFeatured});
+                                AnalyticsService.track('venueClick', {id: id, isFeatured: isFeatured});
                             });
                         });
                     }
@@ -842,7 +838,7 @@ angular
                 var deferred = $q.defer();
 
                 if (!radius) {
-                    AnalyticsService.track('error', {type: 'zoomToRadiusLevel', code: '2', message: 'No radius provided'});
+                    AnalyticsService.track('error', {type: 'zoomToRadiusLevel', code: 2, message: 'No radius provided'});
                     deferred.reject({message: 'No radius provided', code: 2});
                 }else{
                     switch (radius / 1000) {
@@ -880,7 +876,7 @@ angular
                             deferred.resolve(radius/1000);
                             break;
                         default: 
-                            AnalyticsService.track('error', {type: 'zoomToRadiusLevel', code: '3', message: 'No valid radius provided'});
+                            AnalyticsService.track('error', {type: 'zoomToRadiusLevel', code: 3, message: 'No valid radius provided'});
                             deferred.reject({message: 'No valid radius provided', code: 3});
                             break;
                     }
@@ -949,13 +945,13 @@ angular
                             
                             $scope.tracingPosition = false;
 
-                            AnalyticsService.track('getCurrentPosition', {type: 'success', position: position.coords.latitude + ',' + position.coords.longitude, latitude: '' + position.coords.latitude, longitude: '' + position.coords.longitude});
+                            AnalyticsService.track('getCurrentPosition', {type: 'success', position: position.coords.latitude + ',' + position.coords.longitude, latitude: position.coords.latitude, longitude: position.coords.longitude});
 
                             deferred.resolve(position);
                         }, function(e) {
                             $scope.tracingPosition = false;
 
-                            AnalyticsService.track('error', {type: 'getCurrentPosition', message: e.message, code: '' + e.code});
+                            AnalyticsService.track('error', {type: 'getCurrentPosition', message: e.message, code: e.code});
 
                             deferred.reject(e);
                         });
@@ -1004,7 +1000,7 @@ angular
                                 null,
                                 url
                             );
-                            AnalyticsService.track('positionSharing', {position: latlng.lat + ',' + latlng.lng, latitude: '' + latlng.lat, longitude: latlng.lng});
+                            AnalyticsService.track('positionSharing', {position: latlng.lat + ',' + latlng.lng, latitude: latlng.lat, longitude: latlng.lng});
                             break;
                         case 2:
                             //$scope.startNewBusiness(latlng);
@@ -1033,7 +1029,7 @@ angular
                     $timeout.cancel(onMapChangeTimeout);
                 }
 
-                AnalyticsService.track('beforeMapChangeTimeout', {position: latlng.lat + ',' + latlng.lng, latitude: '' + latlng.lat, longitude: '' + latlng.lng});
+                AnalyticsService.track('beforeMapChangeTimeout', {position: latlng.lat + ',' + latlng.lng, latitude: latlng.lat, longitude: latlng.lng});
 
                 //Create timeout
                 onMapChangeTimeout = $timeout(function(){
@@ -1047,10 +1043,10 @@ angular
 
                     if(!previousPosition){
                         previousPosition = latlng;
-                        AnalyticsService.track('mapChangeTimeoutReached', {position: latlng.lat + ',' + latlng.lng, distance: '' + distance, previousPositionLat: '' + latlng.lat, previousPositionLng: '' + latlng.lng});
+                        AnalyticsService.track('mapChangeTimeoutReached', {position: latlng.lat + ',' + latlng.lng, distance: distance, previousPositionLat: latlng.lat, previousPositionLng: latlng.lng});
                     }else {
                         distance = RoutesService.distance(previousPosition, latlng);
-                        AnalyticsService.track('mapChangeTimeoutReached', {position: latlng.lat + ',' + latlng.lng, distance: '' + distance, previousPositionLat: '' + latlng.lat, previousPositionLng: '' + latlng.lng, latitude: '' + position.coords.lat, longitude: '' + position.coords.lng, position: position.coords.lat + ',' + position.coords.lng});
+                        AnalyticsService.track('mapChangeTimeoutReached', {position: latlng.lat + ',' + latlng.lng, distance: distance, previousPositionLat: latlng.lat, previousPositionLng: latlng.lng, latitude: position.coords.lat, longitude: position.coords.lng, position: position.coords.lat + ',' + position.coords.lng});
                         previousPosition = latlng;
                     }
 
@@ -1098,7 +1094,7 @@ angular
                         }
                     );
                 } catch (e) {
-                    AnalyticsService.track('error', {message: e.message, code: '' + e.code, type: 'radiusInit'});
+                    AnalyticsService.track('error', {message: e.message, code: e.code, type: 'radiusInit'});
                     circleDefer.reject(e);
                 }
 
@@ -1113,7 +1109,7 @@ angular
                         markerDefer.resolve(marker);
                     });
                 } catch (e) {
-                    AnalyticsService.track('error', {message: e.message, code: '' + e.code, type: 'markerInit'});
+                    AnalyticsService.track('error', {message: e.message, code: e.code, type: 'markerInit'});
                     markerDefer.reject(e);
                 }
 
@@ -1136,7 +1132,7 @@ angular
                         $timeout(function(){
                             $cordovaDialogs.alert(e.message);
                         });
-                        AnalyticsService.track('error', {message: e.message, code: '' + e.code});
+                        AnalyticsService.track('error', {message: e.message, code: e.code});
                     });
             };
 
@@ -1144,9 +1140,9 @@ angular
                 var settings = $rootScope.settings;
 
                 if(error){
-                    AnalyticsService.track('error', {code: '' + e.code, message: e.message});
+                    AnalyticsService.track('error', {code: e.code, message: e.message});
                 }else{
-                    AnalyticsService.track('firstZoom', {level: '' + zoomedTo});
+                    AnalyticsService.track('firstZoom', {level: zoomedTo});
                 }
 
                 if(settings.usingGeolocation){
@@ -1175,7 +1171,7 @@ angular
 
                 if(settings.position && settings.position.coords){
                     p = settings.position.coords;
-                    AnalyticsService.track('position', {position: p.latitude + ',' + p.longitude, type: 'fromSettings', latitude: '' + p.latitude, longitude: '' + p.longitude, position: p.latitude + ',' + p.longitude});
+                    AnalyticsService.track('position', {position: p.latitude + ',' + p.longitude, type: 'fromSettings', latitude: p.latitude, longitude: p.longitude, position: p.latitude + ',' + p.longitude});
                 }else{
                     p = AppConfig.GEO.DEFAULT_CENTER.coords;
                     AnalyticsService.track('warning', {type: 'positionDefault'});
@@ -1199,7 +1195,7 @@ angular
                     $rootScope.mainMap = plugin.google.maps.Map.getMap($scope.$map);
                     $rootScope.mainMap.addEventListener(plugin.google.maps.event.MAP_READY, onMapInit);
                 }else{
-                    AnalyticsService.track('error', {type: 'mapNotAvailable', message: '' + message});
+                    AnalyticsService.track('error', {type: 'mapNotAvailable', message: message});
                 }
             });
         });
