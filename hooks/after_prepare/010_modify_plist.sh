@@ -39,6 +39,9 @@ Add :NSAppTransportSecurity:NSExceptionDomains:parse.com:NSExceptionAllowsInsecu
 Add :NSAppTransportSecurity:NSExceptionDomains:jound.mx dict
 Add :NSAppTransportSecurity:NSExceptionDomains:jound.mx:NSIncludesSubdomains bool YES
 Add :NSAppTransportSecurity:NSExceptionDomains:jound.mx:NSExceptionAllowsInsecureHTTPLoads bool YES
+Add :NSAppTransportSecurity:NSExceptionDomains:api.jound.mx dict
+Add :NSAppTransportSecurity:NSExceptionDomains:api.jound.mx:NSIncludesSubdomains bool YES
+Add :NSAppTransportSecurity:NSExceptionDomains:api.jound.mx:NSExceptionAllowsInsecureHTTPLoads bool YES
 Add :NSAppTransportSecurity:NSExceptionDomains:gravatar.com dict
 Add :NSAppTransportSecurity:NSExceptionDomains:gravatar.com:NSIncludesSubdomains bool YES
 Add :NSAppTransportSecurity:NSExceptionDomains:gravatar.com:NSExceptionAllowsInsecureHTTPLoads bool YES

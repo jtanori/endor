@@ -94,17 +94,31 @@ angular.module('jound',
     6: {name: 'Domingo', capital: 'D'}
 })
 
-.value('AppConfig', {
+.constant('EARTHRADIUS', 6378137)
+
+.constant('AppConfig', {
     PARSE: {
         appId: "hq7NqhxfTb2p7vBij2FVjlWj2ookUMIPTmHVF9ZH",
         jsKey: "cdfm37yRroAiw82t1qukKv9rLVhlRqQpKmuVlkLC"
     },
-    //API_URL: 'http://192.168.0.10:8100/api/',
+    FB: {
+        DEFAULT_PERMISSIONS: ["public_profile", "email", "user_friends"]
+    },
+    //API_URL: 'http://192.168.1.64:8100/api/',
     HOST_URL: 'http://www.jound.mx/',
     API_URL: 'http://www.jound.mx/',
     GEO: {
-        DEFAULT: {enableHighAccuracy: true, maximumAge: 1000, timeout: 10000},
-        DEFAULT_CENTER: {coords: {latitude: 19.432608, longitude: -99.133208}},
+        DEFAULT: {
+            enableHighAccuracy: true,
+            maximumAge: 1000,
+            timeout: 10000
+        },
+        DEFAULT_CENTER: {
+            coords: {
+                latitude: 19.432608,
+                longitude: -99.133208
+            }
+        },
         DEFAULT_ZOOM: 6,
         DEFAULT_WATCH_OPTIONS: {
             frequency : 60000,
@@ -126,7 +140,7 @@ angular.module('jound',
         autoSearch: false,
         autoFocus: true,
         mapAnimation: true,
-        searchRadius: 3000,//meters
+        searchRadius: 1000,//meters
         center: null,
         usingGeolocation: true,
         position: null
@@ -420,7 +434,7 @@ angular.module('jound',
             },
             resolve: {
                 venue: function($stateParams, VenuesService) {
-                    return VenuesService.getById($stateParams.venueId)
+                    return VenuesService.getById($stateParams.venueId);
                 }
             },
             defaultBack: {
@@ -626,10 +640,8 @@ angular.module('jound',
                 $http
                     .post(AppConfig.API_URL + 'checkIn', {id: id, userId: this.id})
                     .then(function(response){
-                        console.log('checking', response);
                         deferred.resolve(response);
                     }, function(response){
-                        console.log('checkin error', response);
                         deferred.reject(response);
                     });
             }
@@ -698,18 +710,14 @@ angular.module('jound',
         var settings = u.get('settings');
         //Assign global objects
         $rootScope.user = u;
-
-        if(settings && !_.isEmpty(settings.mobile)){
-            $rootScope.settings = settings.mobile;
+        
+        if(!_.isEmpty(settings)){
+            $rootScope.settings = settings;
         }else{
-            $rootScope.settings = AppConfig.SETTINGS;
-            settings.mobile = $rootScope.settings;
-
-            u.save('settings', settings);
+            u.save('settings', AppConfig.SETTINGS);
         }
     }else{
         $rootScope.settings = AppConfig.SETTINGS;
-        console.log('settings default settings', $rootScope.settings);
     }
     
     $rootScope.$on('$stateChangeStart', function (event, next, nextParams, fromState) {

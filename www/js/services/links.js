@@ -1,7 +1,7 @@
 angular
     .module('jound.services')
-    .service('LinksService', function() {
-        function openExternalApp(type, identifier, subIdentifier) {
+    .service('LinksService', function(AnalyticsService) {
+        function openExternalApp(type, identifier, subIdentifier, fallbackURL) {
             var url, uriScheme, schemeUrl;
 
             var isIOS = ionic.Platform.isIOS();
@@ -26,6 +26,12 @@ angular
                     uriScheme = isIOS ? type + '://' : 'com.facebook.katana';
                     schemeUrl = 'fb://profile/' + identifier;
                     url = 'https://facebook.com/' + identifier;
+                    break;
+                case 'facebook:status':
+                case 'fb:status':
+                    uriScheme = isIOS ? type + '://' : 'com.facebook.katana';
+                    schemeUrl = 'fb://post/' + subIdentifier + '?owner=' + identifier;
+                    url = fallbackURL ? fallbackURL : 'https://facebook.com/' + identifier;
                     break;
                 case 'instagram':
                     uriScheme = isIOS ? type + '://' : 'com.instagram.android';
@@ -67,9 +73,19 @@ angular
             appAvailability.check(
                 uriScheme,
                 function() {
+                    AnalyticsService
+                        .ready()
+                        .then(function(){
+                            AnalyticsService.track('appAvailability', {type: type, available: 'true'});
+                        });
                     window.open(schemeUrl, '_system', 'location=no');
                 },
                 function(error) { // Error callback
+                    AnalyticsService
+                        .ready()
+                        .then(function(){
+                            AnalyticsService.track('appAvailability', {type: type, available: 'false'});
+                        });
                     window.open(url, '_system', 'location=no');
                 }
             );

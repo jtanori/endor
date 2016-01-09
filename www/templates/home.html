@@ -29,7 +29,9 @@
 
 				<button type="button" ng-if="currentModel" class="button button-clear clear-search ion-ios-close" id="map-clear-venue" ng-click="clearSelectedVenue()"></button>
 
-				<button ng-if="!newBusinessMarker" class="button button-icon button-clear ion-navigate" ng-class="{'active': usingGeolocation}" ng-click="toggleGeolocation()" id="map-geolocation-button" ng-disabled="newBusinessMarker"></button>
+				<div class="dark" id="map-position-search-label" ng-if="tracingPosition"><ion-spinner icon="ripple"></ion-spinner><div>Trazando ubicacion</div></div>
+				
+				<button ng-if="!newBusinessMarker" class="button button-icon button-clear ion-navigate" ng-class="{'active': usingGeolocation, 'disabled': tracingPosition}" ng-click="toggleGeolocation()" id="map-geolocation-button" ng-disabled="newBusinessMarker || tracingPosition"></button>
 
 				<div ng-if="newBusinessMarker" id="new-business-popup">
 					<div id="new-business-popup-wrapper">
@@ -49,6 +51,7 @@
 						</button>
 					</div>
 				</div>
+				
 		    </ion-pane>
 		    <div ng-show="route1 || route2 || route3" id="home-routes" class="right aligned">
 		    	<button class="button button-clear button-small" ng-click="removeAllRoutes()" ng-show="route1 || route2 || route3" id="home-routes-clear"><i class="icon ion-close"></i> Limpiar</button>

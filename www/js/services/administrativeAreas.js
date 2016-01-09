@@ -1,4 +1,6 @@
-app.factory('AdministrativeAreaService', ['$q','$http',
+angular.module('jound.services')
+
+.factory('AdministrativeAreaService', ['$q','$http',
   function ($q,$http) {
 
     var global = {};  

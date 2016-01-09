@@ -93,22 +93,23 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 }
 
 #login-wrapper {
-	position: absolute;
+	/*position: absolute;
 	bottom: 0;
 	left: 0;
-	right: 0;
-	background-image: linear-gradient(0deg, rgba(0,0,0,0.9), transparent 80%);
-	margin: 0 auto;
+	right: 0;*/
+	/*margin: 0 auto;*/
 
 	&>div {
 		width: 80%;
 		margin: 0 auto;
+		padding: 2rem 0;
 	}
 }
 
 #login {
+
 	.scroll {
-		height: 100%;
+		//height: 100%;
 	}
 }
 
@@ -124,7 +125,6 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 	color: darken($light, 30%);
 }
 
-#login #intro,
 #loader {
 	position: absolute;
     top: 50%;
@@ -138,6 +138,26 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 	background: url('../img/splash.jpg') no-repeat;
 	background-size: cover;
 	transition: 1s opacity;
+}
+
+#login + #intro {
+	background-image: linear-gradient(0deg, rgba(0,0,0,0.9), transparent 80%);
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 50%;
+	z-index: 0;
+}
+
+#login {
+	z-index: 2;
+}
+
+#login-view {
+	background: url('../img/splash.jpg');
+	background-repeat: no-repeat;
+	background-size: cover;
 }
 
 #loader {
@@ -283,6 +303,18 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 			box-shadow: 0 0 1px $positive;
 		}
 	}
+
+	#map-position-search-label {
+		position: absolute;
+		bottom: 0;
+		right: 100px;
+		padding: 0.5rem;
+		vertical-align: middle;
+		width: 100%;
+		text-align: center;
+		left: 0;
+		right: 0;
+	}
 }
 
 .platform-android {
@@ -375,12 +407,13 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 		z-index: -1;
 		background-position: center top;
 		background-image: ('../img/splash.jpg');
+		box-shadow: 0 0 100px rgba(0,0,0,1) inset;
 	}
 
 	img {
 		max-height: 100%;
-		box-shadow: 0 0 100px black;
-		height: 100%;
+	    box-shadow: 0 0 10px black;
+	    height: 100%;
 	}
 
 	&.cover .venue-slide-bg {
@@ -415,6 +448,10 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 			height: 75px;
 			box-shadow: none;
 		}
+	}
+
+	.slider-common-image {
+		height: 100%;
 	}
 
 	#venue-slider-cover-play {
@@ -541,7 +578,25 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 	height: 100%;
 	top: 0 !important;
 	left: 0 !important;
+
+	&.no-absolute {
+		.scroll {
+			min-height: 100%;
+
+			.fullscreen-image {
+				position: static;
+			}
+		}
+	}
+
+	ion-slide {
+		img {
+			max-width: 100%;
+			max-height: 100%;
+		}
+	}
 }
+
 .fullscreen-image {
 	max-width: 100%;
 	max-height: 100%;
@@ -552,6 +607,26 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 	position: fixed;
 	right: 0;
 	top: 0;
+}
+
+.fullscreen-image-slideshow {
+	.image-list-thumb {
+	    padding: 2px 2px 2px 2px;
+	    height: 150px;
+	}
+	 
+	.slider {
+	    width: 100%;
+	    height: 100%;
+	}
+	 
+	.image {
+	    width: 100%;
+	    height: 600px;
+	    background-size: contain;
+	    background-repeat: no-repeat;
+	    background-position: center, center;
+	}
 }
 
 #fullscreen-image-tip {

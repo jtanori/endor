@@ -11,8 +11,10 @@ angular
         $localStorage,
         $ionicModal,
         $ionicSlideBoxDelegate,
+        $ionicHistory,
         AppConfig,
         LinksService,
+        AnalyticsService,
         User
     ) {
         $scope.usingGeolocation = $rootScope.settings.usingGeolocation;
@@ -39,60 +41,35 @@ angular
         $rootScope.$watch('settings.usingGeolocation', function(val, oldVal) {
             if (val !== undefined && val !== oldVal) {
                 updateGeolocationButton(val);
-                $localStorage.setObject('settings', $rootScope.settings);
-                
-                var settings = $rootScope.user.get('settings');
-
-                settings.mobile = $rootScope.settings;
-                $rootScope.user.save('settings', settings);
+                $rootScope.user.save('settings', $rootScope.settings);
             }
         });
 
         $rootScope.$watch('settings.mapAnimation', function(val, oldVal) {
             if (val !== undefined && val !== oldVal) {
-                $localStorage.setObject('settings', $rootScope.settings);
-                
-                var settings = $rootScope.user.get('settings');
-
-                settings.mobile = $rootScope.settings;
-                $rootScope.user.save('settings', settings);
+                $rootScope.user.save('settings', $rootScope.settings);
             }
         });
 
         $rootScope.$watch('settings.autoSearch', function(val, oldVal) {
             if (val !== undefined && val !== oldVal) {
-                $localStorage.setObject('settings', $rootScope.settings);
-                
-                var settings = $rootScope.user.get('settings');
-
-                settings.mobile = $rootScope.settings;
-                $rootScope.user.save('settings', settings);
+                $rootScope.user.save('settings', $rootScope.settings);
             }
         });
 
         $rootScope.$watch('settings.autoFocus', function(val, oldVal) {
             if (val !== undefined && val !== oldVal) {
-                $localStorage.setObject('settings', $rootScope.settings);
-
-                var settings = $rootScope.user.get('settings');
-
-                settings.mobile = $rootScope.settings;
-                $rootScope.user.save('settings', settings);
+                $rootScope.user.save('settings', $rootScope.settings);
             }
         });
 
         $rootScope.$watch('settings.searchRadius', function(val, oldVal) {
             if (val !== undefined && val !== oldVal) {
-                $localStorage.setObject('settings', $rootScope.settings);
-                
-                var settings = $rootScope.user.get('settings');
-
-                settings.mobile = $rootScope.settings;
-                $rootScope.user.save('settings', settings);
+                $rootScope.user.save('settings', $rootScope.settings);
             }
         });
 
-        $scope.toggleGeolocation = function(on) {
+        $scope.toggleGeolocation = function() {
             $rootScope.settings.usingGeolocation = !$rootScope.settings.usingGeolocation;
         };
 
@@ -129,14 +106,17 @@ angular
         });
 
         $scope.openVideo = function(id){
+            AnalyticsService.track('openSidebarVideo', {video: id});
             LinksService.openExternalApp('youtube:video', id);
         };
 
         $scope.openExternalApp = function(type, identifier, subIdentifier){
+            AnalyticsService.track('openSidebarExternalApp', {type: '' + type, identifier: '' + identifier, subIdentifier: '' + subIdentifier});
             LinksService.openExternalApp(type, identifier, subIdentifier);
         };
 
         $scope.openUrl = function(url){
+            AnalyticsService.track('openDrawerURL', {url: url});
             LinksService.open(url);
         };
 
@@ -161,6 +141,8 @@ angular
                 if($rootScope.mainMap){
                     $rootScope.mainMap.setClickable(false);
                 }
+
+                AnalyticsService.track('openTutorial', {});
             });
         };
 
@@ -174,6 +156,7 @@ angular
                 });
         }
 
+        var _left = false;
         $scope.openLeft = function() {
             $rootScope.mainMap.setClickable(false);
             $ionicSideMenuDelegate.toggleLeft(false);
@@ -181,16 +164,11 @@ angular
             _left = true;
         };
 
-        var _left = false;
         $scope.isLeftOpen = function(){
             return _left;
         };
 
         var _right = false;
-        $scope.isRightOpen = function(){
-            return _right;
-        }
-
         $scope.openRight = function() {
             $ionicSideMenuDelegate.toggleRight(false);
             if($rootScope.mainMap){
@@ -200,6 +178,10 @@ angular
             Keyboard.hide();
             _right = true;
         };
+
+        $scope.isRightOpen = function(){
+            return _right;
+        }
 
         $scope.closeLeft = function() {
             $ionicSideMenuDelegate.toggleLeft();
@@ -221,6 +203,9 @@ angular
         };
 
         $scope.logout = function() {
+            $ionicHistory.clearCache();
+            $ionicHistory.clearHistory();
+
             if ($ionicSideMenuDelegate.isOpenLeft()) {
                 $ionicSideMenuDelegate.toggleLeft(true);
                 _left = false;
@@ -232,8 +217,10 @@ angular
             }
 
             if($rootScope.mainMap){
-                $rootScope.mainMap.setClickable(true);
+                $rootScope.mainMap.setClickable(false);
             }
+
+            AnalyticsService.track('logout', {user: $rootScope.user.id});
 
             $rootScope.user = null;
             $rootScope.settings = null;
@@ -265,8 +252,14 @@ angular
             }
 
             if(!$localStorage.get('tutorial')) {
-                $scope.tutorial();
-                $localStorage.set('tutorial', true);
+                Parse.Config
+                    .get()
+                    .then(function(c){
+                        if(c.get('showHelpVideos')){
+                            $scope.tutorial();
+                            $localStorage.set('tutorial', true);
+                        }
+                    });
             }
         });
     });

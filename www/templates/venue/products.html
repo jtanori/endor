@@ -9,9 +9,9 @@
             <p>Este comerciante aun no ha agregado productos, hemos notado tu interes, te mantendremos informado cuando {{name}} agregue productos.</p>
         </div>
     	<ion-list>
-			<ion-item ng-repeat="item in items" class="item-thumbnail-left item-icon-left product">
-				<img ng-src="{{item.picture.url}}" ng-if="item.picture" ng-click="openImage(item.picture.url)" />
-				<img ng-src="{{item.pictureUrl}}" ng-if="item.pictureUrl && !item.picture" ng-click="openImage(item.pictureUrl)" />
+			<ion-item ng-repeat="item in items" class="item-thumbnail-left item-icon-left product" ng-click="openImage(item)">
+				<img ng-src="{{item.picture.url}}" ng-if="item.picture" />
+				<img ng-src="{{item.pictureUrl}}" ng-if="item.pictureUrl && !item.picture" />
 			    <h2>{{item.name}}</h2>
 			    <p>{{item.description}}</p>
 			    <p class="dark">${{item.price.toFixed(2)}}</p>

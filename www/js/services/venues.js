@@ -90,8 +90,6 @@ angular.module('jound.services')
             if(this.get('cover')){
                 l = this.get('cover').get('file');
 
-                console.log(this.get('cover'), 'cover');
-                
                 if(l.url){
                     return {url: l.url(), isDefault: false};
                 }else if(l._url){
@@ -136,7 +134,7 @@ angular.module('jound.services')
 .factory('CategoryModel', function(){
     return Parse.Object.extend({className: 'Category'});
 })
-.factory('VenuesService', function($q, $http, $rootScope, $cordovaDevice, VenueModel, SanitizeService, CategoryModel, AppConfig, User) {
+.factory('VenuesService', function($q, $http, $rootScope, $cordovaDevice, VenueModel, SanitizeService, CategoryModel, AppConfig, User, $cordovaFacebook) {
 
     var _currentResults = [];
     var _currentVenue;
@@ -186,7 +184,6 @@ angular.module('jound.services')
                 .find()
                 .then(
                     function(results){
-                        console.log(results, 'results');
                         if(results.length){
                             _currentResults = results;
                             deferred.resolve(results);
@@ -264,7 +261,6 @@ angular.module('jound.services')
                 $http
                     .get(AppConfig.API_URL + 'venue/' + id)
                     .then(function(response){
-                        console.log('response', response);
                         var v = new VenueModel();
                         var P = Parse.Object.extend('Page');
                         var L = Parse.Object.extend('File');
@@ -282,13 +278,10 @@ angular.module('jound.services')
                                 v.set('logo', l);
                             }
                             if(response.data.venue.cover){
-                                console.log('cover from service', response.data.venue.cover);
                                 c = new L(response.data.venue.cover);
                                 v.set('cover', c);
                             }
                         }
-
-                        console.log('venue', v);
 
                         deferred.resolve(v);
                     }, function(response){
@@ -304,13 +297,50 @@ angular.module('jound.services')
             if(!config){
                 deferred.reject({message: 'No channel config provided'});
             } else {
-                $http
-                    .post(AppConfig.API_URL + 'getChannelForVenue', config)
-                    .then(function(response){
-                        deferred.resolve(response.data);
-                    }, function(response){
-                        deferred.reject(response);
-                    });
+
+                if(config.type === 'facebook'){
+                    $cordovaFacebook
+                        .getLoginStatus()
+                        .then(function(response){
+                            if(response && response.status === 'connected'){
+                                config.accessToken = response.authResponse.accessToken;
+
+                                $http
+                                    .post(AppConfig.API_URL + 'getChannelForVenue', config)
+                                    .then(function(response){
+                                        deferred.resolve(response.data);
+                                    }, function(e){
+                                        deferred.reject(e);
+                                    });
+                            }else{
+                                $cordovaFacebook
+                                    .login(AppConfig.FB.DEFAULT_PERMISSIONS)
+                                    .then(function(response){
+                                        config.accessToken = response.authResponse.accessToken;
+
+                                        $http
+                                            .post(AppConfig.API_URL + 'getChannelForVenue', config)
+                                            .then(function(response){
+                                                deferred.resolve(response.data);
+                                            }, function(e){
+                                                deferred.reject(e);
+                                            });
+                                    }, function(e){
+                                        deferred.reject(e);
+                                    });
+                            }
+                        }, function(e){
+                            deferred.reject(e);
+                        });
+                }else{
+                    $http
+                        .post(AppConfig.API_URL + 'getChannelForVenue', config)
+                        .then(function(response){
+                            deferred.resolve(response.data);
+                        }, function(response){
+                            deferred.reject(response);
+                        });
+                }
             }
 
             return deferred.promise;
@@ -553,8 +583,6 @@ angular.module('jound.services')
                         .then(function(response){
                             var v = new VenueModel();
 
-                            console.log(response, 'server response');
-
                             v.set(response.data.venue);
 
                             deferred.resolve(v);
@@ -596,8 +624,6 @@ angular.module('jound.services')
 
         getAddressComponents: function(p){
             var deferred = $q.defer();
-
-            console.log(p);
 
             $http
                 .post(AppConfig.API_URL + 'address', {

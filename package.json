@@ -45,7 +45,6 @@
     },
     "cordova-plugin-appavailability",
     "cordova-plugin-screen-orientation",
-    "cordova-plugin-console",
     "org.apache.cordova.camera"
   ],
   "cordovaPlatforms": [

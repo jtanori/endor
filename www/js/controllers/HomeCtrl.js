@@ -27,6 +27,7 @@ angular
         VenuesService,
         RoutesService,
         CameraService,
+        AnalyticsService,
 
         VENUE_DEFAULT_IMAGE,
         BASE_64,
@@ -48,7 +49,9 @@ angular
         $scope.routes = [];
         $scope.venue = {};
         $scope.venues = [];
+        $scope.featuredVenues = [];
         $scope.markers = [];
+        $scope.featuredMarkers = [];
         $scope.points = [];
         $scope.currentMarker = false;
         $scope.currentModel = false;
@@ -58,6 +61,8 @@ angular
         $scope.showLoader = false;
         $scope.centerCaptured = false;
         $scope.searchFeatured = true;
+
+        var previousPosition, isSearching = false;
 
         CategoriesService
             .get()
@@ -127,11 +132,19 @@ angular
                 $scope.$apply(function(){
                     $scope.category = c;
                     $scope.query = '';
+
+                    AnalyticsService.track('selectCategory', {category: ''  + c.id});
                 });
             });
         };
 
         $scope.submit = function(form) {
+            if(isSearching){
+                return;
+            }
+
+            isSearching = true;
+
             $scope.clearResults();
             $scope.currentMarker = null;
             $scope.currentModel = null;
@@ -149,24 +162,30 @@ angular
 
             $timeout(function(){
                 $cordovaProgress.showSimpleWithLabelDetail(true, 'Buscando', 'Esperen un segundo');
-            });
 
-            //TODO: Fix backwards (attributes from URI) search
-            VenuesService
-                .search(position, $rootScope.settings.searchRadius, q, c)
-                .then(function(venues) {
-                    $timeout(function() {
-                        $scope.$apply(function() {
-                            $scope.venues = venues;
+                AnalyticsService.track('search', {position: position.coords.latitude + ',' + position.coords.longitude, latitude: '' + position.coords.latitude, longitude: '' + position.coords.longitude, search: q, radius: '' + r, category: '' + c});
+
+                //TODO: Fix backwards (attributes from URI) search
+                VenuesService
+                    .search(position, $rootScope.settings.searchRadius, q, c)
+                    .then(function(venues) {
+                        $timeout(function() {
                             $cordovaProgress.hide();
+                            $scope.$apply(function() {
+                                $scope.venues = venues;
+                                isSearching = false;
+                                AnalyticsService.track('search', {position: position.coords.latitude + ',' + position.coords.longitude, count: '' + venues.length, latitude: '' + position.coords.latitude, longitude: '' + position.coords.longitude, search: '' + q, radius: '' + r, category: '' + c});
+                            });
+                        });
+                    }, function(error) {
+                        $cordovaProgress.hide();
+                        $timeout(function(){
+                            isSearching = false;
+                            $cordovaDialogs.alert(error.message);
+                            AnalyticsService.track('error', {position: position.coords.latitude + ',' + position.coords.longitude, type: 'search', code: '' + error.code, message: error.message, latitude: '' + position.coords.latitude, longitude: '' + position.coords.longitude, search: '' + q, radius: '' + r, category: '' + c});
                         });
                     });
-                }, function(error) {
-                    $cordovaProgress.hide();
-                    $timeout(function(){
-                        $cordovaDialogs.alert(error.message);
-                    });
-                });
+            });
         };
 
         $scope.clearCategory = function(){
@@ -190,12 +209,19 @@ angular
                 msg = '!Hey! Pude encontrar ' + $scope.currentModel.get('name') + ' en #' + s.replaceAll($scope.currentModel.getCityName(), ' ', '') + ' usando #jound';
             }
 
+            AnalyticsService.track('beforeShare', {type: 'venue', id: id});
+
             $cordovaSocialSharing.share(
                 msg,
                 img,
                 null,
                 'http://www.jound.mx/venue/' + id
-            );
+            )
+            .then(function(results){
+                AnalyticsService.track('shareVenue', {id: id});
+            }, function(e){
+                AnalyticsService.track('error', {type: 'shareVenue', code: '' + e.code, message: e.message, id: id});
+            });
         };
 
         $scope.openVenue = function() {
@@ -203,6 +229,7 @@ angular
 
             $timeout(function(){
                 $scope.$apply(function(){
+                    AnalyticsService.track('openVenue', {origin: 'home', id: $scope.currentModel.id});
                     $state.go('app.venue', {venueId: $scope.currentModel.id});
                 });
             });
@@ -212,6 +239,7 @@ angular
             var from, to, l, p;
             var onRoute = function(r) {
                 if (r.data && r.data.status === 'success') {
+                    AnalyticsService.track('traceRoute', {type: 'success'});
                     var routeData = getRoutePoints(r.data.results.routes);
 
                     if (!routeData.points.length) {
@@ -271,7 +299,8 @@ angular
                     );
                 }
             };
-            var onRouteFail = function() {
+            var onRouteFail = function(e) {
+                AnalyticsService.track('error', {type: 'traceRoute', code: '' + e.code, message: e.message});
                 $timeout(function(){
                     $cordovaDialogs.alert('No pudimos trazar la ruta, por favor intenta de nuevo.', '¡Ups!', 'OK');
                 });
@@ -292,12 +321,15 @@ angular
                 .then(function(btnIndex) {
                     var index = btnIndex;
                     var mode; 
+
                     switch(index){
                     case 1:
                         mode = 'walking';
                         break;
                     case 3: return;
                     }
+
+                    AnalyticsService.track('traceRoute', {mode: mode || 'driving', fromLatitude: ''+ p.coords.latitude, fromLongitude: ''+ p.coords.longitude, toLatitude: ''+ l.latitude, toLongitude: ''+ l.longitude, position: l.latitude + ',' + l.longitude});
 
                     //Get route directions
                     RoutesService
@@ -338,7 +370,10 @@ angular
             $interval.cancel($scope.watchPosition);
             $scope.watchPosition = null;
             Keyboard.hideFormAccessoryBar(false);
+
+            AnalyticsService.track('home', {type: 'beforeLeave'});
         });
+
         $scope.$on('$ionicView.enter', function() {
             if(!$rootScope.tutorialModal || !$rootScope.tutorialModal.isShown()){
                 enableMap();
@@ -351,8 +386,14 @@ angular
             $timeout(function(){
                 $scope.$apply(function(){
                     clearSearchButton.css('left', position + 'px');
-                })
-            })
+                });
+            });
+
+            AnalyticsService
+                .ready()
+                .then(function(){
+                    AnalyticsService.track('home', {type: 'enter'});
+                });
 
         });
 
@@ -383,6 +424,8 @@ angular
                 });
             });
 
+            AnalyticsService.track('getRoutePoints', {distance: '' + distance});
+
             return {
                 points: routePoints,
                 distance: distance
@@ -390,6 +433,8 @@ angular
         };
 
         $scope.clearSearch = function(){
+            AnalyticsService.track('clearSearch');
+
             $timeout(function(){
                 $scope.$apply(function(){
                     $scope.query = '';
@@ -403,6 +448,8 @@ angular
         };
 
         $scope.clearResults = function(){
+            AnalyticsService.track('clearResults');
+
             _.each($scope.venue, function(v){v = null;});
             _.each($scope.markers, function(m){m.remove(); m = null});
             $scope.venues = [];
@@ -494,7 +541,6 @@ angular
 
                     openNewBusinessModal();
                 }, function(e){
-                    console.log('error getting address components', e);
                     $timeout(function(){
                         $cordovaDialogs.alert(e.message);
                     });
@@ -547,7 +593,6 @@ angular
                         });
                     });
                 }, function(e){
-                    console.log(e, 'error adding venue');
                     $timeout(function(){
                         $cordovaDialogs.alert(e.message);
                     });
@@ -575,11 +620,15 @@ angular
             VenuesService
                 .getFeatured(p, r)
                 .then(function(venues) {
+                    AnalyticsService.track('getFeaturedVenues', {radius: ''+ r, latitude: ''+ p.coords.latitude, longitude: ''+ p.coords.longitude, position: p.coords.latitude + ',' + p.coords.longitude});
+                    
                     $timeout(function() {
                         $scope.$apply(function() {
-                            $scope.venues = venues;
+                            $scope.featuredVenues = venues;
                         });
                     });
+                }, function(e){
+                    AnalyticsService.track('error', {type: 'getFeaturedVenues', radius: ''+ r, latitude: ''+ p.coords.latitude, longitude: ''+ p.coords.longitude, code: '' + e.code, message: e.message, position: p.coords.latitude + ',' + p.coords.longitude});
                 });
         }
 
@@ -593,16 +642,20 @@ angular
                 message = 'Posicion liberada';
             }
 
-            $cordovaToast.showShortBottom(message)
+            $cordovaToast.showShortBottom(message);
+            AnalyticsService.track('lockPosition', {release: '' + !!lock});
         }
 
         var releasePosition = function(){
             lockPosition(false);
         }
 
+        console.log('home controller');
+
         $ionicPlatform.ready(function() {
 
-            $cordovaProgress.hide();
+            console.log('check we are ready');
+
             Keyboard.hideFormAccessoryBar(true);
 
             $scope.$watch('isSearchFocused', function(focused) {
@@ -613,16 +666,19 @@ angular
 
             $rootScope.$watch('settings.searchRadius', function(radius) {
                 if ($rootScope.circle && radius) {
+                    AnalyticsService.track('searchRadiusChange', {radius: '' + radius});
                     $rootScope.circle.setRadius(radius);
 
                     zoomToRadiusLevel(radius);
+                }else{
+                    AnalyticsService.track('error', {type: 'usingGelocationChange', message: 'No circle or radius defined', radius: ''+ radius, circle: '' + !!$rootScope.circle});
                 }
             });
 
 
             $rootScope.$watch('settings.usingGeolocation', function(using) {
                 if (using) {
-                    $cordovaToast.showShortBottom('Trazando tu ubicacion');
+                    AnalyticsService.track('usingGelocationChange', {using: 'true'});
                     getCurrentPosition();
                 } else if ($rootScope.marker) {
                     
@@ -634,10 +690,17 @@ angular
                     $rootScope.marker.setIcon(AppConfig.MARKERS.LOCATION_CUSTOM);
 
                     $cordovaToast.showShortBottom('Estilo libre activado');
+                    AnalyticsService.track('usingGelocationChange', {using: '' + using, freestyle: 'true'});
                 }
             });
 
             $scope.$watch('venues', function(venues) {
+                var v = venues.map(function(v){return v.id;});
+
+                if($rootScope.settings && $rootScope.settings.position && $rootScope.settings.position.coords){
+                    AnalyticsService.track('venuesChange', {total: '' + venues.length, venues: v.toString(), position: $rootScope.settings.position.coords.latitude + ',' + $rootScope.settings.position.coords.longitude});    
+                }
+                
                 if ($scope.markers.length) {
                     _.each($scope.markers, function(m) {
                         m.remove();
@@ -652,11 +715,41 @@ angular
                 }
             });
 
+            $scope.$watch('featuredVenues', function(venues){
+                var v = venues.map(function(v){return v.id;});
+
+                if($rootScope.settings && $rootScope.settings.position && $rootScope.settings.position.coords){
+                    AnalyticsService.track('featuredVenuesChange', {total: '' + venues.length, venues: v.toString(), position: $rootScope.settings.position.coords.latitude + ',' + $rootScope.settings.position.coords.longitude});
+                }
+
+                if($scope.featuredMarkers.length){
+                    _.each($scope.featuredMarkers, function(m){
+                        //TODO: Enhance this
+                        //      Keep current selected featured marker if present in new results
+                        //Release selected model if it has dissapeared
+                        if($scope.currentMarker && $scope.currentMarker.get('data').id === m.get('data').id){
+                            $scope.currentMarker = null;
+                        }
+
+                        m.remove();
+                        m = null;
+                    });
+
+
+                }
+
+                if(venues.length){
+                    _.each(venues, function(v){
+                        addVenue(v, true);
+                    });
+                }
+            });
+
             $scope.clearSelectedVenue = function(){
                 onMapClick();
             }
 
-            function addVenue(model) {
+            function addVenue(model, isFeatured) {
                 var l = model.get('position');
                 var lng = new plugin.google.maps.LatLng(l.latitude, l.longitude);
 
@@ -673,6 +766,9 @@ angular
                     visible: false,
                     disableAutoPan: true,
                     markerClick: function(marker) {
+                        var $venues = $scope.venues;
+                        var isFeatured = marker.get('data').featured;
+
                         if ($scope.currentMarker) {
                             if($scope.currentMarker.get('data').featured){
                                 $scope.currentMarker.setIcon(AppConfig.MARKERS.VENUE_FEATURED);
@@ -681,25 +777,33 @@ angular
                             }
                         }
 
-                        //Highlight marker
-                        $timeout(function() {
-                            $scope.$apply(function() {
-                                $scope.currentMarker = window.currentMarker = marker;
-                                $scope.currentModel = _.find($scope.venues, function(v) {
-                                    return v.id === marker.get('data').id
-                                });
-
-                            });
-                        });
-
-                        if (marker.get('data').featured) {
+                        if (isFeatured) {
+                            $venues = $scope.featuredVenues;
                             marker.setIcon(AppConfig.MARKERS.VENUE_SELECTED_FEATURED);
                         } else {
                             marker.setIcon(AppConfig.MARKERS.VENUE_SELECTED);
                         }
+
+                        //Highlight marker
+                        $timeout(function() {
+                            $scope.$apply(function() {
+                                var id = marker.get('data').id;
+
+                                $scope.currentMarker = marker;
+                                $scope.currentModel = _.find($venues, function(v) {
+                                    return v.id === id;
+                                });
+
+                                AnalyticsService.track('venueClick', {id: id, isFeatured: '' + isFeatured});
+                            });
+                        });
                     }
                 }, function(marker) {
-                    if(marker.get('data').featured){
+                    var $venues = $scope.venues;
+                    var isFeatured = marker.get('data').featured;
+
+                    if(isFeatured){
+                        $venues = $scope.featuredVenues;
                         marker.setIcon(AppConfig.MARKERS.VENUE_FEATURED);
                     }else{
                         marker.setIcon(AppConfig.MARKERS.VENUE);
@@ -707,20 +811,25 @@ angular
 
                     marker.setVisible(true);
 
-                    $scope.markers.push(marker);
+                    if(isFeatured){
+                        $scope.featuredMarkers.push(marker);
+                        $venues = $scope.featuredVenues;
+                    }else{
+                        $scope.markers.push(marker);
+                    }
 
                     if ($scope.venues.length === 1) {
                         //Highlight marker
                         $timeout(function() {
                             $scope.$apply(function() {
                                 $scope.currentMarker = marker;
-                                $scope.currentModel = _.find($scope.venues, function(v) {
+                                $scope.currentModel = _.find($venues, function(v) {
                                     return v.id === marker.get('data').id
                                 });
                             });
                         });
 
-                        if(marker.get('data').featured){
+                        if(isFeatured){
                             marker.setIcon(AppConfig.MARKERS.VENUE_SELECTED_FEATURED);
                         }else{
                             marker.setIcon(AppConfig.MARKERS.VENUE_SELECTED);
@@ -730,37 +839,54 @@ angular
             };
 
             function zoomToRadiusLevel(radius) {
+                var deferred = $q.defer();
+
                 if (!radius) {
-                    return;
+                    AnalyticsService.track('error', {type: 'zoomToRadiusLevel', code: '2', message: 'No radius provided'});
+                    deferred.reject({message: 'No radius provided', code: 2});
+                }else{
+                    switch (radius / 1000) {
+                        case 0.5:
+                            $rootScope.mainMap.setZoom(15);
+                            deferred.resolve(radius/1000);
+                            break;
+                        case 1:
+                            $rootScope.mainMap.setZoom(14);
+                            deferred.resolve(radius/1000);
+                            break;
+                        case 2:
+                            $rootScope.mainMap.setZoom(13.8);
+                            deferred.resolve(radius/1000);
+                            break;
+                        case 3:
+                        case 4:
+                            $rootScope.mainMap.setZoom(12.5);
+                            deferred.resolve(radius/1000);
+                            break;
+                        case 5:
+                            $rootScope.mainMap.setZoom(12);
+                            deferred.resolve(radius/1000);
+                            break;
+                        case 7.5:
+                            $rootScope.mainMap.setZoom(11.5);
+                            deferred.resolve(radius/1000);
+                            break;
+                        case 10:
+                            $rootScope.mainMap.setZoom(11);
+                            deferred.resolve(radius/1000);
+                            break;
+                        case 15:
+                            $rootScope.mainMap.setZoom(10.3);
+                            deferred.resolve(radius/1000);
+                            break;
+                        default: 
+                            AnalyticsService.track('error', {type: 'zoomToRadiusLevel', code: '3', message: 'No valid radius provided'});
+                            deferred.reject({message: 'No valid radius provided', code: 3});
+                            break;
+                    }
                 }
 
-                switch (radius / 1000) {
-                    case 0.5:
-                        $rootScope.mainMap.setZoom(15);
-                        break;
-                    case 1:
-                        $rootScope.mainMap.setZoom(14);
-                        break;
-                    case 2:
-                        $rootScope.mainMap.setZoom(13.8);
-                        break;
-                    case 3:
-                    case 4:
-                        $rootScope.mainMap.setZoom(12.5);
-                        break;
-                    case 5:
-                        $rootScope.mainMap.setZoom(12);
-                        break;
-                    case 7.5:
-                        $rootScope.mainMap.setZoom(11.5);
-                        break;
-                    case 10:
-                        $rootScope.mainMap.setZoom(11);
-                        break;
-                    case 15:
-                        $rootScope.mainMap.setZoom(10.3);
-                        break;
-                }
+                return deferred.promise;
             };
 
             function centerMap(position) {
@@ -776,6 +902,8 @@ angular
 
                 $rootScope.marker.setPosition(p);
                 $rootScope.circle.setCenter(p);
+
+                AnalyticsService.track('centerMap', {position: $rootScope.settings.position.coords.latitude + ',' + $rootScope.settings.position.coords.longitude});
             };
 
             function getCurrentPosition() {
@@ -785,21 +913,25 @@ angular
 
                 var deferred = $q.defer();
 
+                $scope.tracingPosition = true;
+
                 $cordovaGeolocation
                     .getCurrentPosition(AppConfig.GEO.DEFAULT)
                     .then(
                         function(position) {
+                            $rootScope.marker.setIcon(AppConfig.MARKERS.LOCATION);
+
                             if(($rootScope.settings && !_.isEmpty($rootScope.settings.position)) && _.isEqual(position.coords, $rootScope.settings.position.coords)){
+                                $scope.tracingPosition = false;
+                                deferred.resolve(position);
                                 return;
                             }
 
                             $rootScope.settings.position = position;
-                            $rootScope.marker.setIcon(AppConfig.MARKERS.LOCATION);
+
                             centerMap(position);
 
                             var settings = $rootScope.user.get('settings');
-
-                            settings.mobile = $rootScope.settings;
 
                             $rootScope.user.save({
                                 'settings': settings,
@@ -812,9 +944,19 @@ angular
                             if(!$scope.watchPosition){
                                 $scope.watchPosition = $interval(getCurrentPosition, 20000);
                             }
+
+                            previousPosition = {lat: position.coords.latitude, lng: position.coords.longitude};
                             
+                            $scope.tracingPosition = false;
+
+                            AnalyticsService.track('getCurrentPosition', {type: 'success', position: position.coords.latitude + ',' + position.coords.longitude, latitude: '' + position.coords.latitude, longitude: '' + position.coords.longitude});
+
                             deferred.resolve(position);
                         }, function(e) {
+                            $scope.tracingPosition = false;
+
+                            AnalyticsService.track('error', {type: 'getCurrentPosition', message: e.message, code: '' + e.code});
+
                             deferred.reject(e);
                         });
                 
@@ -862,9 +1004,10 @@ angular
                                 null,
                                 url
                             );
+                            AnalyticsService.track('positionSharing', {position: latlng.lat + ',' + latlng.lng, latitude: '' + latlng.lat, longitude: latlng.lng});
                             break;
                         case 2:
-                            $scope.startNewBusiness(latlng);
+                            //$scope.startNewBusiness(latlng);
                             break;
                         }
                     });
@@ -877,8 +1020,10 @@ angular
                     return;
                 }
 
-                var position = {coords:{latitude: camera.target.lat, longitude: camera.target.lng}};
-                var p = new plugin.google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+                var latlng = {lat: camera.target.lat, lng: camera.target.lng};
+                var position = {coords:{latitude: latlng.lat, longitude: latlng.lng}};
+                var p = new plugin.google.maps.LatLng(latlng.lat, latlng.lng);
+                
                 //Manually center map, don't use centerMap because it changes the camera position too
                 $rootScope.settings.position = position;
                 $rootScope.marker.setPosition(p);
@@ -887,14 +1032,31 @@ angular
                 if(onMapChangeTimeout){
                     $timeout.cancel(onMapChangeTimeout);
                 }
+
+                AnalyticsService.track('beforeMapChangeTimeout', {position: latlng.lat + ',' + latlng.lng, latitude: '' + latlng.lat, longitude: '' + latlng.lng});
+
                 //Create timeout
                 onMapChangeTimeout = $timeout(function(){
                     var settings = $rootScope.user.get('settings');
+                    var distance = 0, maxDistanceToRefresh = 500;
 
-                    settings.mobile = $rootScope.settings;
+                    settings = $rootScope.settings;
 
                     $rootScope.user.save('settings', settings);
                     onMapChangeTimeout = null;
+
+                    if(!previousPosition){
+                        previousPosition = latlng;
+                        AnalyticsService.track('mapChangeTimeoutReached', {position: latlng.lat + ',' + latlng.lng, distance: '' + distance, previousPositionLat: '' + latlng.lat, previousPositionLng: '' + latlng.lng});
+                    }else {
+                        distance = RoutesService.distance(previousPosition, latlng);
+                        AnalyticsService.track('mapChangeTimeoutReached', {position: latlng.lat + ',' + latlng.lng, distance: '' + distance, previousPositionLat: '' + latlng.lat, previousPositionLng: '' + latlng.lng, latitude: '' + position.coords.lat, longitude: '' + position.coords.lng, position: position.coords.lat + ',' + position.coords.lng});
+                        previousPosition = latlng;
+                    }
+
+                    if(distance > maxDistanceToRefresh){
+                        getFeaturedVenues({coords: {latitude: latlng.lat, longitude: latlng.lng}}, $rootScope.settings.searchRadius);
+                    }
                 }, 1000);
             };
 
@@ -915,6 +1077,7 @@ angular
                             lockPosition(!$scope.centerCaptured);
                         }else{
                             $cordovaToast.showLongBottom('Esta es tu posicion, segun la red U_U');
+                            AnalyticsService.track('position', {type: 'lockedByNetwork'});
                         }
                     }
                 };
@@ -935,6 +1098,7 @@ angular
                         }
                     );
                 } catch (e) {
+                    AnalyticsService.track('error', {message: e.message, code: '' + e.code, type: 'radiusInit'});
                     circleDefer.reject(e);
                 }
 
@@ -949,6 +1113,7 @@ angular
                         markerDefer.resolve(marker);
                     });
                 } catch (e) {
+                    AnalyticsService.track('error', {message: e.message, code: '' + e.code, type: 'markerInit'});
                     markerDefer.reject(e);
                 }
 
@@ -956,59 +1121,85 @@ angular
                 $q
                     .all([circleDefer.promise, markerDefer.promise])
                     .then(function(circle, marker) {
-                        //Initialize map with user settings
-                        if (settings.searchRadius) {
-                            zoomToRadiusLevel(settings.searchRadius);
-                        }
-
-                        if (settings.position && settings.position.coords) {
-                            p = new plugin.google.maps.LatLng(settings.position.coords.latitude, settings.position.coords.longitude);
-
-                            $rootScope.mainMap.setCenter(p);
-                            $rootScope.circle.setCenter(p);
-                            $rootScope.marker.setPosition(p);
-
-                            //TODO: Fix backwards (attributes from URI) search
-                            getFeaturedVenues({coords: {latitude: p.lat, longitude: p.lng}}, $rootScope.settings.searchRadius);
-                            lockPosition();
-                        }else if ($rootScope.settings.usingGeolocation) {
-                            getCurrentPosition()
-                                .then(function(position){
-                                    getFeaturedVenues(position, $rootScope.settings.searchRadius);
-                                }, function(e){
-                                    console.log(e, 'error getting position');
-                                    $timeout(function(){
-                                        $cordovaDialogs.alert(e.message);
-                                    });
-                                });
-                        }else{
-                            if($rootScope.settings && $rootScope.settings.position && $rootScope.settings.position.coords){
-                                p = $rootScope.settings.position.coords;
-                                p = new plugin.google.maps.LatLng(p.latitude, p.longitude);
-                            }else {
-                                p = new plugin.google.maps.LatLng(AppConfig.GEO.DEFAULT_CENTER.coords.latitude, AppConfig.GEO.DEFAULT_CENTER.coords.longitude);
-                            }
-
-                            $rootScope.circle.setCenter(p);
-                            $rootScope.marker.setPosition(p);
-                            $rootScope.mainMap.setCenter(p);
-
-                            //TODO: Fix backwards (attributes from URI) search
-                            getFeaturedVenues({coords: {latitude: p.lat, longitude: p.lng}}, $rootScope.settings.searchRadius);
-                            lockPosition();
-                        }
+                        zoomToRadiusLevel(settings.searchRadius || AppConfig.SETTINGS.searchRadius)
+                            .then(function(level){
+                                onFirstZoom(null, level);
+                            }, function(error){
+                                onFirstZoom(error);
+                            });
 
                         //Listen for map events
                         $rootScope.mainMap.addEventListener(plugin.google.maps.event.CAMERA_CHANGE, onMapChange);
                         $rootScope.mainMap.addEventListener(plugin.google.maps.event.MAP_CLICK, onMapClick);
                         $rootScope.mainMap.addEventListener(plugin.google.maps.event.MAP_LONG_CLICK, onMapLongClick);
+                    }, function(e){
+                        $timeout(function(){
+                            $cordovaDialogs.alert(e.message);
+                        });
+                        AnalyticsService.track('error', {message: e.message, code: '' + e.code});
                     });
             };
+
+            function onFirstZoom(error, zoomedTo){
+                var settings = $rootScope.settings;
+
+                if(error){
+                    AnalyticsService.track('error', {code: '' + e.code, message: e.message});
+                }else{
+                    AnalyticsService.track('firstZoom', {level: '' + zoomedTo});
+                }
+
+                if(settings.usingGeolocation){
+                    getCurrentPosition()
+                        .then(function(position){
+                            if(position){
+                                getFeaturedVenues(position, $rootScope.settings.searchRadius);
+                            }else{
+                                tryDefaultPosition();
+                            }
+                        }, function(e){
+                            $timeout(function(){
+                                AnalyticsService.track('error', {type: 'getCurrentPosition', message: 'Error getting position, fallback to defaults', code: 4});
+                                $cordovaDialogs.alert('Ha ocurrido un error al intentar trazar tu ubicacion, por favor intenta de nuevo.');
+                                tryDefaultPosition();
+                            });
+                        });
+                }else{
+                    tryDefaultPosition();
+                }
+            }
+
+            function tryDefaultPosition(){
+                var settings = $rootScope.settings;
+                var p;
+
+                if(settings.position && settings.position.coords){
+                    p = settings.position.coords;
+                    AnalyticsService.track('position', {position: p.latitude + ',' + p.longitude, type: 'fromSettings', latitude: '' + p.latitude, longitude: '' + p.longitude, position: p.latitude + ',' + p.longitude});
+                }else{
+                    p = AppConfig.GEO.DEFAULT_CENTER.coords;
+                    AnalyticsService.track('warning', {type: 'positionDefault'});
+                }
+
+                previousPosition = {lat: p.latitude, lng: p.longitude};
+
+                getFeaturedVenues({coords: p}, $rootScope.settings.searchRadius);
+
+                p = new plugin.google.maps.LatLng(p.latitude, p.longitude);
+
+                $rootScope.mainMap.setCenter(p);
+                $rootScope.circle.setCenter(p);
+                $rootScope.marker.setPosition(p);
+
+                lockPosition();
+            }
 
             plugin.google.maps.Map.isAvailable(function(isAvailable, message) {
                 if (isAvailable) {
                     $rootScope.mainMap = plugin.google.maps.Map.getMap($scope.$map);
                     $rootScope.mainMap.addEventListener(plugin.google.maps.event.MAP_READY, onMapInit);
+                }else{
+                    AnalyticsService.track('error', {type: 'mapNotAvailable', message: '' + message});
                 }
             });
         });

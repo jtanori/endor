@@ -12,7 +12,8 @@ angular
         $localStorage,
         $timeout,
         User,
-        AppConfig) {
+        AppConfig,
+        AnalyticsService) {
 
         var _signup = false;
 
@@ -49,12 +50,14 @@ angular
             //Set root user
             $rootScope.user = User.current();
 
-            if(settings && !_.isEmpty(settings.mobile)){
-                $rootScope.settings = settings.mobile;
+            if(!_.isEmpty(settings)){
+                $rootScope.settings = settings;
             }else{
-                settings.mobile = $rootScope.settings;
-                $rootScope.user.save('settings', settings);
+                $rootScope.settings = AppConfig.SETTINGS;
+                User.save('settings', $rootScope.settings);
             }
+            
+            AnalyticsService.track('login', {user: $rootScope.user.id});
         }
 
         $scope.login = function(form) {
@@ -79,6 +82,8 @@ angular
                         });
                         $state.go('app.home');
                     }, function(e) {
+                        AnalyticsService.track('error', {code: '' + e.code, message: e.message});
+
                         switch (e.code) {
                             case 101:
                                 e.message = 'Usuario y contraseña invalidos';
@@ -88,7 +93,7 @@ angular
                         $timeout(function(){
                             $cordovaProgress.hide();
                         });
-                        $timeot(function(){
+                        $timeout(function(){
                             $cordovaDialogs.alert(e.message, 'Hay caramba!', 'Ok');
                         });
                     });
@@ -110,7 +115,8 @@ angular
 
                 user.signUp(null, {
                     success: function() {
-                        
+                        AnalyticsService.track('signup', {user: User.current().id});
+
                         _onLogin();
                         
                         form.$setPristine();
@@ -124,6 +130,8 @@ angular
                         $state.go('app.home');
                     },
                     error: function(user, e) {
+                        AnalyticsService.track('error', {code: '' + e.code, message: e.message});
+
                         switch (e.code) {
                             case 202:
                                 e.message = 'Ya existe un usuario con ese correo';
@@ -132,7 +140,7 @@ angular
                         $timeout(function(){
                             $cordovaProgress.hide();
                         });
-                        $timeot(function(){
+                        $timeout(function(){
                             $cordovaDialogs.alert(e.message, 'Hay caramba!', 'Ok');
                         });
                     }
@@ -179,6 +187,11 @@ angular
                         expiration_date: expDate
                     };
 
+
+                    $timeout(function(){
+                        $cordovaProgress.showSimpleWithLabelDetail(true, 'Conectando', 'Esperen un momento');
+                    });
+
                     //Login
                     Parse.FacebookUtils
                         .logIn(authData)
@@ -204,20 +217,28 @@ angular
                                             $timeout(function(){
                                                 $cordovaProgress.hide();
                                             });
+
+                                            AnalyticsService.track('userProfileUpdate', {user: $rootScope.user.id});
+
                                             $state.go('app.home');
-                                        }, function() {
+                                        }, function(e) {
+                                            AnalyticsService.track('error', {code: '' + e.code, message: e.message, user: $rootScope.user.id});
+
                                             $timeout(function(){
                                                 $cordovaProgress.hide();
                                             });
                                             $state.go('app.home');
                                         });
-                                }, function(error) {
+                                }, function(e) {
+                                    AnalyticsService.track('error', {code: '' + e.code, message: e.message});
                                     $timeout(function(){
                                         $cordovaProgress.hide();
                                     });
                                     $state.go('app.home');
                                 });
                         }, function(e) {
+                            AnalyticsService.track('error', {code: '' + e.code, message: e.message});
+
                             $timeout(function(){
                                 $cordovaProgress.hide();
                             });
@@ -227,10 +248,6 @@ angular
             };
 
             $scope.facebookLogin = function() {
-                $timeout(function(){
-                    $cordovaProgress.showSimpleWithLabelDetail(true, 'Conectando', 'Esperen un momento');
-                });
-
                 $cordovaFacebook.getLoginStatus()
                     .then(function(response) {
                         switch (response.status) {
@@ -238,21 +255,19 @@ angular
                                 facebookLogin(response);
                                 break;
                             default:
-                                $cordovaFacebook.login(["public_profile", "email", "user_friends"])
-                                    .then(facebookLogin, function(error) {
-                                        $timeout(function(){
-                                            $cordovaProgress.hide();
-                                        });
+                                $cordovaFacebook.login(AppConfig.FB.DEFAULT_PERMISSIONS)
+                                    .then(facebookLogin, function(e) {
+                                        AnalyticsService.track('error', {code: '' + e.code, message: e.message});
+                                        
                                         $timeout(function(){
                                             $cordovaDialogs.alert('No podemos conectar con tu cuenta de Facebook, por favor intenta de nuevo', 'Hay caramba!', 'Ok');
                                         });
                                     });
                                 break;
                         }
-                    }, function() {
-                        $timeout(function(){
-                            $cordovaProgress.hide();
-                        });
+                    }, function(e) {
+                        AnalyticsService.track('error', {code: '' + e.code, message: e.message});
+
                         $timeout(function(){
                             $cordovaDialogs.alert('No podemos conectar con tu cuenta de Facebook, por favor intenta de nuevo', 'Hay caramba!', 'Ok');
                         });
