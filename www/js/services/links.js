@@ -22,7 +22,13 @@ angular
                     schemeUrl = 'twitter://search?query=' + identifier;
                     url = 'https://twitter.com/search?q=' + encodeURIComponent(identifier);
                     break;
+                case 'twitter:tweet':
+                    uriScheme = isIOS ? type + '://' : 'com.twitter.android';
+                    schemeUrl = 'twitter://tweet?text=' + identifier + '&url=' + subIdentifier;
+                    url = 'https://twitter.com/tweet?text=' + identifier + '&url=' + subIdentifier;
+                    break;
                 case 'fb':
+                case 'facebook':
                     uriScheme = isIOS ? type + '://' : 'com.facebook.katana';
                     schemeUrl = 'fb://profile/' + identifier;
                     url = 'https://facebook.com/' + identifier;
@@ -31,7 +37,7 @@ angular
                 case 'fb:status':
                     uriScheme = isIOS ? type + '://' : 'com.facebook.katana';
                     schemeUrl = 'fb://post/' + subIdentifier + '?owner=' + identifier;
-                    url = fallbackURL ? fallbackURL : 'https://facebook.com/' + identifier;
+                    url = fallbackURL ? fallbackURL : 'https://facebook.com/' + subIdentifier + '?owner=' + identifier;
                     break;
                 case 'instagram':
                     uriScheme = isIOS ? type + '://' : 'com.instagram.android';
@@ -95,11 +101,11 @@ angular
             if(typeof address !== "string"){
                 throw new Error('No valid address provided');
             }
-            
+
             if(address.indexOf('http://') === -1 && address.indexOf('https://') === -1){
                 address = 'http://' + address;
             }
-            
+
             window.open(address, '_system', 'location=yes');
         }
 
