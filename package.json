@@ -45,7 +45,10 @@
     },
     "cordova-plugin-appavailability",
     "cordova-plugin-screen-orientation",
-    "org.apache.cordova.camera"
+    {
+      "id": "phonegap-facebook-plugin",
+      "locator": "../phonegap-facebook-plugin-phonegap/"
+    }
   ],
   "cordovaPlatforms": [
     "ios",

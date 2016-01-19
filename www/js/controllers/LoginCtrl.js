@@ -54,9 +54,9 @@ angular
                 $rootScope.settings = settings;
             }else{
                 $rootScope.settings = AppConfig.SETTINGS;
-                User.save('settings', $rootScope.settings);
+                $rootScope.user.save('settings', $rootScope.settings);
             }
-            
+
             AnalyticsService.track('login', {user: $rootScope.user.id});
         }
 
@@ -89,7 +89,7 @@ angular
                                 e.message = 'Usuario y contraseña invalidos';
                                 break;
                         }
-                        
+
                         $timeout(function(){
                             $cordovaProgress.hide();
                         });
@@ -118,7 +118,7 @@ angular
                         AnalyticsService.track('signup', {user: User.current().id});
 
                         _onLogin();
-                        
+
                         form.$setPristine();
                         form.$setUntouched();
 
@@ -198,7 +198,7 @@ angular
                         .then(function() {
                             //Set root user
                             $rootScope.user = User.current();
-                            
+
                             _onLogin();
 
                             $cordovaFacebook.api("me", ["public_profile", "email", "user_friends"])
@@ -258,7 +258,7 @@ angular
                                 $cordovaFacebook.login(AppConfig.FB.DEFAULT_PERMISSIONS)
                                     .then(facebookLogin, function(e) {
                                         AnalyticsService.track('error', {code:  e.code, message: e.message});
-                                        
+
                                         $timeout(function(){
                                             $cordovaDialogs.alert('No podemos conectar con tu cuenta de Facebook, por favor intenta de nuevo', 'Hay caramba!', 'Ok');
                                         });

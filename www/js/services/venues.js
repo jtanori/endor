@@ -101,7 +101,7 @@ angular.module('jound.services')
         },
         getLogo: function(){
             var l;
-            
+
             if(this.get('logo')){
                 l = this.get('logo').get('file');
 
@@ -228,7 +228,7 @@ angular.module('jound.services')
                         .limit(r.limit)
                         .find()
                         .then(
-                            function(results){ 
+                            function(results){
                                 if(results.length){
                                     _currentResults = results;
                                     deferred.resolve(results);
@@ -384,7 +384,7 @@ angular.module('jound.services')
                 config.maxDate = maxDate;
                 config.skip = 0;
             }
-            
+
             $http
                 .post(AppConfig.API_URL + 'getReviewsForVenue', config)
                 .then(function(response){
@@ -458,7 +458,7 @@ angular.module('jound.services')
 
             if(_.isEmpty(attr)) {
                 deferred.reject('Please provide an attribute to update');
-            }else if(!_.isEmpty(id)) {
+            }else if(_.isEmpty(id)) {
                 deferred.reject('Please provide a page id');
             }else {
                 $http
@@ -591,7 +591,7 @@ angular.module('jound.services')
                         });
                 });
 
-                
+
             }
 
             if(_.isEmpty(p) || _.isEmpty(name) || _.isEmpty(phone)) {
