@@ -28,7 +28,7 @@ angular.module('jound.services')
 
         var getPicture = function(options){
             var deferred = $q.defer();
-
+            
             $cordovaCamera
                 .getPicture(options)
                 .then(function(imageData) {
@@ -44,7 +44,7 @@ angular.module('jound.services')
             var deferred = $q.defer();
             var o = angular.copy(defaultOptions);
 
-            if(_.isEmpty(options)){
+            if(!_.isEmpty(options)){
                 o = angular.extend(o, options);
             }
 
@@ -72,7 +72,7 @@ angular.module('jound.services')
                             return;
                         }
 
-                        getPicture(options)
+                        getPicture(o)
                             .then(function(data){
                                 deferred.resolve(data);
                             }, function(e){
@@ -84,6 +84,6 @@ angular.module('jound.services')
             return deferred.promise;
         }
     });
-    
+
     return global;
 });

@@ -137,12 +137,11 @@ angular.module('jound.services')
 .factory('VenuesService', function($q, $http, $rootScope, $cordovaDevice, VenueModel, SanitizeService, CategoryModel, AppConfig, User, $cordovaFacebook) {
 
     var _currentResults = [];
+    var _currentFeaturedResults = [];
     var _currentVenue;
 
     return {
-        //Search by query, position and category
-        //TODO: User search service instead
-        search: function(p, r, q, c){
+        search: function(p, r, q, c, excludedVenues){
             var deferred = $q.defer();
 
             if(!p || !r){
@@ -170,21 +169,26 @@ angular.module('jound.services')
                 query.equalTo('category', category);
             }
 
+            if(!_.isEmpty(excludedVenues)){
+                query.notContainedIn('objectId', excludedVenues || []);
+            }
+
             //Search near current position
             query
+                .select(AppConfig.QUERY.VENUE_DEFAULT_FIELDS)
                 .near('position', geoPoint)
                 .withinKilometers('position', geoPoint, r/1000)
-                .include('logo')
-                .include('cover')
-                .include('page')
-                .include('claimed_by')
-                .select(AppConfig.QUERY.VENUE_DEFAULT_FIELDS)
+                .include(['logo', 'cover', 'page', 'claimed_by'])
                 .limit(200)
-                .ascending('featured')
                 .find()
                 .then(
                     function(results){
                         if(results.length){
+                            //Remove duplicates
+                            results = _.uniq(results, true, function(r){
+                                return r.get('name') + '-' + r.get('position').latitude + '-' + r.get('position').longitude;
+                            });
+
                             _currentResults = results;
                             deferred.resolve(results);
                         }else{
@@ -197,7 +201,7 @@ angular.module('jound.services')
 
             return deferred.promise;
         },
-        getFeatured: function(p, r){
+        getFeatured: function(p, r, c, excludedVenues){
             var deferred = $q.defer();
 
             if(!p || !r){
@@ -206,6 +210,11 @@ angular.module('jound.services')
 
             var query = new Parse.Query(VenueModel);
             var geoPoint = new Parse.GeoPoint({latitude: p.coords.latitude, longitude: p.coords.longitude});
+            var Category = Parse.Object.extend('Category');
+
+            if(c){
+                query.equalTo('category', new Category({id: c}));
+            }
 
             //Search near current position
             Parse.Config
@@ -216,21 +225,22 @@ angular.module('jound.services')
                         radius: c.get('defaultFeaturedRadius') || $rootScope.settings.searchRadius
                     };
 
+                    if(!_.isEmpty(excludedVenues)){
+                        query.notContainedIn('objectId', excludedVenues || []);
+                    }
+
                     query
+                        .select(AppConfig.QUERY.VENUE_DEFAULT_FIELDS)
                         .near('position', geoPoint)
                         .withinKilometers('position', geoPoint, r.radius/1000)
-                        .include('logo')
-                        .include('cover')
-                        .include('page')
-                        .include('claimed_by')
+                        .include(['logo', 'cover', 'page', 'claimed_by'])
                         .equalTo('featured', true)
-                        .select(AppConfig.QUERY.VENUE_DEFAULT_FIELDS)
                         .limit(r.limit)
                         .find()
                         .then(
                             function(results){
                                 if(results.length){
-                                    _currentResults = results;
+                                    _currentFeaturedResults = results;
                                     deferred.resolve(results);
                                 }else{
                                     deferred.reject({message: 'No encontramos resultados, intenta buscar en un rango mas amplio.'});
@@ -249,8 +259,14 @@ angular.module('jound.services')
             var deferred = $q.defer();
             var found = false, query;
 
-            if(_currentResults.length){
+            if(_currentVenue && _currentVenue.id === id){
+                return _currentVenue;
+            } else if(_currentResults.length){
                 found = _.find(_currentResults, function(v){
+                    return v.id === id;
+                });
+            } else if(_currentFeaturedResults.length){
+                found = _.find(_currentFeaturedResults, function(v){
                     return v.id === id;
                 });
             }
@@ -268,7 +284,7 @@ angular.module('jound.services')
 
                         v.set(response.data.venue);
 
-                        if(response.data.venue && response.data.venue.page){
+                        if(response.data.venue){
                             if(response.data.venue.page){
                                 p = new P(response.data.venue.page);
                                 v.set('page', p);
@@ -290,6 +306,31 @@ angular.module('jound.services')
             }
 
             return deferred.promise;
+        },
+        convertToParseObject: function(venue){
+            var v = new VenueModel();
+            var P = Parse.Object.extend('Page');
+            var L = Parse.Object.extend('File');
+            var p, l, c;
+
+            v.set(venue);
+
+            if(venue){
+                if(venue.page){
+                    p = new P(venue.page);
+                    v.set('page', p);
+                }
+                if(venue.logo){
+                    l = new L(venue.logo);
+                    v.set('logo', l);
+                }
+                if(venue.cover){
+                    c = new L(venue.cover);
+                    v.set('cover', c);
+                }
+            }
+
+            return v;
         },
         getChannel: function(config){
             var deferred = $q.defer();
@@ -475,9 +516,9 @@ angular.module('jound.services')
         current: function(venue){
             if(venue){
                 _currentVenue = venue;
-            }else{
-                return venue;
             }
+
+            return _currentVenue;
         },
         claim: function(id, details){
             var deferred = $q.defer();
@@ -650,6 +691,22 @@ angular.module('jound.services')
                 })
                 .then(function(response){
                     deferred.resolve(response.data.url);
+                }, function(response){
+                    deferred.reject(response.data.error);
+                });
+
+            return deferred.promise;
+        },
+
+        getEventById: function(eventId){
+            var deferred = $q.defer();
+
+            $http
+                .post(AppConfig.API_URL + 'getEventById', {
+                    id: eventId
+                })
+                .then(function(response){
+                    deferred.resolve(response.data);
                 }, function(response){
                     deferred.reject(response.data.error);
                 });

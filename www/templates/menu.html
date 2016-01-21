@@ -1,4 +1,7 @@
 <ion-side-menus enable-menu-with-back-views="false">
+    <div ng-if="isLeftOpen()" class="closer left" ng-click="closeLeft()"><button type="button" class="button button-clear button-icon ion-close"></button></div>
+    <div ng-if="isRightOpen()" class="closer right" ng-click="closeRight()"><button type="button" class="button button-clear button-icon ion-close"></button></div>
+
     <ion-side-menu-content drag-content="false">
         <ion-nav-bar class="bar-assertive nav-title-slide-ios7">
         </ion-nav-bar>
@@ -30,9 +33,12 @@
                     <i class="icon ion-upload"></i> Agregar un negocio
                 </a>
             </div>
-            
+
             <br />
 
+            <div class="center aligned" ng-if="$parent.user.isAnonimous()">
+                <a class="button button-assertive button-full" ng-click="signup()">Identificarse</a>
+            </div>
             <div class="center aligned">
                 <a class="button button-clear button-small button-full" menu-close ng-click="logout()">
                     <i class="icon ion-log-out"></i> Cerrar Sesión
@@ -41,8 +47,6 @@
         </ion-content>
     </ion-side-menu>
 
-    <div ng-if="isLeftOpen()" class="closer left" ng-click="closeLeft()"><button type="button" class="button button-clear button-icon ion-close"></button></div>
-    <div ng-if="isRightOpen()" class="closer right" ng-click="closeRight()"><button type="button" class="button button-clear button-icon ion-close"></button></div>
     <ion-side-menu side="right" ng-class="{'menu-active': isRightOpen()}">
         <div class="bar bar-header bar-dark">
             <h1 class="title">Configuración</h1>
@@ -76,7 +80,7 @@
 
             <div class="center aligned light">¿Necesitas ayuda? Dale play a los videos oficiales y aprende a usar <strong>Jound</strong> sin problemas.</div>
 
-            <div class="list list-inset">
+            <div class="list list-inset" ng-if="helpVideos && helpVideos.length">
                 <div class="item item-dark item-avatar" ng-repeat="video in helpVideos" ng-click="openVideo(video.id)">
                     <img src="img/icon-yt.png"/>
                     <h2 class="light">{{video.title}}</h2>
@@ -85,17 +89,17 @@
             </div>
         </ion-content>
         <div class="tabs tabs-dark tabs-icon-only">
-            <a class="tab-item" ng-click="openExternalApp('fb', fbID)">
+            <a class="tab-item" ng-click="openExternalApp('fb', fbID)" ng-if="fbID">
                 <i class="icon ion-social-facebook"></i>
             </a>
-            <a class="tab-item">
-                <i class="icon ion-social-twitter" ng-click="openExternalApp('twitter', twitter)"></i>
+            <a class="tab-item" ng-click="openExternalApp('twitter', twitter)" ng-if="twitter">
+                <i class="icon ion-social-twitter"></i>
             </a>
-            <a class="tab-item">
-                <i class="icon ion-social-instagram" ng-click="openExternalApp('instagram', instagram)"></i>
+            <a class="tab-item" ng-click="openExternalApp('instagram', instagram)" ng-if="instagram">
+                <i class="icon ion-social-instagram"></i>
             </a>
-            <a class="tab-item">
-                <i class="icon ion-earth" ng-click="openUrl(www)"></i>
+            <a class="tab-item" ng-click="openUrl(www)" ng-if="www">
+                <i class="icon ion-earth"></i>
             </a>
         </div>
     </ion-side-menu>

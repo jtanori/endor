@@ -10,7 +10,7 @@ angular.module('jound.controllers', []);
 angular.module('jound.services', []);
 angular.module('jound.directives', []);
 
-angular.module('jound', 
+angular.module('jound',
   [
     'ng',
     'ionic',
@@ -29,9 +29,9 @@ angular.module('jound',
 )
 
 .run(function($ionicPlatform, $rootScope, $cordovaSplashscreen) {
-  
+
   $ionicPlatform.ready(function() {
-    
+
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
     if (window.Keyboard) {
@@ -81,7 +81,7 @@ angular.module('jound',
     'DEFAULT': undefined,
     'VERIFIED': 1,
     'NON_VERIFIED': 2,
-    'CONFLICTING': 3 
+    'CONFLICTING': 3
 })
 
 .constant('WEEKDAYS', {
@@ -96,6 +96,34 @@ angular.module('jound',
 
 .constant('EARTHRADIUS', 6378137)
 
+.constant('TUTORIAL', [
+    {
+        title: 'Ubicate',
+        src: 'img/tutorial/tutorial-1.jpg',
+        text: 'Puedes activar o desactivar la geolocalización en cualquier momento'
+    },
+    {
+        title: 'Explora',
+        src: 'img/tutorial/tutorial-2.gif',
+        text: 'Explora el mundo en estilo libre, captura un centro geográfico al tocar la bolita verde'
+    },
+    {
+        title: 'Busca',
+        src: 'img/tutorial/tutorial-3.gif',
+        text: 'Busca libremente o selecciona alguna de nuestras categorías'
+    },
+    {
+        title: 'Guiate',
+        src: 'img/tutorial/tutorial-4.jpg',
+        text: 'Traza tu ruta, comparte y encuentra los mejores establecimientos'
+    },
+    {
+        title: 'Listo',
+        src: 'img/tutorial/tutorial-5.gif',
+        text: 'Brofist! Estas más que listo para explorar, ¡bienvenido!'
+    }
+])
+
 .constant('AppConfig', {
     PARSE: {
         appId: "hq7NqhxfTb2p7vBij2FVjlWj2ookUMIPTmHVF9ZH",
@@ -104,7 +132,6 @@ angular.module('jound',
     FB: {
         DEFAULT_PERMISSIONS: ["public_profile", "email", "user_friends"]
     },
-    //API_URL: 'http://192.168.1.64:8100/api/',
     HOST_URL: 'http://www.jound.mx/',
     API_URL: 'http://www.jound.mx/',
     GEO: {
@@ -145,74 +172,50 @@ angular.module('jound',
         usingGeolocation: true,
         position: null
     },
-    CAMERA: {/*
-        PHOTO_CAPTURE_DEFAULT: {
-            quality : 75,
-            destinationType : Camera.DestinationType.DATA_URL,
-            sourceType : Camera.PictureSourceType.CAMERA,
-            allowEdit : true,
-            encodingType: Camera.EncodingType.JPEG,
-            targetWidth: 600,
-            targetHeight: 600,
-            //popoverOptions: CameraPopoverOptions,
-            saveToPhotoAlbum: false,
-            meditaType: Camera.MediaType.PICTURE,
-            correctOrientation: true
-        },
-        PHOTO_CAPTURE_ROLL: {
-            quality : 75,
-            destinationType : Camera.DestinationType.DATA_URL,
-            sourceType : Camera.PictureSourceType.PHOTOLIBRARY,
-            allowEdit : true,
-            targetWidth: 600,
-            targetHeight: 600,
-            meditaType: Camera.MediaType.PICTURE,
-            correctOrientation: true
-        }*/
-    },
     QUERY: {
         VENUE_DEFAULT_FIELDS: [
             'avatar',
             'activity_description',
             'block',
-            'building', 
-            'building_floor', 
+            'building',
+            'building_floor',
+            'category',
             'claimed_by',
             'cover',
             'cover_video',
-            'exterior_letter', 
-            'email_address', 
-            'exterior_number', 
+            'exterior_letter',
+            'email_address',
+            'exterior_number',
             'enableUserPhotos',
             'featured',
-            'federal_entity', 
+            'federal_entity',
             'images',
-            'internal_letter', 
-            'internal_number', 
-            'keywords', 
-            'locality', 
+            'internal_letter',
+            'internal_number',
+            'keywords',
+            'locality',
             'logo',
-            'municipality', 
+            'municipality',
             'name',
             'page',
-            'phone_number', 
-            'position', 
-            'postal_code', 
+            'phone_number',
+            'position',
+            'postal_code',
             'rating',
-            'road_name', 
-            'road_name_1', 
-            'road_name_2', 
-            'road_name_3', 
-            'road_type', 
-            'road_type_1', 
-            'road_type_2', 
-            'road_type_3', 
+            'road_name',
+            'road_name_1',
+            'road_name_2',
+            'road_name_3',
+            'road_type',
+            'road_type_1',
+            'road_type_2',
+            'road_type_3',
             'service_hours',
-            'settling_name', 
-            'settling_type', 
-            'shopping_center_name', 
-            'shopping_center_store_number', 
-            'shopping_center_type', 
+            'settling_name',
+            'settling_type',
+            'shopping_center_name',
+            'shopping_center_store_number',
+            'shopping_center_type',
             'verificationLevel',
             'www'
         ]
@@ -398,7 +401,7 @@ angular.module('jound',
     }
 })
 
-.config(function($stateProvider, $urlRouterProvider, $ionicConfigProvider, $httpProvider) {
+.config(function($stateProvider, $urlRouterProvider, $ionicConfigProvider, $httpProvider, $locationProvider) {
 
 
     // Ionic uses AngularUI Router which uses the concept of states
@@ -408,10 +411,20 @@ angular.module('jound',
     $stateProvider
 
         .state('app', {
-            url: "/app",
+            url: "",
             abstract: true,
             templateUrl: "templates/menu.html",
             controller: 'MenuCtrl'
+        })
+
+        .state('app.tutorial', {
+            url: "/tutorial",
+            views: {
+                'app': {
+                    templateUrl: "templates/tutorial.html",
+                    controller: 'TutorialCtrl'
+                }
+            }
         })
 
         .state('app.home', {
@@ -420,6 +433,16 @@ angular.module('jound',
                 'app': {
                     templateUrl: "templates/home.html",
                     controller: 'HomeCtrl'
+                }
+            }
+        })
+
+        .state('app.search', {
+            url: "/venues?q&lat&lng&category&radius",
+            views: {
+                'app': {
+                    controller: 'HomeCtrl',
+                    templateUrl: 'templates/home.html'
                 }
             }
         })
@@ -557,12 +580,26 @@ angular.module('jound',
             }
         })
 
-        .state('app.search', {
-            url: "/venues/search/:categoryId/:lat/:lng",
-            abstract: true,
+        .state('app.venueEvent', {
+            url: "/venues/:venueId/event/:eventId",
             views: {
                 'app': {
-                    controller: 'HomeCtrl'
+                    templateUrl: "templates/venue/event.html",
+                    controller: 'VenueEventCtrl'
+                }
+            },
+            resolve: {
+                venue: function($stateParams, VenuesService) {
+                    return VenuesService.getById($stateParams.venueId)
+                }
+            },
+            defaultBack: {
+                state: 'app.venueEvents',
+                getStateParams: function(stateParams) {
+                    return {
+                        venueId: stateParams.venueId,
+                        eventId: stateParams.eventId
+                    };
                 }
             }
         })
@@ -594,6 +631,8 @@ angular.module('jound',
 
     $ionicConfigProvider.tabs.position('bottom');
 
+    //$locationProvider.html5Mode(true);
+
 })
 
 .factory('AuthInterceptor', function ($rootScope, $q, AUTH_EVENTS) {
@@ -607,7 +646,7 @@ angular.module('jound',
     }
   };
 })
- 
+
 .config(function ($httpProvider) {
   $httpProvider.interceptors.push('AuthInterceptor');
 })
@@ -664,6 +703,9 @@ angular.module('jound',
                 return 'http://www.gravatar.com/avatar/' + CryptoJS.MD5(this.get('username'));
             }
         },
+        isAnonimous: function(){
+            return false;
+        },
         getBasicData: function(){
             return {
                 id: this.id,
@@ -679,6 +721,124 @@ angular.module('jound',
         }
     });
 })
+
+.factory('AnonymousUser', ['$localStorage', 'AppConfig', function($localStorage, AppConfig){
+    var _current;
+    var User = (function () {
+        var instance;
+
+        function createInstance() {
+            var object = function(initialAttributes){
+                if(!_.isEmpty($localStorage.getObject('anon-user'))){
+                    this.attributes = $localStorage.getObject('anon-user');
+                }else{
+                    this.attributes = initialAttributes;
+                    this.save();
+                }
+            };
+
+            object.prototype = {
+                save: function(key, value){
+                    console.log('saving user', key, value);
+                    var $self = this;
+                    //Want to save current attributes?
+                    if(_.isEmpty(key)){
+                        $localStorage.setObject('anon-user', this.attributes);
+                    }else{
+                        var c = $localStorage.getObject('anon-user') || {};
+
+                        if(_.isObject(key)){
+                            _.each(key, function(k, v){
+                                c[v] = k;
+                                $self.attributes[v] = k;
+                            });
+                        }else{
+                            c[key] = value;
+                            this.attributes[key] = value;
+                        }
+
+                        $localStorage.setObject('anon-user', c);
+                    }
+
+                    console.log(this.attributes, 'attributes to save');
+
+                    return c;
+                },
+                get: function(key){
+                    return this.attributes[key];
+                },
+                set: function(key, value){
+                    var c = this.attributes;
+
+                    if(_.isObject(key)){
+                        _.each(key, function(k, v){
+                            c[v] = k;
+                        });
+                    }else{
+                        c[key] = value;
+                    }
+
+                    return c;
+                },
+                toJSON: function(){
+                    return this.attributes;
+                },
+                getAvatar: function(){
+                    var a = this.get('avatar');
+
+                    if(_.isString(a)){
+                        return a;
+                    }else if(this.get('avatar') && this.get('avatar').get('file')){
+                        return this.get('avatar').get('file').url();
+                    }else{
+                        return 'http://www.gravatar.com/avatar/anonymous';
+                    }
+                },
+                isAnonimous: function(){
+                    return true
+                },
+                id: 'anonymous',
+                getBasicData: function(){
+                    return {
+                        id: this.id,
+                        username: 'anonimous',
+                        displayName: 'Anonimo',
+                        settings: this.get('settings'),
+                        avatar: this.getAvatar(),
+                        name: 'Anonimo'
+                    };
+                }
+            };
+
+            return new object({settings: AppConfig.SETTINGS});
+        }
+
+        return {
+            current: function () {
+                if (!instance) {
+                    instance = createInstance();
+                }
+                return instance;
+            },
+            exists: function(){
+                if(instance || !_.isEmpty($localStorage.getObject('anon-user'))){
+                    return true;
+                }
+
+                return false;
+            },
+            logOut: function(){
+                $localStorage.removeItem('anon-user');
+                instance = null;
+
+                return instance;
+            }
+        };
+    })();
+
+    return User;
+}])
+
 .factory('$localStorage', ['$window', function($window) {
     return {
         set: function(key, value) {
@@ -692,10 +852,14 @@ angular.module('jound',
         },
         getObject: function(key) {
             return JSON.parse($window.localStorage[key] || '{}');
+        },
+        removeItem: function(item){
+            $window.localStorage.removeItem(item);
         }
     }
 }])
-.run(function($rootScope, User, $localStorage, $state, AppConfig){
+
+.run(function($rootScope, User, AnonymousUser, $localStorage, $state, AppConfig){
     //Initialize Parse
     Parse.initialize(AppConfig.PARSE.appId, AppConfig.PARSE.jsKey);
     //Get user
@@ -705,23 +869,24 @@ angular.module('jound',
     $rootScope.settings = null;
     //Load settings
     if(u){
-        //Check if we have no settings in the cloud
-        var wasEmpty = _.isEmpty(u.get('settings'));
         var settings = u.get('settings');
+
         //Assign global objects
         $rootScope.user = u;
-        
+
         if(!_.isEmpty(settings)){
             $rootScope.settings = settings;
         }else{
             u.save('settings', AppConfig.SETTINGS);
+            $rootScope.settings = AppConfig.SETTINGS;
         }
-    }else{
-        $rootScope.settings = AppConfig.SETTINGS;
+    }else if(AnonymousUser.exists()){
+        $rootScope.user = AnonymousUser.current();
+        $rootScope.settings = AnonymousUser.current().get('settings');
     }
-    
+
     $rootScope.$on('$stateChangeStart', function (event, next, nextParams, fromState) {
-        if (_.isEmpty(User.current())) {
+        if (_.isEmpty($rootScope.user)) {
             if (next.name !== 'login') {
                 event.preventDefault();
                 $state.go('login');
@@ -729,10 +894,14 @@ angular.module('jound',
         }
     });
 })
-.controller('StartCtrl', function($state, $rootScope, User){
+.controller('StartCtrl', function($state, $rootScope, $localStorage){
     //Redirect to proper page
     if(!!$rootScope.user){
-        $state.go('app.home');
+        if(!$localStorage.get('tutorial')){
+            $state.go('app.tutorial');
+        }else{
+            $state.go('app.home');
+        }
     }else{
         $state.go('login');
     }

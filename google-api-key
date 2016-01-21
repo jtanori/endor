@@ -4,4 +4,4 @@ AIzaSyAlLIlAJlkzMfp66p64EYyIVhpS7KwBkLw iOS
 
 plugin add cordova-plugin-googlemaps --variable API_KEY_FOR_ANDROID="AIzaSyDV7CxwG1IMj-DgTx0Ii9u-q3LUHTRtCbA" --variable API_KEY_FOR_IOS="AIzaSyAlLIlAJlkzMfp66p64EYyIVhpS7KwBkLw"
 
-cordova plugin add ../phonegap-facebook-plugin --variable APP_ID="688997761197114" --variable APP_NAME="Jound"
+cordova plugin add ../Facebook --variable APP_ID="688997761197114" --variable APP_NAME="Jound"

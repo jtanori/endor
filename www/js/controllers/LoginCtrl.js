@@ -12,15 +12,27 @@ angular
         $localStorage,
         $timeout,
         User,
+        AnonymousUser,
         AppConfig,
         AnalyticsService) {
+
+        if ($rootScope.user && !$rootScope.user.isAnonimous()) {
+            $state.go('app.home');
+            return;
+        }
 
         var _signup = false;
 
         $scope.user = {};
         $scope.master = {};
-        //xclude FB login for ios 9 for now
-        $scope.canFB = ionic.Platform.isIOS() && ionic.Platform.device().version*1 > 8.4 ? false : true;
+
+        $ionicHistory.clearCache();
+        $ionicHistory.clearHistory();
+
+        $ionicHistory.nextViewOptions({
+            disableBack: true,
+            historyRoot: true
+        });
 
         $scope.isSignup = function(){
             return _signup;
@@ -45,19 +57,22 @@ angular
         };
 
         var _onLogin = function(){
-            var settings = User.current().get('settings');
-
             //Set root user
             $rootScope.user = User.current();
 
-            if(!_.isEmpty(settings)){
-                $rootScope.settings = settings;
+            if(!_.isEmpty($rootScope.user) && !_.isEmpty($rootScope.user.get('settings'))){
+                console.log('get settings from server', $rootScope.user.get('settings').position);
+                $rootScope.settings = $rootScope.user.get('settings');
             }else{
                 $rootScope.settings = AppConfig.SETTINGS;
                 $rootScope.user.save('settings', $rootScope.settings);
             }
 
+            console.log('loaded settings', $rootScope.settings);
+
             AnalyticsService.track('login', {user: $rootScope.user.id});
+
+            $scope.enableLogin();
         }
 
         $scope.login = function(form) {
@@ -80,6 +95,7 @@ angular
                         $timeout(function(){
                             $cordovaProgress.hide();
                         });
+
                         $state.go('app.home');
                     }, function(e) {
                         AnalyticsService.track('error', {code:  e.code, message: e.message});
@@ -126,7 +142,8 @@ angular
 
                         $timeout(function(){
                             $cordovaProgress.hide();
-                        })
+                        });
+
                         $state.go('app.home');
                     },
                     error: function(user, e) {
@@ -154,24 +171,24 @@ angular
             return !(form.$valid && isEqual);
         };
 
-        $ionicPlatform.ready(function() {
-            if (Parse.User.current()) {
+        $scope.skip = function(){
+            console.log('skip');
+            $rootScope.user = AnonymousUser.current();
+            $rootScope.settings = AnonymousUser.current().get('settings');
+
+            goHome();
+        };
+
+        function goHome(){
+            if($localStorage.get('tutorial')){
                 $state.go('app.home');
+            }else{
+                $state.go('app.tutorial');
             }
+        }
 
-            $ionicHistory.clearCache();
-            $ionicHistory.clearHistory();
-
-            $scope.$on('$ionicView.beforeLeave', function() {
-                Keyboard.disableScrollingInShrinkView(true);
-                Keyboard.hideFormAccessoryBar(true);
-                Keyboard.shrinkView(true);
-            });
-
+        $ionicPlatform.ready(function() {
             $scope.enableLogin();
-            Keyboard.shrinkView(false);
-            Keyboard.disableScrollingInShrinkView(false);
-            Keyboard.hideFormAccessoryBar(false);
 
             function facebookLogin(response) {
                 if (!response.authResponse) {
@@ -187,7 +204,6 @@ angular
                         expiration_date: expDate
                     };
 
-
                     $timeout(function(){
                         $cordovaProgress.showSimpleWithLabelDetail(true, 'Conectando', 'Esperen un momento');
                     });
@@ -196,14 +212,11 @@ angular
                     Parse.FacebookUtils
                         .logIn(authData)
                         .then(function() {
-                            //Set root user
-                            $rootScope.user = User.current();
-
-                            _onLogin();
-
                             $cordovaFacebook.api("me", ["public_profile", "email", "user_friends"])
                                 .then(function(data) {
-                                    $rootScope.user.save({
+                                    _onLogin();
+
+                                    User.current().save({
                                             gender: data.gender || '',
                                             firstName: data.first_name,
                                             lastName: data.last_name,
@@ -218,23 +231,24 @@ angular
                                                 $cordovaProgress.hide();
                                             });
 
-                                            AnalyticsService.track('userProfileUpdate', {user: $rootScope.user.id});
-
-                                            $state.go('app.home');
+                                            goHome();
                                         }, function(e) {
                                             AnalyticsService.track('error', {code:  e.code, message: e.message, user: $rootScope.user.id});
 
                                             $timeout(function(){
                                                 $cordovaProgress.hide();
                                             });
-                                            $state.go('app.home');
+
+                                            goHome();
                                         });
                                 }, function(e) {
                                     AnalyticsService.track('error', {code:  e.code, message: e.message});
+
                                     $timeout(function(){
                                         $cordovaProgress.hide();
                                     });
-                                    $state.go('app.home');
+
+                                    goHome();
                                 });
                         }, function(e) {
                             AnalyticsService.track('error', {code:  e.code, message: e.message});

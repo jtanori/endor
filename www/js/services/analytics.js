@@ -1,6 +1,6 @@
 angular.module('jound.services')
 
-.factory('AnalyticsService', function($q, $ionicPlatform, $cordovaDevice, $http, AppConfig, User){
+.factory('AnalyticsService', function($q, $ionicPlatform, $cordovaDevice, $http, AppConfig, $rootScope){
 
     var global = {
         ready: function(){
@@ -11,7 +11,8 @@ angular.module('jound.services')
             });
 
             return deferred.promise;
-        }
+        },
+        track: function(){}
     };
 
     $ionicPlatform.ready(function(){
@@ -35,11 +36,11 @@ angular.module('jound.services')
         global.track = function(type, e){
             var deviceData = getDeviceData(e);
             var serverLogData = angular.extend({}, deviceData, {
-                user: User.current() ? User.current().id : null,
+                user: $rootScope.user ? $rootScope.user.id : null,
                 timestamp: new Date()*1,
                 event: type
             });
-            
+
             //Post device data to analytics service
             $http.post(AppConfig.API_URL + 'analytics', {data: serverLogData});
 
@@ -50,6 +51,6 @@ angular.module('jound.services')
             Parse.Analytics.track(type, deviceData);
         };
     });
-    
+
     return global;
 });
