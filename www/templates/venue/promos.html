@@ -15,10 +15,10 @@
     		<div><i class="icon ion-nuclear"></i></div>
     		<p>No hay promociones aun, hemos notado tu interes, te mantendremos informado cuando una nueva promocion sea agregada.</p>
     	</div>
-    	<ion-slide-box ng-if="items.length">
+    	<ion-slide-box ng-if="items.length" delegate-handle="venuePromoHandle" show-pager="false">
 			<ion-slide ng-repeat="item in items" style="background-image:url({{item.bannerUrl || item.file.url}})">
 				<div class="promo">
-					<h2>{{item.name}}</h2>
+					<h4 class="light">{{item.name}}</h4>
 					<p>{{item.description}}</p>
 					<div ng-if="item.url">Mas informacion en: <a ng-click="openUrl(item.url)">{{item.url}}</a></div>
 				</div>

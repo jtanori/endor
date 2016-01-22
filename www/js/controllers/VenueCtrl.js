@@ -34,6 +34,8 @@ angular
                 AnalyticsService.track('loadVenue', {venue: venue.id});
             });
 
+        VenuesService.current(venue);
+
         $scope.venue = venue;
         $scope.basicData = venue.getBasicData();
         $scope.logo = $scope.basicData.logo;
@@ -631,7 +633,7 @@ angular
 
         $scope.checkin = function(){
             if($rootScope.user.isAnonimous()){
-                console.log('launch login');
+                $cordovaDialogs.alert('Esta opcion solo esta disponible para usuarios registrados, por favor crea una cuenta para poder usar todas las caracteristicas de Jound');
                 return;
             }
 
@@ -668,7 +670,6 @@ angular
         $scope.isCheckedIn = false;
         var _isCheckedIn = function(){
             if($rootScope.user.isAnonimous()){
-                console.log('launch login');
                 return;
             }
 
@@ -750,6 +751,11 @@ angular
         });
 
         $scope.startClaim = function(){
+            if($rootScope.user.isAnonimous()){
+                $cordovaDialogs.alert('Esta opcion solo esta disponible para usuarios registrados, por favor crea una cuenta para poder usar todas las caracteristicas de Jound');
+                return
+            }
+
             $scope.claim = angular.copy($scope.claimMaster);
             $scope.claim.comments = 'Hola, me gustaria reclamar el negocio ' + $scope.basicData.name + ' ubicado en ' + $scope.basicData.address + ', ' + $scope.basicData.city;
             $scope.claimModal.show();
@@ -787,6 +793,11 @@ angular
         };
 
         $scope.reportBug = function(){
+            if($rootScope.user.isAnonimous()){
+                $cordovaDialogs.alert('Esta opcion solo esta disponible para usuarios registrados, por favor crea una cuenta para poder usar todas las caracteristicas de Jound');
+                return;
+            }
+
             $scope.bug = angular.copy($scope.bugMaster);
             $scope.bugModal.show();
         }
@@ -965,7 +976,9 @@ angular
             _checkClaimed();
         });
     })
-    .controller('VenueAboutCtrl', function($scope, $state, $sce, $ionicHistory, $stateParams, venue, AnalyticsService){
+    .controller('VenueAboutCtrl', function($scope, $state, $sce, $ionicHistory, $stateParams, venue, VenuesService, AnalyticsService, AppConfig, $cordovaSocialSharing){
+        VenuesService.current(venue);
+
         $scope.basicData = venue.getBasicData();
         $scope.text = $sce.trustAsHtml(venue.get('page').get('about'));
         $scope.name = venue.get('name');
@@ -976,10 +989,31 @@ angular
         $scope.back = function(){
             $state.go('app.venue', {venueId: $scope.venueId});
         }
+
+        $scope.share = function(){
+            var link = AppConfig.HOST_URL + '/venues/' + venue.id + '/about';
+            var msg = 'Acerca de ' + venue.get('name') + ' #jound';
+
+            var onShare = function() {
+                AnalyticsService.track('shareAbout', {link:  link, venue: venue.id});
+            };
+            var onShareError = function(e) {
+                AnalyticsService.track('error', {type: 'shareAbout', code:  e.code, message: e.message, venue: venue.id});
+            };
+
+            $cordovaSocialSharing.share(
+                msg,
+                null,
+                null,
+                link
+            ).then(onShare, onShareError);
+        };
     })
-    .controller('VenuePromosCtrl', function($scope, $state, $timeout, $stateParams, $ionicSlideBoxDelegate, $cordovaSocialSharing, $ionicHistory, VenuesService, LinksService, venue, AnalyticsService){
+    .controller('VenuePromosCtrl', function($scope, $state, $timeout, $stateParams, $ionicSlideBoxDelegate, $cordovaSocialSharing, $ionicHistory, VenuesService, LinksService, venue, AnalyticsService, AppConfig){
         var _canLoadMore = false;
         var _pageSize = 20;
+
+        VenuesService.current(venue);
 
         $scope.venueId = $stateParams.venueId;
         $scope.skip = 0;
@@ -999,9 +1033,27 @@ angular
                     }
 
                     $scope.items = items;
-                    $ionicSlideBoxDelegate.update();
+
+                    $timeout(function(){
+                        $scope.$apply(function(){
+                            $ionicSlideBoxDelegate.$getByHandle('venuePromoHandle').update();
+                        });
+                    });
 
                     AnalyticsService.track('loadPromoItems', {venue: $scope.venueId, count:  items.length});
+
+                    if($scope.items && $scope.items.length > 1){
+                        $scope.items.filter(function(e, i){
+                            if(e.objectId === $stateParams.promoId){
+                                $timeout(function(){
+                                    $scope.$apply(function(){
+                                        $ionicSlideBoxDelegate.$getByHandle('venuePromoHandle').slide(i);
+                                    });
+                                }, 1000);
+                            }
+                        });
+                    }
+
                 }, function(e){
                     //console.log('deals error', arguments);
                     _canLoadMore = false;
@@ -1026,11 +1078,13 @@ angular
         };
 
         $scope.share = function() {
+
+
             var index = $ionicSlideBoxDelegate.currentIndex();
             var promo = $scope.items[index];
             var img = promo.bannerUrl ? promo.bannerUrl : promo.file && promo.file.url;
-            var link = 'http://www.jound.mx/venue/' + $scope.venueId + '/promo/' + promo.objectId;
-            var msg = 'Hey mira la promo que encontre via #jound';
+            var link = AppConfig.HOST_URL + 'venue/' + $scope.venueId + '/promo/' + promo.objectId;
+            var msg = 'Promocion: ' + promo.name || promo.description + ' de ' + venue.get('name') + ' que encontre via #jound';
 
             $cordovaSocialSharing
                 .share(msg, null, img, link)
@@ -1053,15 +1107,18 @@ angular
             $scope.loadItems($scope.venueId);
         });
     })
-    .controller('VenueEventsCtrl', function($scope, $state, $timeout, $stateParams, $ionicSlideBoxDelegate, $cordovaSocialSharing, $ionicHistory, VenuesService, LinksService, venue, AnalyticsService){
+    .controller('VenueEventsCtrl', function($scope, $state, $timeout, $stateParams, $ionicSlideBoxDelegate, $cordovaSocialSharing, $ionicHistory, VenuesService, LinksService, venue, AnalyticsService, AppConfig){
         var _canLoadMore = false;
         var _pageSize = 20;
+
+        VenuesService.current(venue);
 
         $scope.venueId = $stateParams.venueId;
         $scope.skip = 0;
         $scope.items = [];
         $scope.name = venue.get('name');
         $scope.loading = true;
+        $scope.activeSlide = 0;
 
         $scope.loadItems = function(id, skip){
             VenuesService
@@ -1075,9 +1132,26 @@ angular
                     }
 
                     $scope.items = items;
-                    $ionicSlideBoxDelegate.update();
+
+                    $timeout(function(){
+                        $scope.$apply(function(){
+                            $ionicSlideBoxDelegate.$getByHandle('venueEventHandle').update();
+                        });
+                    });
 
                     AnalyticsService.track('loadEventItems', {venue: $scope.venueId, count:  items.length});
+
+                    if($scope.items && $scope.items.length > 1){
+                        $scope.items.filter(function(e, i){
+                            if(e.objectId === $stateParams.eventId){
+                                $timeout(function(){
+                                    $scope.$apply(function(){
+                                        $ionicSlideBoxDelegate.$getByHandle('venueEventHandle').slide(i);
+                                    });
+                                }, 1000);
+                            }
+                        });
+                    }
                 }, function(){
                     //console.log('deals error', arguments);
                     _canLoadMore = false;
@@ -1104,9 +1178,9 @@ angular
         $scope.share = function() {
             var index = $ionicSlideBoxDelegate.currentIndex();
             var e = $scope.items[index];
-            var msg = 'Hey mira el evento que encontre via #jound';
+            var msg = e.title ? e.title + ' evento de ' + venue.get('name') + ' via #jound' : 'Hey mira el evento de ' + venue.get('name') + ' que encontre via #jound';
             var img = e.bannerUrl ? e.bannerUrl : e.banner && e.banner.url;
-            var link = 'http://www.jound.mx/venue/' + $scope.venueId + '/event/' + e.objectId;
+            var link = AppConfig.HOST_URL + 'venues/' + $scope.venueId + '/events/' + e.objectId;
 
             $cordovaSocialSharing
                 .share(msg, null, img, link)
@@ -1129,10 +1203,12 @@ angular
             $scope.loadItems($scope.venueId);
         });
     })
-    .controller('VenueProductsCtrl', function($scope, $timeout, $state, $stateParams, $ionicHistory, $ionicModal, VenuesService, venue, AnalyticsService){
+    .controller('VenueProductsCtrl', function($scope, $timeout, $state, $stateParams, $ionicHistory, $ionicModal, VenuesService, venue, AnalyticsService, AppConfig, $cordovaSocialSharing){
         var _canLoadMore = true;
         var _pageSize = 20;
         var _page = 0;
+
+        VenuesService.current(venue);
 
         $scope.venueId = $stateParams.venueId;
         $scope.skip = 0;
@@ -1203,11 +1279,33 @@ angular
         $scope.closeFSModal = function() {
             $scope.fullScreenModal.hide();
         };
+
+        $scope.share = function() {
+            var img = venue.getLogo();
+            var link = AppConfig.HOST_URL + 'venues/' + $scope.venueId + '/products';
+            var msg = 'Productos de ' + venue.get('name') + ' via #jound';
+
+            $cordovaSocialSharing
+                .share(msg, null, img, link)
+                .then(function(){
+                    AnalyticsService.track('shareProducts', {venue: $scope.venueId, url: link});
+                }, function(e){
+                    AnalyticsService.track('error', {type: 'shareProducts', venue: $scope.venueId, code:  e.code, message:  e.message, url: link});
+                });
+
+            AnalyticsService.track('beforeShare', {id: $scope.venueId, url: link});
+        };
     })
-    .controller('VenueReviewsCtrl', function($scope, $stateParams, $state, $cordovaProgress, $ionicHistory, VenuesService, User, venue, AnalyticsService){
+    .controller('VenueReviewsCtrl', function($scope, $rootScope, $stateParams, $state, $cordovaProgress, $cordovaDialogs, $ionicHistory, VenuesService, User, venue, AnalyticsService, $cordovaSocialSharing, AppConfig){
         var _canLoadMore = true;
         var _pageSize = 20;
         var _page = 0;
+
+        if($rootScope.user.isAnonimous()){
+            $cordovaDialogs.alert('De momento los reviews solo pueden ser creados por usuarios registrados, por favor crea una cuenta para poder usar todas las caracteristicas de Jound');
+        }
+
+        VenuesService.current(venue);
 
         $scope.venueId = $stateParams.venueId;
         $scope.skip = 0;
@@ -1330,6 +1428,27 @@ angular
                     $cordovaProgress.hide();
                 })
         }
+
+        $scope.share = function(){
+            var link = AppConfig.HOST_URL + 'venues/' + venue.id + '/reviews';
+            var msg = 'Mira lo que estan diciendo de ' + venue.get('name') + ' en #jound';
+
+            var onShare = function() {
+                AnalyticsService.track('shareReviews', {link:  link, venue: venue.id});
+            };
+            var onShareError = function(e) {
+                AnalyticsService.track('error', {type: 'shareReviews', code:  e.code, message: e.message, venue: venue.id});
+            };
+
+            AnalyticsService.track('beforeShare', {venue: venue.id, link:  link});
+
+            $cordovaSocialSharing.share(
+                msg,
+                null,
+                null,
+                link
+            ).then(onShare, onShareError);
+        };
 
         $scope.back = function(){
             $state.go('app.venue', {venueId: $scope.venueId});

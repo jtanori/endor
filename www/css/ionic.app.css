@@ -9641,11 +9641,20 @@ a.button {
       #venue-events-page .slider ion-slide .promo *,
       #venue-events-page .slider ion-slide .event * {
         text-shadow: 0 0 5px black; }
-      #venue-promos-page .slider ion-slide .promo h2,
-      #venue-promos-page .slider ion-slide .event h2,
-      #venue-events-page .slider ion-slide .promo h2,
-      #venue-events-page .slider ion-slide .event h2 {
-        color: white; }
+      #venue-promos-page .slider ion-slide .promo h4,
+      #venue-promos-page .slider ion-slide .event h4,
+      #venue-events-page .slider ion-slide .promo h4,
+      #venue-events-page .slider ion-slide .event h4 {
+        color: white;
+        margin-top: 0;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden; }
+      #venue-promos-page .slider ion-slide .promo p,
+      #venue-promos-page .slider ion-slide .event p,
+      #venue-events-page .slider ion-slide .promo p,
+      #venue-events-page .slider ion-slide .event p {
+        margin-bottom: 0; }
 
 #venue-products-page .product .badge {
   top: 0;

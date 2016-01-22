@@ -676,9 +676,17 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 					text-shadow: 0 0 5px black;
 				}
 
-				h2 {
+                h4 {
 					color: white;
+                    margin-top: 0;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
 				}
+
+                p {
+                    margin-bottom: 0;
+                }
 			}
 		}
 	}

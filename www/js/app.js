@@ -134,6 +134,7 @@ angular.module('jound',
     },
     HOST_URL: 'http://www.jound.mx/',
     API_URL: 'http://www.jound.mx/',
+    MAX_DISTANCE_TO_REFRESH: 500,
     GEO: {
         DEFAULT: {
             enableHighAccuracy: true,
@@ -466,7 +467,7 @@ angular.module('jound',
         })
 
         .state('app.venueAbout', {
-            url: "venues/:venueId/about",
+            url: "/venues/:venueId/about",
             views: {
                 'app': {
                     templateUrl: "templates/venue/about.html",
@@ -475,21 +476,16 @@ angular.module('jound',
             },
             resolve: {
                 venue: function($stateParams, VenuesService) {
-                    return VenuesService.getById($stateParams.venueId)
+                    return VenuesService.getById($stateParams.venueId);
                 }
             },
             defaultBack: {
-                state: 'app.venue',
-                getStateParams: function(stateParams) {
-                    return {
-                        postId: stateParams.venueId
-                    };
-                }
+                state: 'app.venue'
             }
         })
 
         .state('app.venuePromos', {
-            url: "venues/:venueId/promos",
+            url: "/venues/:venueId/promos",
             views: {
                 'app': {
                     templateUrl: "templates/venue/promos.html",
@@ -498,21 +494,34 @@ angular.module('jound',
             },
             resolve: {
                 venue: function($stateParams, VenuesService) {
-                    return VenuesService.getById($stateParams.venueId)
+                    return VenuesService.getById($stateParams.venueId);
                 }
             },
             defaultBack: {
-                state: 'app.venue',
-                getStateParams: function(stateParams) {
-                    return {
-                        postId: stateParams.venueId
-                    };
+                state: 'app.venue'
+            }
+        })
+
+        .state('app.venuePromo', {
+            url: "/venues/:venueId/promos/:promoId",
+            views: {
+                'app': {
+                    templateUrl: "templates/venue/promos.html",
+                    controller: 'VenuePromosCtrl'
                 }
+            },
+            resolve: {
+                venue: function($stateParams, VenuesService) {
+                    return VenuesService.getById($stateParams.venueId);
+                }
+            },
+            defaultBack: {
+                state: 'app.venue'
             }
         })
 
         .state('app.venueProducts', {
-            url: "venues/:venueId/products",
+            url: "/venues/:venueId/products",
             views: {
                 'app': {
                     templateUrl: "templates/venue/products.html",
@@ -525,17 +534,12 @@ angular.module('jound',
                 }
             },
             defaultBack: {
-                state: 'app.venue',
-                getStateParams: function(stateParams) {
-                    return {
-                        postId: stateParams.venueId
-                    };
-                }
+                state: 'app.venue'
             }
         })
 
         .state('app.venueReviews', {
-            url: "venues/:venueId/reviews",
+            url: "/venues/:venueId/reviews",
             views: {
                 'app': {
                     templateUrl: "templates/venue/reviews.html",
@@ -548,17 +552,12 @@ angular.module('jound',
                 }
             },
             defaultBack: {
-                state: 'app.venue',
-                getStateParams: function(stateParams) {
-                    return {
-                        postId: stateParams.venueId
-                    };
-                }
+                state: 'app.venue'
             }
         })
 
         .state('app.venueEvents', {
-            url: "venues/:venueId/events",
+            url: "/venues/:venueId/events",
             views: {
                 'app': {
                     templateUrl: "templates/venue/events.html",
@@ -571,21 +570,16 @@ angular.module('jound',
                 }
             },
             defaultBack: {
-                state: 'app.venue',
-                getStateParams: function(stateParams) {
-                    return {
-                        postId: stateParams.venueId
-                    };
-                }
+                state: 'app.venue'
             }
         })
 
         .state('app.venueEvent', {
-            url: "/venues/:venueId/event/:eventId",
+            url: "/venues/:venueId/events/:eventId",
             views: {
                 'app': {
-                    templateUrl: "templates/venue/event.html",
-                    controller: 'VenueEventCtrl'
+                    templateUrl: "templates/venue/events.html",
+                    controller: 'VenueEventsCtrl'
                 }
             },
             resolve: {
@@ -594,13 +588,7 @@ angular.module('jound',
                 }
             },
             defaultBack: {
-                state: 'app.venueEvents',
-                getStateParams: function(stateParams) {
-                    return {
-                        venueId: stateParams.venueId,
-                        eventId: stateParams.eventId
-                    };
-                }
+                state: 'app.venue'
             }
         })
 
@@ -739,7 +727,6 @@ angular.module('jound',
 
             object.prototype = {
                 save: function(key, value){
-                    console.log('saving user', key, value);
                     var $self = this;
                     //Want to save current attributes?
                     if(_.isEmpty(key)){
@@ -759,8 +746,6 @@ angular.module('jound',
 
                         $localStorage.setObject('anon-user', c);
                     }
-
-                    console.log(this.attributes, 'attributes to save');
 
                     return c;
                 },
@@ -906,3 +891,8 @@ angular.module('jound',
         $state.go('login');
     }
 });
+
+function handleOpenURL(url) {
+    url = url.replace('jound://', '');
+    window.location.hash = url
+}

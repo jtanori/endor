@@ -54,7 +54,7 @@
     {
       "id": "com.phonegap.plugins.facebookconnect",
       "locator": "../Facebook"
-    },
+    }
   ],
   "cordovaPlatforms": [
     "ios",

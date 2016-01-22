@@ -67,7 +67,9 @@ angular
 
         $rootScope.$watch('settings.searchRadius', function(val, oldVal) {
             if (val !== undefined && val !== oldVal) {
+                console.log('val', val, oldVal);
                 $rootScope.user.save('settings', $rootScope.settings);
+                $rootScope.$broadcast('updateFeatured', val > oldVal);
             }
         });
 

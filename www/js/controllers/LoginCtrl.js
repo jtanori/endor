@@ -61,18 +61,19 @@ angular
             $rootScope.user = User.current();
 
             if(!_.isEmpty($rootScope.user) && !_.isEmpty($rootScope.user.get('settings'))){
-                console.log('get settings from server', $rootScope.user.get('settings').position);
                 $rootScope.settings = $rootScope.user.get('settings');
             }else{
                 $rootScope.settings = AppConfig.SETTINGS;
                 $rootScope.user.save('settings', $rootScope.settings);
             }
 
-            console.log('loaded settings', $rootScope.settings);
-
             AnalyticsService.track('login', {user: $rootScope.user.id});
 
             $scope.enableLogin();
+
+            if(AnonymousUser.exists()){
+                AnonymousUser.logOut();
+            }
         }
 
         $scope.login = function(form) {
