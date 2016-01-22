@@ -393,7 +393,8 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 }
 
 #venue-slider,
-#modal-venue-new-cover {
+#modal-venue-new-cover,
+#venue-product-page-cover {
 	height: 200px;
 	background: linear-gradient(0deg, $dark, darken($dark, 5%));
 	text-align: center;
@@ -411,8 +412,9 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 		background-size: cover;
 		z-index: -1;
 		background-position: center top;
-		background-image: ('../img/splash.jpg');
+		background-image: url('../img/splash.jpg');
 		box-shadow: 0 0 100px rgba(0,0,0,1) inset;
+        -webkit-filter: blur(5px);
 	}
 
 	img {
@@ -471,6 +473,45 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 	    width: 3rem;
 	    text-align: center;
 	}
+}
+
+#venue-product-page {
+    .price {
+        position: absolute;
+        bottom: 0;
+        padding: 0.5rem;
+        color: white;
+        background-color: rgba(0,0,0,0.5);
+        left: 0;
+        right: 0;
+        text-align: right;
+    }
+
+    #venue-product-page-cover {
+        position: relative;
+        background-size: cover;
+        background-repeat: no-repeat;
+
+        .venue-slide-bg {
+            z-index: 0;
+        }
+
+        img {
+            position: relative;
+        }
+    }
+
+    #venue-product-page-description {
+        margin-bottom: 0;
+
+        p {
+            white-space: initial;
+        }
+    }
+
+    #venue-product-page-call {
+        margin: 0;
+    }
 }
 
 #venue-tabs .tabs {
@@ -539,6 +580,7 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 		img {
 			max-height: 300px;
     		width: auto;
+            max-width: 100%;
 		}
 
 		background: black;
@@ -574,6 +616,13 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 			color: $dark;
 		}
 	}
+}
+
+#tab-venue-facebook {
+    .card.social.video .item-image {
+        height: auto;
+        min-height: auto;
+    }
 }
 
 .transparent {
@@ -712,6 +761,10 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 			font-size: 2rem;
 		}
 	}
+
+    &.perro img {
+        max-width: 150px;
+    }
 }
 
 
@@ -796,7 +849,8 @@ ion-footer-bar {
     border-radius: 0.5rem;
 }
 
-#tab-venue-home-checkin {
+#tab-venue-home-checkin,
+#venue-product-page .availability {
 	position: fixed;
     color: white;
     background: rgba(0,0,0,0.5);

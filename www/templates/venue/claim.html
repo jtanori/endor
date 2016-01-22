@@ -30,14 +30,14 @@
             </label>
 
             <label class="item item-input">
-                <input type="tel" placeholder="Telefono" ng-model="claim.phone" required>
+                <input type="tel" placeholder="teléfono" ng-model="claim.phone" required>
             </label>
 
             <label class="item item-input">
                 <textarea placeholder="Comentarios" ng-model="claim.comments"></textarea>
             </label>
 
-            <ion-checkbox ng-model="claim.phoneContact" ng-disabled="claim.phone.length < 10">Pueden llamarme por telefono</ion-checkbox>
+            <ion-checkbox ng-model="claim.phoneContact" ng-disabled="claim.phone.length < 10">Pueden llamarme por teléfono</ion-checkbox>
 
             <div class="padding center aligned">
                 <button class="button button-positive" type="submit" ng-disabled="claimForm.$invalid">Enviar solicitud</button>

@@ -56,7 +56,7 @@
                             <h4>{{basicData.name}}</h4>
                             <p>{{basicData.activity}}</p>
 
-                            <h4>Direccion</h4>
+                            <h4>Dirección</h4>
                             <p>{{basicData.address}}, {{basicData.city}}</p>
 
                             <div ng-if="serviceDays && !twentyFourSeven" id="venue-home-service-days">
@@ -73,6 +73,9 @@
                                 <a ng-if="twitter" class="button button-icon ion-social-twitter" ng-click="openExternalApp('twitter', twitter)"></a>
                                 <a ng-if="facebook" class="button button-icon ion-social-facebook" ng-click="openExternalApp('fb', facebook)"></a>
                                 <a ng-if="pinterest" class="button button-icon ion-social-pinterest" ng-click="openExternalApp('pinterest', pinterest)"></a>
+                            </div>
+                            <div class="padding">
+                                <button ng-click="share()" class="button button-positive button-block button-small"><i class="icon ion-share"></i> Compartir</button>
                             </div>
                         </div>
                         <ul class="list" ng-if="!page">
@@ -95,7 +98,7 @@
                                 <i class="icon ion-chevron-right"></i>
                             </li>
                             <li class="item item-icon-right" ng-click="deals()" ng-if="page.hasDeals || page.hasDeals == undefined">
-                                Promociones
+                                Ofertas
                                 <i class="icon ion-chevron-right"></i>
                             </li>
                             <li class="item item-icon-right" ng-click="events()" ng-if="page.hasEvents || page.hasEvents == undefined">
@@ -106,70 +109,6 @@
 
                     </ion-content>
 
-                </ion-nav-view>
-            </ion-tab>
-            <!-- Facebook -->
-            <ion-tab title="Facebook" icon="ion-social-facebook-outline" icon-on="ion-social-facebook" ng-if="page.facebook && page.facebook.id">
-                <ion-nav-view name="tab-venue-facebook">
-                    <ion-content>
-                        <ion-refresher pulling-text="Actualizar Facebook timeline..." on-refresh="refreshFacebook(firstTweet)"></ion-refresher>
-
-                        <div ng-repeat="item in timeline" class="animate-repeat">
-                            <div class="list card social" ng-class="{video: item.type=='video'}">
-                                <div class="item item-avatar" ng-if="!item.to" ng-click="item.type == 'link' ? openUrl(item.link) : openExternalApp('facebook:status', item.from.id, item.id)">
-                                    <img ng-src="{{logo}}" ng-if="logo"/>
-                                    <h2 class="positive"><img src="{{item.icon}}" ng-if="item.icon"/><i class="icon ion-speakerphone" ng-if="item.type=='status' && !item.icon"></i> {{item.name || item.from.name}}</h2>
-                                    <p>{{item.story}}</p>
-                                    <p>Publicado el {{item.created_time}}</p>
-                                </div>
-                                <div class="item item-avatar" ng-if="item.from && item.to" ng-click="item.type == 'link' ? openUrl(item.link) : openExternalApp('facebook:status', item.from.id, item.id)">
-                                    <img ng-src="{{logo}}" ng-if="logo"/>
-                                    <h2 class="positive"><i class="icon ion-chatboxes"></i> {{item.from.name}}</h2>
-                                    <p>Publicado el {{item.created_time}}</p>
-                                </div>
-
-                                <div class="item item-image" ng-if="item.type=='photo'" ng-click="openExternalApp('facebook:status', item.from.id, item.id)">
-                                    <img ng-src="{{item.picture}}">
-                                </div>
-                                <div class="item item-image" ng-if="item.type=='event'" ng-click="openExternalApp('facebook:status', item.from.id, item.id)">
-                                    <img ng-src="{{item.picture}}">
-                                </div>
-                                <div class="item item-image" ng-if="item.type=='video'" ng-click="openExternalApp('facebook:status', item.from.id, item.id)">
-                                    <img ng-src="{{item.picture}}" >
-                                    <i class="ion-play icon"></i>
-                                </div>
-                                <div class="item-body" ng-if="item.story || item.message">
-                                    <p ng-if="item.caption && item.type!='status'">{{item.caption}}</p>
-                                    <p ng-if="item.message && item.type=='status' || item.type=='link'">{{item.message}}</p>
-                                    <p ng-if="item.description && item.type=='link'" ng-click="openUrl(item.link)">{{item.description}}</p>
-                                    <div class="row">
-                                        <div class="col center aligned"><span class="dark">{{item.likes.data.length || 0}}</span> <i class="icon ion-thumbsup"></i></div>
-                                        <div class="col center aligned"><span class="dark">{{item.shares.count || 0}}</span> <i class="icon ion-share"></i>  </div>
-                                        <div class="col center aligned"><span class="dark">{{item.comments.data.length || 0}}</span> <i class="icon ion-chatbubbles"></i></div>
-                                    </div>
-                                </div>
-                                <div class="item tabs tabs-secondary tabs-icon-left">
-                                    <a class="tab-item" ng-click="item.type == 'link' ? openUrl(item.link) : openExternalApp('facebook:status', item.from.id, item.id)">
-                                        <i class="icon ion-social-facebook"></i>
-                                        Ver en Facebook
-                                    </a>
-                                    <a class="tab-item" ng-click="shareFacebook(item.link, venue.id)">
-                                        <i class="icon ion-share"></i>
-                                        Compartir
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div ng-if="facebookError" class="center aligned padding error message">
-                            <div><i class="icon ion-nuclear"></i></div>
-                            <p>{{facebookError}}</p>
-                        </div>
-
-                        <ion-infinite-scroll on-infinite="loadFacebook()" distance="1%" immediate-check="true">
-                            <ion-spinner></ion-spinner>
-                        </ion-infinite-scroll>
-                    </ion-content>
                 </ion-nav-view>
             </ion-tab>
             <!-- Twitter -->
@@ -207,7 +146,7 @@
                                         <i class="icon ion-social-twitter"></i>
                                         Ver en Twitter
                                     </a>
-                                    <a class="tab-item" ng-click="shareTwitter('https://twitter.com/{{item.user.screenName}}/status/{{item.id}}', item.media[0].url, item.tags, venue.id)">
+                                    <a class="tab-item" ng-click="shareTwitter('https://twitter.com/{{item.user.screenName}}/status/{{item.id}}', item.media[0].url, item.tags)">
                                         <i class="icon ion-share"></i>
                                         Compartir
                                     </a>
@@ -310,6 +249,70 @@
                         </div>
 
                         <ion-infinite-scroll on-infinite="refreshVideos(videoPageToken)" distance="1%" ng-if="canLoadVideos()">
+                            <ion-spinner></ion-spinner>
+                        </ion-infinite-scroll>
+                    </ion-content>
+                </ion-nav-view>
+            </ion-tab>
+            <!-- Facebook -->
+            <ion-tab title="Facebook" icon="ion-social-facebook-outline" icon-on="ion-social-facebook" ng-if="page.facebook && page.facebook.id">
+                <ion-nav-view name="tab-venue-facebook" id="tab-venue-facebook">
+                    <ion-content>
+                        <ion-refresher pulling-text="Actualizar Facebook timeline..." on-refresh="refreshFacebook(firstTweet)"></ion-refresher>
+
+                        <div ng-repeat="item in timeline" class="animate-repeat">
+                            <div class="list card social" ng-class="{video: item.type=='video'}">
+                                <div class="item item-avatar" ng-if="!item.to" ng-click="item.type == 'link' ? openUrl(item.link) : openExternalApp('facebook:status', item.from.id, item.id)">
+                                    <img ng-src="{{logo}}" ng-if="logo"/>
+                                    <h2 class="positive"><img src="{{item.icon}}" ng-if="item.icon"/><i class="icon ion-speakerphone" ng-if="item.type=='status' && !item.icon"></i> {{item.name || item.from.name}}</h2>
+                                    <p>{{item.story}}</p>
+                                    <p>Publicado el {{item.created_time}}</p>
+                                </div>
+                                <div class="item item-avatar" ng-if="item.from && item.to" ng-click="item.type == 'link' ? openUrl(item.link) : openExternalApp('facebook:status', item.from.id, item.id)">
+                                    <img ng-src="{{logo}}" ng-if="logo"/>
+                                    <h2 class="positive"><i class="icon ion-chatboxes"></i> {{item.from.name}}</h2>
+                                    <p>Publicado el {{item.created_time}}</p>
+                                </div>
+
+                                <div class="item item-image" ng-if="item.type=='photo'" ng-click="openExternalApp('facebook:status', item.from.id, item.id)">
+                                    <img ng-src="{{item.picture}}">
+                                </div>
+                                <div class="item item-image" ng-if="item.type=='event'" ng-click="openExternalApp('facebook:status', item.from.id, item.id)">
+                                    <img ng-src="{{item.picture}}">
+                                </div>
+                                <div class="item item-image" ng-if="item.type=='video'" ng-click="openExternalApp('facebook:status', item.from.id, item.id)">
+                                    <img ng-src="{{item.picture}}" >
+                                    <i class="ion-play icon"></i>
+                                </div>
+                                <div class="item-body" ng-if="item.story || item.message">
+                                    <p ng-if="item.caption && item.type!='status'">{{item.caption}}</p>
+                                    <p ng-if="item.message && item.type=='status' || item.type=='link'">{{item.message}}</p>
+                                    <p ng-if="item.description && item.type=='link'" ng-click="openUrl(item.link)">{{item.description}}</p>
+                                    <div class="row">
+                                        <div class="col center aligned"><span class="dark">{{item.likes.data.length || 0}}</span> <i class="icon ion-thumbsup"></i></div>
+                                        <div class="col center aligned"><span class="dark">{{item.shares.count || 0}}</span> <i class="icon ion-share"></i>  </div>
+                                        <div class="col center aligned"><span class="dark">{{item.comments.data.length || 0}}</span> <i class="icon ion-chatbubbles"></i></div>
+                                    </div>
+                                </div>
+                                <div class="item tabs tabs-secondary tabs-icon-left">
+                                    <a class="tab-item" ng-click="item.type == 'link' ? openUrl(item.link) : openExternalApp('facebook:status', item.from.id, item.id)">
+                                        <i class="icon ion-social-facebook"></i>
+                                        Ver en Facebook
+                                    </a>
+                                    <a class="tab-item" ng-click="shareFacebook(item.link, venue.id)">
+                                        <i class="icon ion-share"></i>
+                                        Compartir
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div ng-if="facebookError" class="center aligned padding error message">
+                            <div><i class="icon ion-nuclear"></i></div>
+                            <p>{{facebookError}}</p>
+                        </div>
+
+                        <ion-infinite-scroll on-infinite="loadFacebook()" distance="1%" immediate-check="true">
                             <ion-spinner></ion-spinner>
                         </ion-infinite-scroll>
                     </ion-content>

@@ -9,11 +9,11 @@
     <ion-content id="venue-promos-page" scroll="false">
     	<div ng-if="loading" class="padding center aligned">
     		<ion-spinner></ion-spinner>
-    		<div>Cargando promos...</div>
+    		<div>Cargando Ofertas...</div>
     	</div>
-    	<div ng-if="!loading && !items.length" class="center aligned padding error message">
-    		<div><i class="icon ion-nuclear"></i></div>
-    		<p>No hay promociones aun, hemos notado tu interes, te mantendremos informado cuando una nueva promocion sea agregada.</p>
+    	<div ng-if="!loading && !items.length" class="center aligned padding error message perro">
+    		<img src="/img/perro.png" />
+    		<p>No hay ofertas aún, hemos notado tu interés, te mantendremos informado cuando una nueva promoción sea agregada.</p>
     	</div>
     	<ion-slide-box ng-if="items.length" delegate-handle="venuePromoHandle" show-pager="false">
 			<ion-slide ng-repeat="item in items" style="background-image:url({{item.bannerUrl || item.file.url}})">

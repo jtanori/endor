@@ -18,8 +18,8 @@
 				<small class="date">Publicado el {{item.displayDate}}</small>
 			</ion-item>
     	</ion-list>
-    	<div ng-if="noReviews" class="center aligned padding error message">
-    		<div><i class="icon ion-nuclear"></i></div>
+    	<div ng-if="noReviews" class="center aligned padding error message perro">
+    		<img src="/img/perro.png" />
     		<p>No hay reseñas, se el primero en decir algo.</p>
     	</div>
         <ion-infinite-scroll on-infinite="loadItems(venueId, skip)" distance="1%" immediate-check="true" ng-if="canLoad()">

@@ -12,6 +12,11 @@
 		border-bottom: 1px solid lighten(darken($dark, 10%), 5%);
 		height: 140px;
 		background-size: cover;
+
+		&.avatar-guest {
+			background: url('../img/splash.jpg') no-repeat;
+			background-size: cover;
+		}
 	}
 
 	#drawer-avatar-info {

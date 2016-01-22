@@ -11,16 +11,16 @@
     		<ion-spinner></ion-spinner>
     		<div>Cargando eventos...</div>
     	</div>
-    	<div ng-if="!loading && !items.length" class="center aligned padding error message">
-    		<div><i class="icon ion-nuclear"></i></div>
-    		<p>No hay eventos proximos, hemos notado tu interes, te mantendremos informado cuando un evento sea agregado.</p>
+    	<div ng-if="!loading && !items.length" class="center aligned padding error message perro">
+    		<img src="/img/perro.png" />
+    		<p>No hay eventos próximos, hemos notado tu interés, te mantendremos informado cuando un evento sea agregado.</p>
     	</div>
     	<ion-slide-box ng-if="items.length" delegate-handle="venueEventHandle" show-pager="false">
 			<ion-slide ng-repeat="item in items" style="background-image:url({{item.bannerUrl || item.banner.url}})">
 				<div class="event">
 					<h4 class="light">{{item.name}}</h4>
 					<p>{{item.description}}</p>
-					<div ng-if="item.url">Mas informacion en: <a ng-click="openUrl(item.url)">{{item.url}}</a></div>
+					<div ng-if="item.url">Más información en: <a ng-click="openUrl(item.url)">{{item.url}}</a></div>
 				</div>
 			</ion-slide>
 		</ion-slide-box>

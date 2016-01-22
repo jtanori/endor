@@ -14,6 +14,7 @@ angular
         $state,
         $cordovaSocialSharing,
         $ionicModal,
+        $ionicLoading,
         $ionicHistory,
         $cordovaDialogs,
         $cordovaProgress,
@@ -26,6 +27,7 @@ angular
         AnalyticsService,
         venue,
         User,
+        AppConfig,
         WEEKDAYS
     ) {
         AnalyticsService
@@ -443,9 +445,7 @@ angular
                 AnalyticsService.track('error', {type: 'shareFacebook', code:  e.code, message: e.message, venue: venue.id});
             };
 
-            AnalyticsService.track('beforeShare', {venue: venue.id, link:  link});
-
-            var msg = 'Mira lo que encontre en Facebook ' + link + ' #jound';
+            var msg = 'Mira lo que encontre sobre ' + venue.get('name') + ' via #jound';
 
             $cordovaSocialSharing.share(
                 msg,
@@ -477,72 +477,118 @@ angular
         };
 
         $scope.aboutUs = function(){
-            $state.go('app.venueAbout', {inherith:true, venueId: $scope.venue.id});
+            $ionicLoading.show({
+                template: 'Cargando...'
+            });
+
+            $state
+                .go('app.venueAbout', {inherith:true, venueId: $scope.venue.id})
+                .then(function(){}, function(e){
+                    AnalyticsService.track('error', {type: 'navigate', page: 'about', code:  e.code, message: e.message, venue: venue.id});
+                    $cordovaDialogs.alert('Ha ocurrido un error al cargar los datos, hemos reportado el error, disculpe las molestias.', 'Error', 'OK');
+                })
+                .finally(function(){
+                    $ionicLoading.hide();
+                });
         };
 
         $scope.products = function(){
-            $state.go('app.venueProducts', {inherith:true, venueId: $scope.venue.id});
+            $ionicLoading.show({
+                template: 'Cargando...'
+            });
+
+            $state
+                .go('app.venueProducts', {inherith:true, venueId: $scope.venue.id})
+                .then(function(){}, function(e){
+                    AnalyticsService.track('error', {type: 'navigate', page: 'products', code:  e.code, message: e.message, venue: venue.id});
+                    $cordovaDialogs.alert('Ha ocurrido un error al cargar los datos, hemos reportado el error, disculpe las molestias.', 'Error', 'OK');
+                })
+                .finally(function(){
+                    $ionicLoading.hide();
+                });
         };
 
         $scope.deals = function(){
-            $state.go('app.venuePromos', {inherith:true, venueId: $scope.venue.id});
+            $ionicLoading.show({
+                template: 'Cargando...'
+            });
+
+            $state
+                .go('app.venuePromos', {inherith:true, venueId: $scope.venue.id})
+                .then(function(){}, function(e){
+                    AnalyticsService.track('error', {type: 'navigate', page: 'deals', code:  e.code, message: e.message, venue: venue.id});
+                    $cordovaDialogs.alert('Ha ocurrido un error al cargar los datos, hemos reportado el error, disculpe las molestias.', 'Error', 'OK');
+                })
+                .finally(function(){
+                    $ionicLoading.hide();
+                });
         };
 
         $scope.reviews = function(){
-            $state.go('app.venueReviews', {inherith:true, venueId: $scope.venue.id});
+            $ionicLoading.show({
+                template: 'Cargando...'
+            });
+
+            $state
+                .go('app.venueReviews', {inherith:true, venueId: $scope.venue.id})
+                .then(function(){}, function(e){
+                    AnalyticsService.track('error', {type: 'navigate', page: 'reviews', code:  e.code, message: e.message, venue: venue.id});
+                    $cordovaDialogs.alert('Ha ocurrido un error al cargar los datos, hemos reportado el error, disculpe las molestias.', 'Error', 'OK');
+                })
+                .finally(function(){
+                    $ionicLoading.hide();
+                });
         };
 
         $scope.events = function(){
-            $state.go('app.venueEvents', {inherith:true, venueId: $scope.venue.id});
+            $ionicLoading.show({
+                template: 'Cargando...'
+            });
+
+            $state
+                .go('app.venueEvents', {inherith:true, venueId: $scope.venue.id})
+                .then(function(){}, function(e){
+                    AnalyticsService.track('error', {type: 'navigate', page: 'events', code:  e.code, message: e.message, venue: venue.id});
+                    $cordovaDialogs.alert('Ha ocurrido un error al cargar los datos, hemos reportado el error, disculpe las molestias.', 'Error', 'OK');
+                })
+                .finally(function(){
+                    $ionicLoading.hide();
+                });
         };
 
-        $scope.share = function(link, img, tags, venueId) {
+        $scope.share = function() {
+            var link = AppConfig.HOST_URL + 'venues/' + venue.id;
+            var msg = venue.get('name') + ' en ' + venue.getCity() + ' via #jound ' + venue.getTwitterHashtags().split(' ');
+            var img = venue.getLogo();
             var onShare = function() {
-                //$cordovaDialogs.alert('Gracias por compartir :)', '!Hey!', 'De nada');
-                AnalyticsService.track('share', {link:  link, tags:  tags, venue: venue.id});
+                AnalyticsService.track('share', {link:  link, tags:  keywords, venue: venue.id});
             };
             var onShareError = function(e) {
-                //$cordovaDialogs.alert('Ha ocurrido un error al compartir, por favor intenta de nuevo', 'Error', 'Ok');
                 AnalyticsService.track('error', {type: 'share', code:  e.code, message: e.message, venue: venue.id});
             };
 
-            if(tags){
-                tags = tags.map(function(t){return t.text || t;});
-            }else{
-                tags = [];
-            }
-
-            var msg = 'Hey mira lo que encontre via #jound http://www.jound.mx/venue/' + venueId + ' #' + tags.join(' #');
-
-            AnalyticsService.track('beforeShare', {venue: venue.id, link:  link});
-
             $cordovaSocialSharing.share(
                 msg,
-                'Hey mira lo que encontre en #jound',
+                null,
                 img,
                 link
             ).then(onShare, onShareError);
         };
 
-        $scope.shareInstagram = function(link, img, tags, venueId) {
+        $scope.shareInstagram = function(link, img, tags) {
+            var msg = 'Cheka esta foto de ' + venue.get('name') + ' via #jound';
+
             var onShare = function() {
-                //$cordovaDialogs.alert('Gracias por compartir :)', '!Hey!', 'De nada');
                 AnalyticsService.track('shareInstagram', {link:  link, tags:  tags, venue: venue.id});
             };
             var onShareError = function(e) {
-                //$cordovaDialogs.alert('Ha ocurrido un error al compartir, por favor intenta de nuevo', 'Error', 'Ok');
                 AnalyticsService.track('error', {type: 'shareInstagram', code:  e.code, message: e.message, venue: venue.id});
             };
 
-            if(tags){
+            if(!_.isEmpty(tags)){
                 tags = tags.map(function(t){return t.text || t;});
-            }else{
-                tags = [];
+                msg += ' #' + tags.join(' #');
             }
-
-            AnalyticsService.track('beforeShare', {venue: venue.id, link:  link});
-
-            var msg = 'Cheka esta foto que encontre ' + link + ' http://www.jound.mx/venue/' + venueId + ' #jound #' + tags.join(' #');
 
             $cordovaSocialSharing.share(
                 msg,
@@ -552,25 +598,22 @@ angular
             ).then(onShare, onShareError);
         };
 
-        $scope.shareTwitter = function(link, img, tags, venueId) {
+        $scope.shareTwitter = function(link, img, tags) {
+            var msg = 'Mira lo que estan twiteando sobre ' + venue.get('name') + ' via #jound';
             var onShare = function() {
-                //$cordovaDialogs.alert('Gracias por compartir :)', '!Hey!', 'De nada');
                 AnalyticsService.track('shareTwitter', {link:  link, tags:  tags, venue: venue.id});
             };
             var onShareError = function(e) {
-                //$cordovaDialogs.alert('Ha ocurrido un error al compartir, por favor intenta de nuevo', 'Error', 'Ok');
                 AnalyticsService.track('error', {type: 'shareTwitter', code:  e.code, message: e.message, venue: venue.id});
             };
 
-            if(tags){
-                tags = tags.map(function(t){return t.text || t;});
-            }else{
-                tags = [];
+            if(!_.isEmpty(tags)){
+                tags = tags.map(function(t){
+                    if(_.isString(t)){return t;}
+                    else if(t.text){return t.text;}
+                });
+                msg += ' #' + tags.join(' #');
             }
-
-            AnalyticsService.track('beforeShare', {venue: venue.id, link:  link});
-
-            var msg = 'Mira lo que estan twiteando ' + link + ' http://www.jound.mx/venue/' + venueId + ' #jound #' + tags.join(' #');
 
             $cordovaSocialSharing.share(
                 msg,
@@ -581,22 +624,23 @@ angular
         };
 
         $scope.shareCheckin = function(){
+            var msg = 'Hice Check-In en ' + venue.get('name') + ' via #jound';
+            var keywords = venue.getTwitterHashtags();
+            var link = AppConfig.HOST_URL + 'venues/' + venue.id;
+
             var onShare = function() {
-                //$cordovaDialogs.alert('Gracias por compartir :)', '!Hey!', 'De nada');
                 AnalyticsService.track('shareCheckin', {venue: venue.id});
             };
             var onShareError = function(e) {
-                //$cordovaDialogs.alert('Ha ocurrido un error al compartir, por favor intenta de nuevo', 'Error', 'Ok');
                 AnalyticsService.track('error', {type: 'shareCheckin', code:  e.code, message: e.message, venue: venue.id});
             };
 
-            var tags = $scope.venue.get('keywords').map(function(t){return t;});
-            var link = 'http://www.jound.mx/venue/' + $scope.venue.id;
-
-            AnalyticsService.track('beforeShare', {venue: venue.id});
+            if(!_.isEmpty(keywords)){
+                msg += ' ' + keywords.join (' ');
+            }
 
             $cordovaSocialSharing.share(
-                'Hice Check-In en ' + $scope.venue.get('name') + '#' + $scope.venue.getCityName() + ' via #jound ' + tags.join(' #'),
+                msg,
                 $scope.venue.getLogo(),
                 null,
                 link
@@ -604,17 +648,18 @@ angular
         };
 
         $scope.shareVideo = function(link, img, title, venueId) {
-            var msg = 'Hey mira el video de '+ $scope.venue.get('name') + ' ' + link + ' http://www.jound.mx/venue/' + venueId + ' #jound';
+            var msg = 'Hey mira el video de ' + $scope.venue.get('name') + ' #jound';
+            var hashtags = venue.getTwitterHashtags();
             var onShare = function() {
-                //$cordovaDialogs.alert('Gracias por compartir :)', '!Hey!', 'De nada');
                 AnalyticsService.track('shareVideo', {link:  link, venue: venue.id});
             };
             var onShareError = function(e) {
-                //$cordovaDialogs.alert('Ha ocurrido un error al compartir, por favor intenta de nuevo', 'Error', 'Ok');
                 AnalyticsService.track('error', {type: 'shareVideo', code:  e.code, message: e.message, venue: venue.id});
             };
 
-            AnalyticsService.track('beforeShare', {venue: venue.id, link:  link});
+            if(hashtags){
+                msg += ' ' + hashtags.join(' ');
+            }
 
             $cordovaSocialSharing.share(
                 msg,
@@ -623,7 +668,6 @@ angular
                 link
             ).then(onShare, onShareError);
         };
-
 
         $scope.back = function(){
             $state.go('app.home');
@@ -1093,8 +1137,6 @@ angular
                 }, function(e){
                     AnalyticsService.track('error', {type: 'sharePromo', venue: $scope.venueId, code:  e.code, message:  e.message, url: link});
                 });
-
-            AnalyticsService.track('beforeShare', {venue: $scope.venueId, url: link});
         };
 
         $scope.back = function(){
@@ -1189,8 +1231,6 @@ angular
                 }, function(e){
                     AnalyticsService.track('error', {type: 'shareEvent', venue: $scope.venueId, code:  e.code, message:  e.message, url: link});
                 });
-
-            AnalyticsService.track('beforeShare', {id: $scope.venueId, url: link});
         };
 
         $scope.back = function(){
@@ -1203,7 +1243,7 @@ angular
             $scope.loadItems($scope.venueId);
         });
     })
-    .controller('VenueProductsCtrl', function($scope, $timeout, $state, $stateParams, $ionicHistory, $ionicModal, VenuesService, venue, AnalyticsService, AppConfig, $cordovaSocialSharing){
+    .controller('VenueProductsCtrl', function($scope, $timeout, $state, $stateParams, $ionicHistory, $ionicModal, $cordovaDialogs, $ionicLoading, VenuesService, venue, AnalyticsService, AppConfig, $cordovaSocialSharing){
         var _canLoadMore = true;
         var _pageSize = 20;
         var _page = 0;
@@ -1252,32 +1292,24 @@ angular
             $state.go('app.venue', {venueId: $scope.venueId});
         };
 
-        $scope.currentFSImage = undefined;
-        //Create fullscreen image modal
-        $ionicModal.fromTemplateUrl('templates/fsproductmodal.html', {
-            scope: $scope,
-            animation: 'slide-in-up'
-        }).then(function(modal) {
-            $scope.fullScreenModal = modal;
-        });
+        $scope.openProduct = function(item){
+            $ionicLoading.show();
 
-        $scope.openImage = function(item){
-            var url = item.picture && item.picture.url ? item.picture.url : item.pictureUrl ? item.pictureUrl : false;
+            $state
+                .go('app.venueProduct', {venueId: venue.id, productId: item.objectId})
+                .then(function(){
+                    AnalyticsService.track('openProduct', {venue: $scope.venueId, id: item.objectId});
+                }, function(e){
+                    var msg = 'Ha ocurrido un error, lo reportaremos de inmediato, disculpa las inconveniencias.';
+                    if(e.code === 404){
+                        msg = 'Parece que ese producto no existe, lo reportaremos al establecimiento, disculpa las inconveniencias.';
+                    }
 
-            if(url){
-                $scope.currentFSImage = url;
-            }
-
-            $scope.currentItem = item;
-            $scope.openFSModal();
-        };
-
-        $scope.openFSModal = function() {
-            $scope.fullScreenModal.show();
-        };
-
-        $scope.closeFSModal = function() {
-            $scope.fullScreenModal.hide();
+                    $cordovaDialogs.alert(msg, 'Error', 'Entendido');
+                })
+                .finally(function(){
+                    $ionicLoading.hide();
+                });
         };
 
         $scope.share = function() {
@@ -1292,10 +1324,36 @@ angular
                 }, function(e){
                     AnalyticsService.track('error', {type: 'shareProducts', venue: $scope.venueId, code:  e.code, message:  e.message, url: link});
                 });
-
-            AnalyticsService.track('beforeShare', {id: $scope.venueId, url: link});
         };
     })
+
+    .controller('VenueProductCtrl', function($scope, $state, $stateParams, $ionicHistory, $cordovaDialogs, VenuesService, productData, AnalyticsService, AppConfig, $cordovaSocialSharing){
+        $scope.item = productData.product;
+        $scope.venue = VenuesService.current(VenuesService.convertToParseObject(productData.venue));
+
+        $scope.back = function(){
+            $state.go('app.venueProducts', {venueId: $stateParams.venueId});
+        };
+
+        $scope.share = function() {
+            var img = $scope.venue.getLogo();
+            var link = AppConfig.HOST_URL + 'venues/' + $stateParams.venueId + '/products/' + $scope.item.objectId;
+            var msg = $scope.item.name + ' de ' + $scope.venue.get('name') + ' via #jound';
+
+            $cordovaSocialSharing
+                .share(msg, null, img, link)
+                .then(function(){
+                    AnalyticsService.track('shareProduct', {venue: $scope.venueId, url: link, product: $scope.item.id});
+                }, function(e){
+                    AnalyticsService.track('error', {type: 'shareProduct', venue: $scope.venue.id, code:  e.code, message:  e.message, url: link, product: $scope.item.id});
+                });
+        };
+
+        $scope.order = function(){
+            $cordovaDialogs.alert('Estamos trabajando en las herramientas para que puedas ordenar productos desde tu dispositivo.');
+        }
+    })
+
     .controller('VenueReviewsCtrl', function($scope, $rootScope, $stateParams, $state, $cordovaProgress, $cordovaDialogs, $ionicHistory, VenuesService, User, venue, AnalyticsService, $cordovaSocialSharing, AppConfig){
         var _canLoadMore = true;
         var _pageSize = 20;
@@ -1439,8 +1497,6 @@ angular
             var onShareError = function(e) {
                 AnalyticsService.track('error', {type: 'shareReviews', code:  e.code, message: e.message, venue: venue.id});
             };
-
-            AnalyticsService.track('beforeShare', {venue: venue.id, link:  link});
 
             $cordovaSocialSharing.share(
                 msg,

@@ -21,6 +21,7 @@ angular
         $ionicModal,
         $ionicPosition,
         $cordovaToast,
+        $ionicLoading,
 
         AppConfig,
         CategoriesService,
@@ -261,10 +262,19 @@ angular
         $scope.openVenue = function() {
             VenuesService.current($scope.currentModel);
 
+            $ionicLoading.show();
+
             $timeout(function(){
                 $scope.$apply(function(){
-                    AnalyticsService.track('openVenue', {origin: 'home', id: $scope.currentModel.id});
-                    $state.go('app.venue', {venueId: $scope.currentModel.id});
+                    $state
+                        .go('app.venue', {venueId: $scope.currentModel.id})
+                        .then(angular.noop, function(e){
+                            AnalyticsService.track('error', {type: 'openVenue', code: e.code, message: e.message, id: $scope.currentModel.id});
+                            $cordovaDialogs.alert('Ha ocurrido un error al cargar los datos, hemos reportado el error, disculpe las molestias.', 'Error', 'OK');
+                        })
+                        .finally(function(){
+                            $ionicLoading.hide();
+                        })
                 });
             });
         }
@@ -711,8 +721,6 @@ angular
             });
 
             $rootScope.$watch('settings.searchRadius', function(radius, previousRadius) {
-                //console.log('search radius changed', onMapChangeTimeout, radius, previousRadius);
-
                 if ($rootScope.circle && radius) {
                     AnalyticsService.track('searchRadiusChange', {radius: radius});
                     $rootScope.circle.setRadius(radius);

@@ -9208,6 +9208,9 @@ a.button {
     border-bottom: 1px solid #373737;
     height: 140px;
     background-size: cover; }
+    .drawer #drawer-avatar.avatar-guest {
+      background: url("../img/splash.jpg") no-repeat;
+      background-size: cover; }
   .drawer #drawer-avatar-info {
     margin: 0;
     text-align: left;
@@ -9417,15 +9420,18 @@ a.button {
       margin: 0 auto; }
 
 #venue-slider,
-#modal-venue-new-cover {
+#modal-venue-new-cover,
+#venue-product-page-cover {
   height: 200px;
   background: linear-gradient(0deg, #444, #373737);
   text-align: center; }
   #venue-slider ion-slide,
-  #modal-venue-new-cover ion-slide {
+  #modal-venue-new-cover ion-slide,
+  #venue-product-page-cover ion-slide {
     background-size: cover; }
   #venue-slider .venue-slide-bg,
-  #modal-venue-new-cover .venue-slide-bg {
+  #modal-venue-new-cover .venue-slide-bg,
+  #venue-product-page-cover .venue-slide-bg {
     position: absolute;
     top: 0;
     left: 0;
@@ -9434,22 +9440,27 @@ a.button {
     background-size: cover;
     z-index: -1;
     background-position: center top;
-    background-image: "../img/splash.jpg";
-    box-shadow: 0 0 100px black inset; }
+    background-image: url("../img/splash.jpg");
+    box-shadow: 0 0 100px black inset;
+    -webkit-filter: blur(5px); }
   #venue-slider img,
-  #modal-venue-new-cover img {
+  #modal-venue-new-cover img,
+  #venue-product-page-cover img {
     max-height: 100%;
     box-shadow: 0 0 10px black;
     height: 100%; }
   #venue-slider.cover .venue-slide-bg,
-  #modal-venue-new-cover.cover .venue-slide-bg {
+  #modal-venue-new-cover.cover .venue-slide-bg,
+  #venue-product-page-cover.cover .venue-slide-bg {
     z-index: 1;
     opacity: 1; }
   #venue-slider.cover,
-  #modal-venue-new-cover.cover {
+  #modal-venue-new-cover.cover,
+  #venue-product-page-cover.cover {
     position: relative; }
     #venue-slider.cover img,
-    #modal-venue-new-cover.cover img {
+    #modal-venue-new-cover.cover img,
+    #venue-product-page-cover.cover img {
       z-index: 100;
       position: relative;
       background: transparent;
@@ -9459,21 +9470,26 @@ a.button {
       margin-bottom: 0;
       height: 50%; }
   #venue-slider .default,
-  #modal-venue-new-cover .default {
+  #modal-venue-new-cover .default,
+  #venue-product-page-cover .default {
     height: 100%; }
     #venue-slider .default h4,
-    #modal-venue-new-cover .default h4 {
+    #modal-venue-new-cover .default h4,
+    #venue-product-page-cover .default h4 {
       margin-top: 0; }
     #venue-slider .default img,
-    #modal-venue-new-cover .default img {
+    #modal-venue-new-cover .default img,
+    #venue-product-page-cover .default img {
       margin-top: 1rem;
       height: 75px;
       box-shadow: none; }
   #venue-slider .slider-common-image,
-  #modal-venue-new-cover .slider-common-image {
+  #modal-venue-new-cover .slider-common-image,
+  #venue-product-page-cover .slider-common-image {
     height: 100%; }
   #venue-slider #venue-slider-cover-play,
-  #modal-venue-new-cover #venue-slider-cover-play {
+  #modal-venue-new-cover #venue-slider-cover-play,
+  #venue-product-page-cover #venue-slider-cover-play {
     position: absolute;
     font-size: 3rem;
     color: white;
@@ -9484,6 +9500,33 @@ a.button {
     margin-left: -1.5rem;
     width: 3rem;
     text-align: center; }
+
+#venue-product-page .price {
+  position: absolute;
+  bottom: 0;
+  padding: 0.5rem;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5);
+  left: 0;
+  right: 0;
+  text-align: right; }
+
+#venue-product-page #venue-product-page-cover {
+  position: relative;
+  background-size: cover;
+  background-repeat: no-repeat; }
+  #venue-product-page #venue-product-page-cover .venue-slide-bg {
+    z-index: 0; }
+  #venue-product-page #venue-product-page-cover img {
+    position: relative; }
+
+#venue-product-page #venue-product-page-description {
+  margin-bottom: 0; }
+  #venue-product-page #venue-product-page-description p {
+    white-space: initial; }
+
+#venue-product-page #venue-product-page-call {
+  margin: 0; }
 
 #venue-tabs .tabs {
   border-bottom: 0; }
@@ -9537,7 +9580,8 @@ a.button {
   background: black; }
   .card.social .item-image img {
     max-height: 300px;
-    width: auto; }
+    width: auto;
+    max-width: 100%; }
 
 .card.social.video .item-image {
   max-height: 200px;
@@ -9561,6 +9605,10 @@ a.button {
   border-top: 1px solid #eaeaea !important; }
   .card.social .item.tabs .tab-item {
     color: #444; }
+
+#tab-venue-facebook .card.social.video .item-image {
+  height: auto;
+  min-height: auto; }
 
 .transparent {
   background: transparent !important; }
@@ -9668,6 +9716,9 @@ a.button {
   .message.error .icon {
     font-size: 2rem; }
 
+.message.perro img {
+  max-width: 150px; }
+
 ul.rating.small {
   font-size: 10px; }
   ul.rating.small li {
@@ -9731,7 +9782,8 @@ ion-footer-bar.disabled:before {
   background: rgba(0, 0, 0, 0.5);
   border-radius: 0.5rem; }
 
-#tab-venue-home-checkin {
+#tab-venue-home-checkin,
+#venue-product-page .availability {
   position: fixed;
   color: white;
   background: rgba(0, 0, 0, 0.5);
@@ -9742,10 +9794,12 @@ ion-footer-bar.disabled:before {
   line-height: 30px;
   height: 38px;
   min-height: 38px; }
-  #tab-venue-home-checkin.icon:before {
+  #tab-venue-home-checkin.icon:before,
+  #venue-product-page .availability.icon:before {
     font-size: 30px;
     line-height: 30px; }
-  #tab-venue-home-checkin.energized {
+  #tab-venue-home-checkin.energized,
+  #venue-product-page .availability.energized {
     color: #ffc900;
     box-shadow: 0 0 5px #ffc900; }
 

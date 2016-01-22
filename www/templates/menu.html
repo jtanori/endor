@@ -3,17 +3,21 @@
     <div ng-if="isRightOpen()" class="closer right" ng-click="closeRight()"><button type="button" class="button button-clear button-icon ion-close"></button></div>
 
     <ion-side-menu-content drag-content="false">
-        <ion-nav-bar class="bar-assertive nav-title-slide-ios7">
+        <ion-nav-bar class="bar-assertive nav-title-slide-ios7" animation="slide-left-right">
         </ion-nav-bar>
         <ion-nav-view name="app" animation="slide-left-right"></ion-nav-view>
     </ion-side-menu-content>
 
     <ion-side-menu side="left" ng-class="{'menu-active': isLeftOpen()}">
         <ion-content class="dark-bg drawer" id="drawer">
-            <div id="drawer-avatar" style="background-image:url('{{user.getAvatar()}}')">
+            <div id="drawer-avatar" style="background-image:url('{{user.getAvatar()}}')" ng-if="!$parent.user.isAnonimous()">
                 <div class="center aligned" id="drawer-avatar-info">
-                    <!--a ng-click="profile()" class="button button-clear button-icon ion-wrench"></a-->
                     <span class="h5 light">Hola {{user.get('fullName') || user.get('username')}}</span>
+                </div>
+            </div>
+            <div id="drawer-avatar" ng-if="$parent.user.isAnonimous()" class="avatar-guest">
+                <div class="center aligned" id="drawer-avatar-info">
+                    <span class="h5 light">Hola invitado :)</span>
                 </div>
             </div>
             <div>
@@ -29,15 +33,15 @@
                 <a class="button button-clear button-full left aligned" ng-click="privacy()">
                     <i class="icon ion-lock-combination"></i> Privacidad
                 </a>
-                <a class="button button-assertive button-full left aligned" ng-click="business()" ng-class="{disabled: !newBusinessStarted}">
+                <!--a class="button button-assertive button-full left aligned" ng-click="business()" ng-class="{disabled: !newBusinessStarted}">
                     <i class="icon ion-upload"></i> Agregar un negocio
-                </a>
+                </a-->
             </div>
 
             <br />
 
             <div class="center aligned" ng-if="$parent.user.isAnonimous()">
-                <a class="button button-assertive button-full" ng-click="signup()">Identificarse</a>
+                <a class="button button-assertive button-full" ng-click="signup()">Iniciar Sesión</a>
             </div>
             <div class="center aligned">
                 <a class="button button-clear button-small button-full" menu-close ng-click="logout()">

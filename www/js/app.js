@@ -134,6 +134,7 @@ angular.module('jound',
     },
     HOST_URL: 'http://www.jound.mx/',
     API_URL: 'http://www.jound.mx/',
+    //API_URL: 'http://192.168.1.65:8100/api/',
     MAX_DISTANCE_TO_REFRESH: 500,
     GEO: {
         DEFAULT: {
@@ -538,6 +539,24 @@ angular.module('jound',
             }
         })
 
+        .state('app.venueProduct', {
+            url: "/venues/:venueId/products/:productId",
+            views: {
+                'app': {
+                    templateUrl: "templates/venue/product.html",
+                    controller: 'VenueProductCtrl'
+                }
+            },
+            resolve: {
+                productData: function($stateParams, VenuesService) {
+                    return VenuesService.getProductById($stateParams.venueId, $stateParams.productId);
+                }
+            },
+            defaultBack: {
+                state: 'app.venueProducts'
+            }
+        })
+
         .state('app.venueReviews', {
             url: "/venues/:venueId/reviews",
             views: {
@@ -880,6 +899,9 @@ angular.module('jound',
     });
 })
 .controller('StartCtrl', function($state, $rootScope, $localStorage){
+    $rootScope.$on("$routeChangeError", function () {
+        console.log("failed to change routes", arguments);
+    });
     //Redirect to proper page
     if(!!$rootScope.user){
         if(!$localStorage.get('tutorial')){

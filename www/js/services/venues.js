@@ -114,6 +114,26 @@ angular.module('jound.services')
                 return 'img/venue_default_large.jpg';
             }
         },
+        getHashTags: function(){
+            var keywords = this.get('keywords').map(function(h){
+                if(h[0] === '#' || h[0] === '@'){
+                    return h;
+                }else{
+                    return '#' + h;
+                }
+            });
+
+            return keywords;
+        },
+        getTwitterHashtags: function(){
+            var tags = this.getHashTags();
+
+            if(tags.length >= 5){
+                tags.splice(5, tags.length - 1);
+            }
+
+            return tags;
+        },
         getBasicData: function(){
             return {
                 name: this.get('name'),
@@ -140,7 +160,7 @@ angular.module('jound.services')
     var _currentFeaturedResults = [];
     var _currentVenue;
 
-    return {
+    var global = {
         search: function(p, r, q, c, excludedVenues){
             var deferred = $q.defer();
 
@@ -303,6 +323,39 @@ angular.module('jound.services')
                     }, function(response){
                         deferred.reject(response);
                     });
+            }
+
+            return deferred.promise;
+        },
+        getProductById: function(venueId, productId){
+            var deferred = $q.defer();
+
+            if(!_.isEmpty(_currentVenue) && _currentVenue.id === venueId){
+                $http
+                    .post(AppConfig.API_URL + 'getProductById', {id: productId, venue: venueId})
+                    .then(function(response){
+                        if(response && response.data && response.data.product){
+                            deferred.resolve({venue: _currentVenue, product: response.data.product});
+                        }else{
+                            deferred.reject({message: 'Product not found', code: 404});
+                        }
+                    }, function(response){
+                        deferred.reject(response);
+                    });
+            }else if(!_.isEmpty(venueId) && !_.isEmpty(productId)){
+                $http
+                    .post(AppConfig.API_URL + 'getProductForVenue', {id: productId, venue: venueId})
+                    .then(function(response){
+                        if(response && response.data && response.data.venue && response.data.product){
+                            deferred.resolve({venue: response.data.venue, product: response.data.product});
+                        }else{
+                            deferred.reject({message: 'Product not found', code: 404});
+                        }
+                    }, function(response){
+                        deferred.reject(response);
+                    });
+            } else{
+                deferred.reject({message: 'Product not found', code: 404});
             }
 
             return deferred.promise;
@@ -714,4 +767,6 @@ angular.module('jound.services')
             return deferred.promise;
         }
     };
+
+    return global;
 });
