@@ -1,7 +1,6 @@
-<ion-view view-title="{{basicData.name}}" align-title="left" nav-direction="forward">
+<ion-view view-title="{{basicData.name}}" align-title="left" nav-direction="back">
     <ion-nav-buttons side="left">
-        <button class="button button-icon ion-ios-arrow-back" ng-click="back()">
-        </button>
+        <a nav-direction="back" href="#/venues" class="button button-icon ion-ios-arrow-back"></a>
     </ion-nav-buttons>
     <ion-nav-buttons side="right">
         <a class="button button-icon button-clear ion-email" ng-show="basicData.email" href="mailto:{{basicData.email}}">

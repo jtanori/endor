@@ -28,21 +28,8 @@ angular
             toolbar: 'yes'
         };
 
-        function updateGeolocationButton(val) {
-            $timeout(function() {
-                $scope.$apply(function() {
-                    $scope.usingGeolocation = val;
-                });
-            });
-        };
-
-        $scope.$on('change:usingGeolocation', function(e, val) {
-            updateGeolocationButton(val);
-        });
-
         $rootScope.$watch('settings.usingGeolocation', function(val, oldVal) {
             if (val !== undefined && val !== oldVal) {
-                updateGeolocationButton(val);
                 $rootScope.user.save('settings', $rootScope.settings);
             }
         });
@@ -74,6 +61,7 @@ angular
         });
 
         $scope.toggleGeolocation = function() {
+            console.log($rootScope.settings.usingGeolocation, 'ha');
             $rootScope.settings.usingGeolocation = !$rootScope.settings.usingGeolocation;
         };
 

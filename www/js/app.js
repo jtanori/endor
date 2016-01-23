@@ -899,9 +899,6 @@ angular.module('jound',
     });
 })
 .controller('StartCtrl', function($state, $rootScope, $localStorage){
-    $rootScope.$on("$routeChangeError", function () {
-        console.log("failed to change routes", arguments);
-    });
     //Redirect to proper page
     if(!!$rootScope.user){
         if(!$localStorage.get('tutorial')){

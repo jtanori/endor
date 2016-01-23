@@ -31,7 +31,7 @@
 
 				<div class="dark" id="map-position-search-label" ng-if="tracingPosition"><ion-spinner icon="ripple"></ion-spinner><div>Trazando ubicacion</div></div>
 
-				<button ng-if="!newBusinessMarker" class="button button-icon button-clear ion-navigate" ng-class="{'active': usingGeolocation, 'disabled': tracingPosition}" ng-click="toggleGeolocation()" id="map-geolocation-button" ng-disabled="newBusinessMarker || tracingPosition"></button>
+				<button ng-if="!newBusinessMarker" class="button button-icon button-clear ion-navigate" ng-class="{'active': $parent.settings.usingGeolocation, 'disabled': tracingPosition}" ng-click="toggleGeolocation()" id="map-geolocation-button"></button>
 
 				<div ng-if="newBusinessMarker" id="new-business-popup">
 					<div id="new-business-popup-wrapper">

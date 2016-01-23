@@ -4,7 +4,7 @@ angular.module('jound.services')
     return Parse.Object.extend('Location', {
         pageLoaded: false,
         getURL: function(){
-            return '//www.jound.mx/venue/' + this.id;
+            return AppConfig.HOST_URL + 'venues/' + this.id;
         },
         getWWW: function(){
             if(this.get('www')){
@@ -111,7 +111,7 @@ angular.module('jound.services')
                     return l._url;
                 }
             }else{
-                return 'img/venue_default_large.jpg';
+                return AppConfig.HOST_URL + 'img/venue_default_large.jpg';
             }
         },
         getHashTags: function(){

@@ -250,7 +250,7 @@ angular
                 msg,
                 img,
                 null,
-                'http://www.jound.mx/venues/' + id
+                AppConfig.HOST_URL + 'venues/' + id
             )
             .then(function(results){
                 AnalyticsService.track('shareVenue', {id: id});
@@ -262,7 +262,7 @@ angular
         $scope.openVenue = function() {
             VenuesService.current($scope.currentModel);
 
-            $ionicLoading.show();
+            $cordovaProgress.showSimple(true);
 
             $timeout(function(){
                 $scope.$apply(function(){
@@ -273,8 +273,8 @@ angular
                             $cordovaDialogs.alert('Ha ocurrido un error al cargar los datos, hemos reportado el error, disculpe las molestias.', 'Error', 'OK');
                         })
                         .finally(function(){
-                            $ionicLoading.hide();
-                        })
+                            $cordovaProgress.hide();
+                        });
                 });
             });
         }
@@ -465,6 +465,9 @@ angular
         function enableMap() {
             if ($rootScope.mainMap) {
                 $rootScope.mainMap.setClickable(true);
+                $timeout(function(){
+                    $rootScope.mainMap.refreshLayout();
+                }, 2000);
             }
         };
 
@@ -704,6 +707,10 @@ angular
             }
 
             $cordovaToast.showShortBottom(message);
+
+            if($rootScope.mainMap){
+                $rootScope.mainMap.refreshLayout();
+            }
         }
 
         var releasePosition = function(){
@@ -971,7 +978,11 @@ angular
                 var deferred = $q.defer();
 
                 if(!fromInterval){
-                    $scope.tracingPosition = true;
+                    $timeout(function(){
+                        $scope.$apply(function(){
+                            $scope.tracingPosition = true;
+                        });
+                    });
                 }
 
                 if($ionicHistory.currentView().stateName !== 'app.home'){
@@ -983,38 +994,50 @@ angular
                             function(position) {
                                 $rootScope.marker.setIcon(AppConfig.MARKERS.LOCATION);
 
-                                if(($rootScope.settings && !_.isEmpty($rootScope.settings.position)) && _.isEqual(position.coords, $rootScope.settings.position.coords)){
-                                    $scope.tracingPosition = false;
-                                    deferred.resolve(position);
-                                    return;
-                                }
-
-                                centerMap(position, fromInterval);
-
-                                if(!$scope.watchPosition){
-                                    $scope.watchPosition = $interval(function(){
-                                        getCurrentPosition(true);
-                                    }, 20000);
-                                }
-
-                                previousPosition = {coords:{latitude: position.coords.latitude, longitude: position.coords.longitude}};
-
-                                $scope.tracingPosition = false;
-                                $rootScope.settings.position = previousPosition;
-
-                                $rootScope.user.save({
-                                    'settings': $rootScope.settings,
-                                    'lastPosition': new Parse.GeoPoint({
-                                        latitude: position.coords.latitude,
-                                        longitude: position.coords.longitude
-                                    })
+                                $timeout(function(){
+                                    $scope.$apply(function(){
+                                        $scope.tracingPosition = false;
+                                    });
                                 });
 
-                                AnalyticsService.track('getCurrentPosition', {type: 'success', position: position.coords.latitude + ',' + position.coords.longitude, latitude: position.coords.latitude, longitude: position.coords.longitude});
+                                if(($rootScope.settings && !_.isEmpty($rootScope.settings.position)) && _.isEqual(position.coords, $rootScope.settings.position.coords)){
+                                    deferred.resolve(position);
+                                }else {
+                                    centerMap(position, fromInterval);
 
-                                deferred.resolve(position);
+                                    if(!$scope.watchPosition){
+                                        $scope.watchPosition = $interval(function(){
+                                            getCurrentPosition(true);
+                                        }, 20000);
+                                    }
+
+                                    previousPosition = {coords:{latitude: position.coords.latitude, longitude: position.coords.longitude}};
+
+                                    $rootScope.settings.position = previousPosition;
+
+                                    $rootScope.user.save({
+                                        'settings': $rootScope.settings,
+                                        'lastPosition': new Parse.GeoPoint({
+                                            latitude: position.coords.latitude,
+                                            longitude: position.coords.longitude
+                                        })
+                                    });
+
+                                    AnalyticsService.track('getCurrentPosition', {type: 'success', position: position.coords.latitude + ',' + position.coords.longitude, latitude: position.coords.latitude, longitude: position.coords.longitude});
+
+                                    deferred.resolve(position);
+                                }
                             }, function(e) {
-                                $scope.tracingPosition = false;
+                                $timeout(function(){
+                                    $scope.$apply(function(){
+                                        $scope.tracingPosition = false;
+                                    });
+
+                                    $rootScope.$apply(function(){
+                                        $rootScope.settings.usingGeolocation = false;
+                                    });
+
+                                });
 
                                 AnalyticsService.track('error', {type: 'getCurrentPosition', message: e.message, code: e.code});
 
@@ -1265,13 +1288,20 @@ angular
                                 tryDefaultPosition();
                             }
                         }, function(e){
-                            if(e.code !== 300){
+                            if(e.code !== 300 && e.code !== 1){
                                 $timeout(function(){
                                     AnalyticsService.track('error', {type: 'getCurrentPosition', message: 'Error getting position, fallback to defaults', code: 4});
                                     $cordovaDialogs.alert('Ha ocurrido un error al intentar trazar tu ubicacion, por favor intenta de nuevo.');
-                                    tryDefaultPosition();
+                                });
+                            }else if(e.code === 1){
+                                $timeout(function(){
+                                    $rootScope.$apply(function(){
+                                        $rootScope.settings.usingGeolocation = false;
+                                    });
                                 });
                             }
+
+                            tryDefaultPosition();
                         });
                 }else{
                     tryDefaultPosition();
@@ -1314,7 +1344,7 @@ angular
 
             plugin.google.maps.Map.isAvailable(function(isAvailable, message) {
                 if (isAvailable) {
-                    $rootScope.mainMap = plugin.google.maps.Map.getMap($scope.$map);
+                    $rootScope.mainMap = window.mainMap = plugin.google.maps.Map.getMap($scope.$map);
                     $rootScope.mainMap.addEventListener(plugin.google.maps.event.MAP_READY, onMapInit);
                 }
             });
