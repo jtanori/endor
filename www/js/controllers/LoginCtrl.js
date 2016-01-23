@@ -10,6 +10,7 @@ angular
         $cordovaDialogs,
         $ionicHistory,
         $localStorage,
+        $cordovaSplashscreen,
         $timeout,
         User,
         AnonymousUser,
@@ -173,7 +174,6 @@ angular
         };
 
         $scope.skip = function(){
-            console.log('skip');
             $rootScope.user = AnonymousUser.current();
             $rootScope.settings = AnonymousUser.current().get('settings');
 
@@ -181,6 +181,8 @@ angular
         };
 
         function goHome(){
+            $cordovaSplashscreen.show();
+
             if($localStorage.get('tutorial')){
                 $state.go('app.home');
             }else{
@@ -223,7 +225,7 @@ angular
                                             lastName: data.last_name,
                                             name: data.name,
                                             fullName: data.first_name + ' ' + data.last_name,
-                                            email: data.email,
+                                            //email: data.email,
                                             avatar: 'http://graph.facebook.com/' + data.id + '/picture?type=large',
                                             facebook: true
                                         })
@@ -257,6 +259,7 @@ angular
                             $timeout(function(){
                                 $cordovaProgress.hide();
                             });
+
                             $cordovaDialogs.alert(e.message, 'Error', 'Ok');
                         });
                 }

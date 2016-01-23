@@ -20,7 +20,6 @@ angular.module('jound',
     'ionic.service.push',
     'ionic.rating',
     'ngIOS9UIWebViewPatch',
-    'ngImgCrop',
 
     'jound.controllers',
     'jound.services',

@@ -15,6 +15,7 @@ angular
         $cordovaSocialSharing,
         $cordovaProgress,
         $cordovaActionSheet,
+        $cordovaSplashscreen,
         $ionicHistory,
         $cordovaCamera,
         $cordovaKeyboard,
@@ -442,6 +443,9 @@ angular
                     AnalyticsService.track('home', {type: 'enter'});
                 });
 
+            $ionicPlatform.ready(function(){
+                $cordovaSplashscreen.hide();
+            });
         });
 
         $rootScope.$watch('user', function(newUser, prevUser){
@@ -676,6 +680,10 @@ angular
             }
 
             var excludedVenues = $scope.featuredVenues.map(function(v){return v.id;});
+
+            if(_.isEmpty(p) || !_.isEmpty(p.coords)){
+                return;
+            }
 
             VenuesService
                 .getFeatured(p, r, $scope.category.id, excludedVenues)
@@ -1253,6 +1261,8 @@ angular
                 $q
                     .all([circleDefer.promise, markerDefer.promise])
                     .then(function(circle, marker) {
+                        $cordovaSplashscreen.hide();
+
                         zoomToRadiusLevel(settings.searchRadius || AppConfig.SETTINGS.searchRadius)
                             .then(function(level){
                                 onFirstZoom(null, level);
@@ -1260,6 +1270,8 @@ angular
                                 onFirstZoom(error);
                             });
                     }, function(e){
+                        $cordovaSplashscreen.hide();
+                        
                         $timeout(function(){
                             $cordovaDialogs.alert(e.message);
                         });

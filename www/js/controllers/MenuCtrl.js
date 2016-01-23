@@ -54,14 +54,12 @@ angular
 
         $rootScope.$watch('settings.searchRadius', function(val, oldVal) {
             if (val !== undefined && val !== oldVal) {
-                console.log('val', val, oldVal);
                 $rootScope.user.save('settings', $rootScope.settings);
                 $rootScope.$broadcast('updateFeatured', val > oldVal);
             }
         });
 
         $scope.toggleGeolocation = function() {
-            console.log($rootScope.settings.usingGeolocation, 'ha');
             $rootScope.settings.usingGeolocation = !$rootScope.settings.usingGeolocation;
         };
 
@@ -112,6 +110,10 @@ angular
             LinksService.open(url);
         };
 
+        $scope.hideAccessoryBar = function(){
+            console.log('close');
+        }
+
         var _left = false;
         $scope.openLeft = function() {
             $rootScope.mainMap.setClickable(false);
@@ -130,7 +132,7 @@ angular
             if($rootScope.mainMap){
                 $rootScope.mainMap.setClickable(false);
             }
-            $cordovaKeyboard.hideAccessoryBar(false);
+            $cordovaKeyboard.hideAccessoryBar(true);
             $cordovaKeyboard.close();
             _right = true;
         };

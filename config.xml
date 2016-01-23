@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<widget id="mx.jound.app" version="1.0.24" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="mx.jound.app" version="1.0.26" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
   <name>Jound</name>
   <description>
       Jound es la mejor herramienta para encontrar establecimientos a tu alrededor.
@@ -7,7 +7,7 @@
   <author email="jaime@jound.mx" href="http://www.jound.mx">
       Jound Development Team
   </author>
-  <content src="http://192.168.1.65:8100" original-src="index.html"/>
+  <content src="index.html"/>
   <access origin="*"/>
   <access launch-external="yes" origin="tel:*"/>
   <access launch-external="yes" origin="mailto:*"/>
