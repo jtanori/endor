@@ -132,13 +132,17 @@ angular
             }
         };
 
-        $scope.selectCategory = function(c) {
+        $scope.selectCategory = function(c, autoSearch) {
             $timeout(function(){
                 $scope.$apply(function(){
                     $scope.category = c;
-                    $scope.query = '';
+                    if(autoSearch){
+                        $scope.submit();
+                    }else{
+                        $scope.query = '';
 
-                    AnalyticsService.track('selectCategory', {category: ''  + c.id});
+                        AnalyticsService.track('selectCategory', {category: ''  + c.id});
+                    }
                 });
             });
 
@@ -679,11 +683,11 @@ angular
                 return;
             }
 
-            var excludedVenues = $scope.featuredVenues.map(function(v){return v.id;});
-
-            if(_.isEmpty(p) || !_.isEmpty(p.coords)){
+            if(_.isEmpty(p) || _.isEmpty(p.coords)){
                 return;
             }
+
+            var excludedVenues = $scope.featuredVenues.map(function(v){return v.id;});
 
             VenuesService
                 .getFeatured(p, r, $scope.category.id, excludedVenues)
@@ -1271,7 +1275,7 @@ angular
                             });
                     }, function(e){
                         $cordovaSplashscreen.hide();
-                        
+
                         $timeout(function(){
                             $cordovaDialogs.alert(e.message);
                         });

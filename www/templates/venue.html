@@ -1,6 +1,6 @@
-<ion-view view-title="{{basicData.name}}" align-title="left" nav-direction="back">
+<ion-view view-title="{{basicData.name}}" align-title="left">
     <ion-nav-buttons side="left">
-        <a nav-direction="back" href="#/venues" class="button button-icon ion-ios-arrow-back"></a>
+        <a href="#/venues" class="button button-icon ion-ios-arrow-back"></a>
     </ion-nav-buttons>
     <ion-nav-buttons side="right">
         <a class="button button-icon button-clear ion-email" ng-show="basicData.email" href="mailto:{{basicData.email}}">
@@ -25,22 +25,30 @@
                         <button type="button" class="buton button-icon icon ion-camera" id="tab-venue-home-photo" ng-click="takePhoto()" ng-if="enableUserPhotos"></button>
                         <!-- Tab 1 content -->
 						<!-- Slideshow -->
-					  	<ion-slide-box on-slide-changed="slideHasChanged($index)" id="venue-slider" ng-if="images.length">
-							<ion-slide ng-repeat='img in images' ng-click="coverVideo && coverVideo.id && ($index == 0) ? playVideo(coverVideo.id) : img.isDefault ? _.noop() : openSlideshow($index)">
-								<div class="venue-slide-bg" style="background-image: url({{img.url}})"></div>
-								<!--img ng-src="{{img.url}}" ng-if="!img.isDefault"/-->
-                                <div ng-if="img.isDefault" class="center aligned default padding">
-                                    <img src="img/jound.png" />
-                                    <h4 class="light">{{basicData.name}}</h4>
-                                </div>
+                        <div class="swiper-container" id="venue-slider">
+                            <div class="swiper-wrapper">
+                                <div class="swiper-slide" ng-repeat='img in images' ng-click="coverVideo && coverVideo.id && ($index == 0) ? playVideo(coverVideo.id) : img.isDefault ? _.noop() : openSlideshow($index)">
+                                    <div class="venue-slide-bg" style="background-image: url({{img.url}})"></div>
+                                    <!--img ng-src="{{img.url}}" ng-if="!img.isDefault"/-->
+                                    <div ng-if="img.isDefault" class="center aligned default padding">
+                                        <img src="img/jound.png" />
+                                        <h4 class="light">{{basicData.name}}</h4>
+                                    </div>
 
-                                <div ng-if="!img.isDefault" class="slider-common-image">
-                                    <img src="{{img.url}}" />
-                                </div>
+                                    <div ng-if="!img.isDefault" class="slider-common-image">
+                                        <div class="img-table">
+                                            <div class="img-cell">
+                                                <img src="{{img.url}}" alt="Imagen de {{basicData.name}}" />
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                <i ng-if="coverVideo && coverVideo.id && $index == 0" class="icon ion-play" id="venue-slider-cover-play"></i>
-							</ion-slide>
-						</ion-slide-box>
+                                    <i ng-if="coverVideo && coverVideo.id && $index == 0" class="icon ion-play" id="venue-slider-cover-play"></i>
+                                </div>
+                            </div>
+                            <!-- Add Pagination -->
+                            <div class="swiper-pagination"></div>
+                        </div>
 
                         <div id="venue-home-logo" ng-click="openImage(logo)">
                             <img ng-src="{{logo}}" />
@@ -78,32 +86,32 @@
                             </div>
                         </div>
                         <ul class="list" ng-if="!page">
-                            <li class="item item-icon-right" ng-click="reviews()">
+                            <a class="item item-icon-right" href="#/venues/{{venueId}}/reviews">
                                 Reseñas
                                 <i class="icon ion-chevron-right"></i>
-                            </li>
+                            </a>
                         </ul>
                         <ul class="list" ng-if="page">
-                            <li class="item item-icon-right" ng-click="reviews()" ng-if="page.showReviews || page.showReviews == undefined">
+                            <a class="item item-icon-right" href="#/venues/{{venueId}}/reviews" ng-if="page.showReviews || page.showReviews == undefined">
                                 Reseñas
                                 <i class="icon ion-chevron-right"></i>
-                            </li>
-                            <li class="item item-icon-right" ng-click="aboutUs()" ng-if="page.about">
+                            </a>
+                            <a class="item item-icon-right" href="#/venues/{{venueId}}/about" ng-if="page.about">
                                 Acerca de {{basicData.name}}
                                 <i class="icon ion-chevron-right"></i>
-                            </li>
-                            <li class="item item-icon-right" ng-click="products()" ng-if="page.hasProducts || page.hasProducts == undefined">
+                            </a>
+                            <a class="item item-icon-right" href="#/venues/{{venueId}}/products" ng-if="page.hasProducts || page.hasProducts == undefined">
                                 Productos
                                 <i class="icon ion-chevron-right"></i>
-                            </li>
-                            <li class="item item-icon-right" ng-click="deals()" ng-if="page.hasDeals || page.hasDeals == undefined">
-                                Ofertas
+                            </a>
+                            <a class="item item-icon-right" href="#/venues/{{venueId}}/promos" ng-if="page.hasDeals || page.hasDeals == undefined">
+                                Promociones
                                 <i class="icon ion-chevron-right"></i>
-                            </li>
-                            <li class="item item-icon-right" ng-click="events()" ng-if="page.hasEvents || page.hasEvents == undefined">
+                            </a>
+                            <a class="item item-icon-right" href="#/venues/{{venueId}}/events" ng-if="page.hasEvents || page.hasEvents == undefined">
                                 Eventos
                                 <i class="icon ion-chevron-right"></i>
-                            </li>
+                            </a>
                         </ul>
 
                     </ion-content>

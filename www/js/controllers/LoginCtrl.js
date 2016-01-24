@@ -192,6 +192,7 @@ angular
 
         $ionicPlatform.ready(function() {
             $scope.enableLogin();
+            $cordovaSplashscreen.hide();
 
             function facebookLogin(response) {
                 if (!response.authResponse) {

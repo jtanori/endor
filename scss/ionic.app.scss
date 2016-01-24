@@ -234,11 +234,8 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 	border-radius: 0.5rem;
 	margin-top: 0.5rem;
 	overflow-y: scroll;
-	min-width: 50%;
-
-	li.item {
-		padding: 0.5rem;
-	}
+	width: 85%;
+    padding: 0;
 
 	&.ng-hide-add, &.ng-hide-remove {
 	    transition: 0s linear all;
@@ -256,6 +253,28 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 	&.ng-hide {
 		opacity: 0;
 	}
+
+    .label {
+        display: inline-block;
+        padding: 0.5rem;
+        width: 80%;
+    }
+
+    .button {
+        padding: 0.2rem;
+        line-height: 20px;
+        height: auto;
+        min-height: initial;
+        margin: 0.2rem 0;
+        position: absolute;
+        right: 0.2rem;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+
+    .item {
+        padding: 0;
+    }
 }
 
 #map {
@@ -403,6 +422,10 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 		background-size: cover;
 	}
 
+    .swiper-pagination-bullet-active {
+        background-color: white;
+    }
+
 	.venue-slide-bg {
 		position: absolute;
 		top: 0;
@@ -419,8 +442,10 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 
 	img {
 		max-height: 100%;
+        max-width: 100%;
 	    box-shadow: 0 0 10px black;
-	    height: 100%;
+	    height: auto;
+        width: auto;
 	}
 
 	&.cover .venue-slide-bg {
@@ -473,6 +498,16 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 	    width: 3rem;
 	    text-align: center;
 	}
+
+    .img-table {
+        height: 200px;
+        width: 100%;
+
+        .img-cell {
+            height: 200px;
+            width: 100%;
+        }
+    }
 }
 
 #venue-product-page {
@@ -1009,4 +1044,15 @@ ion-footer-bar {
 #image-modal-buttons {
 	position: absolute;
     bottom: 0;
+}
+
+.img-table {
+    height: 100%;
+    display: table;
+
+    .img-cell {
+        height: 100%;
+        display: table-cell;
+        vertical-align: middle;
+    }
 }

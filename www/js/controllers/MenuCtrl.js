@@ -6,6 +6,7 @@ angular
         $state,
         $cordovaInAppBrowser,
         $cordovaKeyboard,
+        $cordovaSplashscreen,
         $ionicPlatform,
         $ionicSideMenuDelegate,
         $timeout,
@@ -214,16 +215,19 @@ angular
                 options.toolbarposition = 'top';
                 options.disallowoverscroll = 'yes';
             }
+
+            $cordovaSplashscreen.hide();
         });
     })
-    .controller('TutorialCtrl', function($scope, $timeout, $rootScope, $ionicSlideBoxDelegate, $ionicHistory, $localStorage, $state, TUTORIAL){
+    .controller('TutorialCtrl', function($scope, $timeout, $rootScope, $ionicSlideBoxDelegate, $ionicPlatform, $cordovaSplashscreen, $ionicHistory, $localStorage, $state, TUTORIAL){
         $ionicHistory.clearCache();
         $ionicHistory.clearHistory();
 
         $scope.tutorialItems = TUTORIAL;
+        $localStorage.set('tutorial', true);
 
         $scope.closeTutorial = function(){
-            $localStorage.set('tutorial', true);
+            $cordovaSplashscreen.show();
             $state.go('app.home');
         }
 
@@ -248,4 +252,8 @@ angular
 
             return index < $scope.tutorialItems.length-1;
         }
+
+        $ionicPlatform.ready(function(){
+            $cordovaSplashscreen.hide();
+        })
     });

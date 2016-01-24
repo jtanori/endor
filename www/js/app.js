@@ -17,7 +17,6 @@ angular.module('jound',
     'ionic.service.core',
     'ngCordova',
     'ngSanitize',
-    'ionic.service.push',
     'ionic.rating',
     'ngIOS9UIWebViewPatch',
 
@@ -403,8 +402,6 @@ angular.module('jound',
 })
 
 .config(function($stateProvider, $urlRouterProvider, $ionicConfigProvider, $httpProvider, $locationProvider) {
-
-
     // Ionic uses AngularUI Router which uses the concept of states
     // Learn more here: https://github.com/angular-ui/ui-router
     // Set up the various states which the app can be in.
@@ -896,6 +893,10 @@ angular.module('jound',
             }
         }
     });
+
+    $rootScope.$on('$stateNotFound', function(event, unfoundState, fromState, fromParams){
+        $state.go('notFound');
+    })
 })
 .controller('StartCtrl', function($state, $rootScope, $localStorage){
     //Redirect to proper page

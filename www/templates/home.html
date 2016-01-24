@@ -21,11 +21,14 @@
 	<ion-content scroll="false" scrollbar-x="false" scrollbar-y="false" class="has-header has-subheader">
 		<ion-pane>
 			<div class="list list-inset" id="categories-results-list" ng-show="isSearchFocused">
-				<li class="item" ng-repeat="category in categories" ng-if="category.selected" ng-click="selectCategory(category)">{{category.title}}</li>
-				<li class="item item-warning" ng-show="!categoriesFound"><i class="icon ion-heart-broken"></i> No hay coincidencias</li>
+				<div class="item" ng-repeat="category in categories" ng-if="category.selected">
+					<div class="label" ng-click="selectCategory(category)">{{category.title}}</div>
+					<button class="button button-small button-positive" ng-click="selectCategory(category, true)">Buscar</button>
+				</div>
+				<div class="item item-warning" ng-show="!categoriesFound"><i class="icon ion-heart-broken"></i> No hay coincidencias</div>
 			</div>
 		    <ion-pane id="map" ng-class="{'has-venue': currentModel, 'has-routes': route1 || route2 || route3}">
-				<div id="map-category" ng-if="category"><button type="button" class="button button-clear button-icon ion-close" ng-click="clearCategory()"></button> {{category.title}}</div>
+				<div id="map-category" ng-if="category && !isSearchFocused"><button type="button" class="button button-clear button-icon ion-close" ng-click="clearCategory()"></button> {{category.title}}</div>
 
 				<button type="button" ng-if="currentModel" class="button button-clear clear-search ion-ios-close hide-on-keyboard-open" id="map-clear-venue" ng-click="clearSelectedVenue()"></button>
 
@@ -53,14 +56,14 @@
 				</div>
 
 		    </ion-pane>
-		    <div ng-show="route1 || route2 || route3" id="home-routes" class="right aligned" class="hide-on-keyboard-open">
+		    <div ng-show="(route1 || route2 || route3) && !isSearchFocused" id="home-routes" class="right aligned" class="hide-on-keyboard-open">
 		    	<button class="button button-clear button-small" ng-click="removeAllRoutes()" ng-show="route1 || route2 || route3" id="home-routes-clear"><i class="icon ion-close"></i> Limpiar</button>
 
 				<button class="button button-positive button-small icon icon-right ion-close-circled route-option" ng-show="route1" ng-click="removeRoute(route1)">{{route1.distance}}</button>
 				<button class="button button-assertive button-small icon icon-right ion-close-circled route-option" ng-show="route2" ng-click="removeRoute(route2)">{{route2.distance}}</button>
 				<button class="button button-dark button-small icon icon-right ion-close-circled route-option" ng-show="route3" ng-click="removeRoute(route3)">{{route3.distance}}</button>
 		    </div>
-		    <div ng-show="currentModel" id="home-venue-details" ng-class="{'has-phone': currentModel.get('phone_number')}" class="hide-on-keyboard-open">
+		    <div ng-show="currentModel && !isSearchFocused" id="home-venue-details" ng-class="{'has-phone': currentModel.get('phone_number')}" class="hide-on-keyboard-open">
 		    	<div class="list">
 					<div class="item item-avatar" href="#">
 						<img src="{{currentModel.getLogo()}}" ng-click="openVenue()">

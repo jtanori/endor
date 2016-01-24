@@ -84,7 +84,7 @@
 
             <div class="center aligned light">¿Necesitas ayuda? Dale play a los videos oficiales y aprende a usar <strong>Jound</strong> sin problemas.</div>
 
-            <div class="list list-inset" ng-if="helpVideos && helpVideos.length">
+            <div class="list list-inset hide-on-keyboard-open" ng-if="helpVideos && helpVideos.length">
                 <div class="item item-dark item-avatar" ng-repeat="video in helpVideos" ng-click="openVideo(video.id)">
                     <img src="img/icon-yt.png"/>
                     <h2 class="light">{{video.title}}</h2>
@@ -92,7 +92,7 @@
                 </div>
             </div>
         </ion-content>
-        <div class="tabs tabs-dark tabs-icon-only">
+        <div class="tabs tabs-dark tabs-icon-only hide-on-keyboard-open">
             <a class="tab-item" ng-click="openExternalApp('fb', fbID)" ng-if="fbID">
                 <i class="icon ion-social-facebook"></i>
             </a>

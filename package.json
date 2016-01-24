@@ -54,10 +54,14 @@
     {
       "id": "com.phonegap.plugins.facebookconnect",
       "locator": "../Facebook"
-    }
+    },
+    "com.telerik.plugins.nativepagetransitions"
   ],
   "cordovaPlatforms": [
     "ios",
     "android"
-  ]
+  ],
+  "dependencies": {
+    "ionic-native-transitions": "^1.0.0-rc9"
+  }
 }

@@ -9292,9 +9292,8 @@ a.button {
   border-radius: 0.5rem;
   margin-top: 0.5rem;
   overflow-y: scroll;
-  min-width: 50%; }
-  #categories-results-list li.item {
-    padding: 0.5rem; }
+  width: 85%;
+  padding: 0; }
   #categories-results-list.ng-hide-add, #categories-results-list.ng-hide-remove {
     transition: 0s linear all; }
   #categories-results-list.ng-hide-add-active, #categories-results-list.ng-hide-remove-active {
@@ -9303,6 +9302,22 @@ a.button {
     opacity: 1; }
   #categories-results-list.ng-hide {
     opacity: 0; }
+  #categories-results-list .label {
+    display: inline-block;
+    padding: 0.5rem;
+    width: 80%; }
+  #categories-results-list .button {
+    padding: 0.2rem;
+    line-height: 20px;
+    height: auto;
+    min-height: initial;
+    margin: 0.2rem 0;
+    position: absolute;
+    right: 0.2rem;
+    text-overflow: ellipsis;
+    overflow: hidden; }
+  #categories-results-list .item {
+    padding: 0; }
 
 #map.has-venue {
   height: auto;
@@ -9429,6 +9444,10 @@ a.button {
   #modal-venue-new-cover ion-slide,
   #venue-product-page-cover ion-slide {
     background-size: cover; }
+  #venue-slider .swiper-pagination-bullet-active,
+  #modal-venue-new-cover .swiper-pagination-bullet-active,
+  #venue-product-page-cover .swiper-pagination-bullet-active {
+    background-color: white; }
   #venue-slider .venue-slide-bg,
   #modal-venue-new-cover .venue-slide-bg,
   #venue-product-page-cover .venue-slide-bg {
@@ -9447,8 +9466,10 @@ a.button {
   #modal-venue-new-cover img,
   #venue-product-page-cover img {
     max-height: 100%;
+    max-width: 100%;
     box-shadow: 0 0 10px black;
-    height: 100%; }
+    height: auto;
+    width: auto; }
   #venue-slider.cover .venue-slide-bg,
   #modal-venue-new-cover.cover .venue-slide-bg,
   #venue-product-page-cover.cover .venue-slide-bg {
@@ -9500,6 +9521,16 @@ a.button {
     margin-left: -1.5rem;
     width: 3rem;
     text-align: center; }
+  #venue-slider .img-table,
+  #modal-venue-new-cover .img-table,
+  #venue-product-page-cover .img-table {
+    height: 200px;
+    width: 100%; }
+    #venue-slider .img-table .img-cell,
+    #modal-venue-new-cover .img-table .img-cell,
+    #venue-product-page-cover .img-table .img-cell {
+      height: 200px;
+      width: 100%; }
 
 #venue-product-page .price {
   position: absolute;
@@ -9907,3 +9938,11 @@ ion-footer-bar.disabled:before {
 #image-modal-buttons {
   position: absolute;
   bottom: 0; }
+
+.img-table {
+  height: 100%;
+  display: table; }
+  .img-table .img-cell {
+    height: 100%;
+    display: table-cell;
+    vertical-align: middle; }

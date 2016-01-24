@@ -84,7 +84,7 @@ angular.module('jound.services')
 
             return city;
         },
-        getBanner: function(){
+        getCover: function(){
             var l;
 
             if(this.get('cover')){
@@ -134,6 +134,15 @@ angular.module('jound.services')
 
             return tags;
         },
+        getImages: function(){
+            var images = this.get('images') || [];
+
+            if(!_.isEmpty(images)){
+                images = images.map(function(i){return {url:i};});
+            }
+
+            return images;
+        },
         getBasicData: function(){
             return {
                 name: this.get('name'),
@@ -144,7 +153,7 @@ angular.module('jound.services')
                 url: this.get('www'),
                 activity: this.get('activity_description'),
                 logo: this.getLogo(),
-                banner: this.getBanner(),
+                cover: this.getCover(),
                 email: this.get('email_address'),
                 www: this.getWWW()
             };
