@@ -186,9 +186,11 @@ angular.module('jound.services')
                 q = _.chain(q).compact().uniq().invoke('trim').invoke('toLowerCase').value();
 
                 if(q.length === 1){
-                    query.equalTo('keywords', q[0].toLowerCase());
+                    q = q[0].toLowerCase();
+                    query.equalTo('keywords', q);
                 }else if(q.length > 1){
-                    query.containsAll('keywords', SanitizeService.strings.sanitize(q));
+                    q = SanitizeService.strings.sanitize(q);
+                    query.containsAll('keywords', q);
                 }
             }
 
@@ -219,9 +221,9 @@ angular.module('jound.services')
                             });
 
                             _currentResults = results;
-                            deferred.resolve(results);
+                            deferred.resolve(results, q);
                         }else{
-                            deferred.reject({message: 'No encontramos resultados, intenta buscar en un rango mas amplio.'});
+                            deferred.reject({message: 'No encontramos resultados, intenta buscar en un rango mas amplio.', keywords: q, code: 404});
                         }
                     }, function(e){
                         deferred.reject(e);

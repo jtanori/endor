@@ -124,6 +124,8 @@ angular
                         c.selected = false
                     });
                 }
+
+                filterMarkersByKeywords($scope.featuredMarkers, val);
             } else {
                 //Show all categories when nothing is written
                 _.each($scope.categories, function(c) {
@@ -136,12 +138,10 @@ angular
             $timeout(function(){
                 $scope.$apply(function(){
                     $scope.category = c;
+                    $scope.query = '';
+
                     if(autoSearch){
                         $scope.submit();
-                    }else{
-                        $scope.query = '';
-
-                        AnalyticsService.track('selectCategory', {category: ''  + c.id});
                     }
                 });
             });
@@ -178,7 +178,7 @@ angular
             $scope.venue = {};
             $scope.points = [];
             $scope.isSearchFocused = false;
-            $scope.featuredVenues = [];
+            //$scope.featuredVenues = [];
 
             ionic.DomUtil.blurAll();
 
@@ -196,10 +196,19 @@ angular
                 //TODO: Fix backwards (attributes from URI) search
                 VenuesService
                     .search(position, $rootScope.settings.searchRadius, q, c, excluded)
-                    .then(function(venues) {
+                    .then(function(venues, keywords) {
                         $timeout(function() {
                             enableMap()
                             $cordovaProgress.hide();
+
+                            if(!_.isEmpty($scope.featuredMarkers)){
+                                if(c){
+                                    filterMarkersByCategoryAndKeywords($scope.featuredMarkers, c, keywords);
+                                }else{
+                                    filterMarkersByKeywords($scope.featuredMarkers, keywords);
+                                }
+                            }
+
                             $scope.$apply(function() {
                                 $scope.venues = venues;
                                 isSearching = false;
@@ -209,11 +218,20 @@ angular
                     }, function(error) {
                         enableMap();
                         $cordovaProgress.hide();
-                        $timeout(function(){
-                            isSearching = false;
-                            $cordovaDialogs.alert(error.message);
-                            AnalyticsService.track('error', {type: 'search', position: position.coords.latitude + ',' + position.coords.longitude, type: 'search', code: error.code, message: error.message, latitude: position.coords.latitude, longitude: position.coords.longitude, search: q, radius: r, category: c});
-                        });
+                        isSearching = false;
+                        var featuredFound = 0;
+
+                        if(error.code === 404){
+                            featuredFound = filterMarkersByKeywords($scope.featuredMarkers, error.keywords);
+                        }
+
+                        if(!featuredFound){
+                            $timeout(function(){
+                                $cordovaDialogs.alert(error.message);
+                            });
+                        }
+
+                        AnalyticsService.track('error', {type: 'search', position: position.coords.latitude + ',' + position.coords.longitude, type: 'search', code: error.code, message: error.message, latitude: position.coords.latitude, longitude: position.coords.longitude, search: q, radius: r, category: c});
                     });
             }, 300);
         };
@@ -228,16 +246,10 @@ angular
                 $scope.points = [];
             }
 
-            if(!_.isEmpty($scope.featuredVenues)){
-                $scope.featuredMarkers.forEach(function(m){
-                    if(!m.isVisible()){
-                        m.setVisible(true);
-                    }
-                });
-            }
+            showAllFeatured();
 
             _.each($scope.categories, function(c) {
-                c.selected = true
+                c.selected = true;
             });
         }
 
@@ -464,6 +476,106 @@ angular
             }
         });
 
+        $scope.clearSearch = function(){
+            $timeout(function(){
+                $scope.$apply(function(){
+                    $scope.query = '';
+
+                    if($scope.currentMarker){
+                        if($scope.currentMarker.get('data').featured){
+                            $scope.currentMarker.setIcon(AppConfig.MARKERS.VENUE_FEATURED);
+                        }else{
+                            $scope.currentMarker.setIcon(AppConfig.MARKERS.VENUE);
+                        }
+                    }
+
+                    $scope.clearResults();
+                    $scope.currentMarker = null;
+                    $scope.currentModel = null;
+                    ionic.DomUtil.blurAll();
+                    $cordovaKeyboard.close();
+                });
+            });
+        };
+
+        $scope.clearResults = function(){
+            _.each($scope.venue, function(v){v = null;});
+            _.each($scope.markers, function(m){m.remove(); m = null});
+            $scope.venues = [];
+            $scope.markers = [];
+            $scope.removeAllRoutes();
+        };
+
+        function filterMarkersByKeywords($markers, keywords){
+            var allFound = 0;
+
+            if(!_.isEmpty($markers)){
+                if(_.isEmpty(keywords)){
+                    return found;
+                } else if(_.isString(keywords)){
+                    keywords = [keywords];
+                }
+
+                allFound = $scope.featuredMarkers.map(function(m){
+                    var found = _.intersection(m.get('data').keywords, keywords);
+
+                    if(found.length){
+                        if(!m.isVisible()){
+                            m.setVisible(true);
+                        }
+                    }else if(m.isVisible()){
+                        m.setVisible(false);
+                    }
+
+                    return found.length;
+                }).reduce(function(c, p){
+                    return p + c;
+                });
+            }
+
+            return allFound;
+        };
+
+        function filterMarkersByCategoryAndKeywords($markers, category, keywords){
+            var markers = $markers.filter(function(m){
+                var c = m.get('data').category;
+
+                if(c === category){
+                    return m;
+                }
+            });
+
+            if(!_.isEmpty(markers)){
+                if(!_.isEmpty(keywords)){
+                    filterMarkersByKeywords(markers, keywords);
+                }else{
+                    markers.forEach(function(m){
+                        m.setVisible(true);
+                    });
+                }
+            }else{
+                hideAllFeatured();
+            }
+        }
+
+        function showAllFeatured(){
+            if(!_.isEmpty($scope.featuredMarkers)){
+                $scope.featuredMarkers.forEach(function(m){
+                    m.setIcon(AppConfig.MARKERS.VENUE_FEATURED);
+                    m.setVisible(true);
+                });
+            }
+        }
+
+        function hideAllFeatured(){
+            if(!_.isEmpty($scope.featuredMarkers)){
+                $scope.featuredMarkers.forEach(function(m){
+                    m.setIcon(AppConfig.MARKERS.VENUE_FEATURED);
+                    m.setVisible(false);
+                });
+            }
+        }
+
         function disableMap() {
             if ($rootScope.mainMap) {
                 $rootScope.mainMap.setClickable(false);
@@ -500,27 +612,6 @@ angular
                 points: routePoints,
                 distance: distance
             };
-        };
-
-        $scope.clearSearch = function(){
-            $timeout(function(){
-                $scope.$apply(function(){
-                    $scope.query = '';
-                    $scope.clearResults();
-                    $scope.currentMarker = null;
-                    $scope.currentModel = null;
-                    ionic.DomUtil.blurAll();
-                    $cordovaKeyboard.close();
-                });
-            });
-        };
-
-        $scope.clearResults = function(){
-            _.each($scope.venue, function(v){v = null;});
-            _.each($scope.markers, function(m){m.remove(); m = null});
-            $scope.venues = [];
-            $scope.markers = [];
-            $scope.removeAllRoutes();
         };
 
         $scope.newBusinessMarker = null;
@@ -626,7 +717,6 @@ angular
                 $scope.newBusinessModal.show();
             }
         }
-
 
         $scope.saveNewBusiness = function(){
             var nb = $scope.newBusiness;
@@ -841,9 +931,10 @@ angular
                     position: lng,
                     data: {
                         id: model.id,
-                        category: model.get('category').id,
+                        category: model.get('category') ? model.get('category').id : undefined,
                         position: l.toJSON(),
-                        featured: model.get('featured')
+                        featured: model.get('featured'),
+                        keywords: model.get('keywords')
                     },
                     visible: false,
                     disableAutoPan: true,
