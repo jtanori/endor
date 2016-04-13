@@ -22,7 +22,8 @@
                             <div>24/7</div>
                             <div class="label">Abierto</div>
                         </div>
-                        <button type="button" class="buton button-icon icon ion-camera" id="tab-venue-home-photo" ng-click="takePhoto()" ng-if="enableUserPhotos"></button>
+                        <!--button type="button" class="buton button-icon icon ion-camera" id="tab-venue-home-photo" ng-click="takePhoto()" ng-if="enableUserPhotos"></button-->
+                        <button type="button" class="buton button-icon icon ion-share" id="tab-venue-home-photo" ng-click="share()"></button>
                         <!-- Tab 1 content -->
 						<!-- Slideshow -->
                         <div class="swiper-container" id="venue-slider">
@@ -81,9 +82,9 @@
                                 <a ng-if="facebook" class="button button-icon ion-social-facebook" ng-click="openExternalApp('fb', facebook)"></a>
                                 <a ng-if="pinterest" class="button button-icon ion-social-pinterest" ng-click="openExternalApp('pinterest', pinterest)"></a>
                             </div>
-                            <div class="padding">
+                            <!--div class="padding">
                                 <button ng-click="share()" class="button button-positive button-block button-small"><i class="icon ion-share"></i> Compartir</button>
-                            </div>
+                            </div-->
                         </div>
                         <ul class="list" ng-if="!page">
                             <a class="item item-icon-right" href="#/venues/{{venueId}}/reviews">

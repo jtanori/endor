@@ -1,4 +1,6 @@
-rm jound.apk
+rm jound-armv7.apk
+rm jound-x86.apk
+
 cordova plugin rm cordova-plugin-console
 cordova build android
 cordova build --release android

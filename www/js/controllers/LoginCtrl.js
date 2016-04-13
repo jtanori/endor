@@ -17,18 +17,18 @@ angular
         AppConfig,
         AnalyticsService) {
 
-        if ($rootScope.user && !$rootScope.user.isAnonimous()) {
+        if ($rootScope.user) {
             $state.go('app.home');
             return;
         }
 
         var _signup = false;
 
-        $scope.user = {};
-        $scope.master = {};
-
         $ionicHistory.clearCache();
         $ionicHistory.clearHistory();
+
+        $scope.user = {};
+        $scope.master = {};
 
         $ionicHistory.nextViewOptions({
             disableBack: true,
@@ -98,7 +98,7 @@ angular
                             $cordovaProgress.hide();
                         });
 
-                        $state.go('app.home');
+                        goHome();
                     }, function(e) {
                         AnalyticsService.track('error', {code:  e.code, message: e.message});
 
@@ -146,7 +146,7 @@ angular
                             $cordovaProgress.hide();
                         });
 
-                        $state.go('app.home');
+                        goHome();
                     },
                     error: function(user, e) {
                         AnalyticsService.track('error', {code:  e.code, message: e.message});

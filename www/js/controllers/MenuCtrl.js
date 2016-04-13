@@ -111,10 +111,6 @@ angular
             LinksService.open(url);
         };
 
-        $scope.hideAccessoryBar = function(){
-            console.log('close');
-        }
-
         var _left = false;
         $scope.openLeft = function() {
             $rootScope.mainMap.setClickable(false);

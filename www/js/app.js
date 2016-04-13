@@ -127,6 +127,11 @@ angular.module('jound',
         appId: "hq7NqhxfTb2p7vBij2FVjlWj2ookUMIPTmHVF9ZH",
         jsKey: "cdfm37yRroAiw82t1qukKv9rLVhlRqQpKmuVlkLC"
     },
+    /*
+    PARSE: {
+        appId: "24BXvqzE2yuQX5EVM9UPDIh1SyxBZnRMq7BBmo0Y",
+        jsKey: "dHaSGaXxD4ssx7GbPoXFNouJBG5r3pzPdCIPau9V"
+    },*/
     FB: {
         DEFAULT_PERMISSIONS: ["public_profile", "email", "user_friends"]
     },
@@ -230,16 +235,6 @@ angular.module('jound',
             'Viernes',
             'Sabado'
         ]
-    },
-    ADMOB: {
-        DEFAULT_OPTIONS: {
-            bannerId: 'ca-app-pub-9450508564392305/7289295079',
-            interstitialId: 'ca-app-pub-9450508564392305/8766028274',
-            adSize: 'SMART_BANNER',
-            //position: AdMob.AD_POSITION.BOTTOM_CENTER,
-            isTesting: true,
-            autoShow: false
-        }
     },
     GOOGLE: {
         MAPS_WEB_KEY: 'AIzaSyDzZII1NdMzWZaRPfTFntVwaGt6p5hnesQ'
@@ -896,7 +891,7 @@ angular.module('jound',
 
     $rootScope.$on('$stateNotFound', function(event, unfoundState, fromState, fromParams){
         $state.go('notFound');
-    })
+    });
 })
 .controller('StartCtrl', function($state, $rootScope, $localStorage){
     //Redirect to proper page

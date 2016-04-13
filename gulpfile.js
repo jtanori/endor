@@ -19,7 +19,7 @@ gulp.task('sass', function(done) {
       errLogToConsole: true,
       compass: true
     }))
-    .pipe(gulp.dest('./www/css/'))
+    .pipe(gulp.dest('./public/css/'))
     .pipe(minifyCss({
       keepSpecialComments: 0
     }))

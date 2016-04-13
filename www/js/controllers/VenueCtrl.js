@@ -929,6 +929,11 @@ angular
 
         $scope.businessImageSRC = '';
         $scope.takePhoto = function(){
+            if($rootScope.user.isAnonimous()){
+                $cordovaDialogs.alert('Esta opcion solo esta disponible para usuarios registrados, no te quedes fuera y crea tu cuenta Jound para usar todas sus caracteristicas');
+                return;
+            }
+
             $scope.businessImageSRC = '';
 
             CameraService
@@ -943,6 +948,8 @@ angular
                                 .savePhotoForVenue(image, $scope.venue.id)
                                 .then(function(url){
                                     $scope.images.push({url: url});
+                                    $scope.venue.addUnique('images', url);
+
                                     $cordovaProgress.hide();
 
                                     $timeout(function(){

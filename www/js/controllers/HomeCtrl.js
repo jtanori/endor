@@ -131,6 +131,7 @@ angular
                 _.each($scope.categories, function(c) {
                     c.selected = true
                 });
+                $scope.categoriesFound = $scope.categories.length;
             }
         };
 
@@ -165,7 +166,7 @@ angular
             }
 
             isSearching = true;
-            lockPosition();
+            lockPosition(true, false);
             disableMap();
 
             if($scope.currentMarker && $scope.currentMarker.get('data').featured){
@@ -416,7 +417,7 @@ angular
 
                     route = null;
                 });
-            })
+            });
         }
 
         $scope.removeAllRoutes = function() {
@@ -499,7 +500,7 @@ angular
         };
 
         $scope.clearResults = function(){
-            _.each($scope.venue, function(v){v = null;});
+            _.each($scope.venues, function(v){v = null;});
             _.each($scope.markers, function(m){m.remove(); m = null});
             $scope.venues = [];
             $scope.markers = [];
@@ -511,7 +512,7 @@ angular
 
             if(!_.isEmpty($markers)){
                 if(_.isEmpty(keywords)){
-                    return found;
+                    return allFound;
                 } else if(_.isString(keywords)){
                     keywords = [keywords];
                 }
@@ -798,8 +799,12 @@ angular
                 });
         }
 
-        var lockPosition = function(lock){
+        var lockPosition = function(lock, showMessage){
             $scope.centerCaptured = lock === false ? false : true;
+
+            if(showMessage === false){
+                return;
+            }
 
             var message;
             if($scope.centerCaptured){
@@ -1248,55 +1253,6 @@ angular
                 }, 1000);
             }
 
-            var removeOutOfRangeFeaturedTimeout;
-            function removeOutOfRangeFeatured(){
-
-                if(removeOutOfRangeFeaturedTimeout){
-                    $timeout.cancel(removeOutOfRangeFeaturedTimeout);
-                }
-
-                if(!_.isEmpty($scope.featuredVenues)){
-                    removeOutOfRangeFeaturedTimeout = $timeout(function(){
-                        $rootScope.mainMap.getCameraPosition(function(camera){
-                            var position = {latitude: camera.target.lat, longitude: camera.target.lng};
-                            var radius = $rootScope.settings.searchRadius;
-                            var maxDistanceToRemove = radius + (AppConfig.MAX_DISTANCE_TO_REFRESH/2);
-                            var tobeIncluded = [];
-                            var tobeRemoved = _.chain($scope.featuredVenues).map(function(v){
-                                var p = v.get('position');
-                                var distance = RoutesService.distance(position, {latitude: p.latitude, longitude: p.longitude});
-
-                                if(distance > maxDistanceToRemove){
-                                    return v.id;
-                                }else{
-                                    tobeIncluded.push(v.id);
-                                }
-                            }).compact().value();
-
-                            if(!_.isEmpty(tobeRemoved)){
-                                tobeRemoved.forEach(function(id){
-                                    $scope.featuredMarkers.forEach(function(m){
-                                        if(m.get('data').id === id){
-                                            m.setVisible(false);
-                                        }
-                                    });
-                                });
-                            }
-
-                            if(!_.isEmpty(tobeIncluded)){
-                                tobeIncluded.forEach(function(id){
-                                    $scope.featuredMarkers.forEach(function(m){
-                                        if(m.get('data').id === id && !m.isVisible()){
-                                            m.setVisible(true);
-                                        }
-                                    });
-                                });
-                            }
-                        });
-                    }, 1500);
-                }
-            }
-
             function onMapInit() {
                 $rootScope.mainMap.clear();
 
@@ -1443,7 +1399,7 @@ angular
                 if(map && _.isUndefined(oldMap)){
                     //Listen for map events
                     $rootScope.mainMap.on(plugin.google.maps.event.MAP_CLICK, onMapClick);
-                    $rootScope.mainMap.on(plugin.google.maps.event.CAMERA_CHANGE, removeOutOfRangeFeatured);
+                    //$rootScope.mainMap.on(plugin.google.maps.event.CAMERA_CHANGE, removeOutOfRangeFeatured);
                     //$rootScope.mainMap.on(plugin.google.maps.event.MAP_LONG_CLICK, onMapLongClick);
                     $rootScope.mainMap.on(plugin.google.maps.event.CAMERA_CHANGE, onMapChange);
                 }
